@@ -303,4 +303,4 @@ async function sendDoubtMsg() {
         console.error(e);
         alert('Failed to send message. Please check internet connection.');
     }
-} ab isko
+} 
