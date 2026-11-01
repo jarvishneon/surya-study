@@ -1,0 +1,1008 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RJ Study Academy | Secure Portal</title>
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;600&family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- FontAwesome for Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary: #00ff66;
+            --primary-glow: rgba(0, 255, 102, 0.4);
+            --bg-dark: #020504;
+            --card-bg: rgba(5, 18, 12, 0.88);
+            --border-color: rgba(0, 255, 102, 0.3);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            scroll-behavior: smooth;
+        }
+
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background-color: var(--bg-dark);
+            color: #ffffff;
+            min-height: 100vh;
+            overflow-x: hidden;
+            position: relative;
+        }
+
+        /* Live Matrix & Grid Movement Background */
+        .cyber-grid {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background-image: 
+                linear-gradient(rgba(0, 255, 102, 0.04) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(0, 255, 102, 0.04) 1px, transparent 1px);
+            background-size: 50px 50px;
+            z-index: -3;
+            pointer-events: none;
+            animation: gridMove 20s linear infinite;
+        }
+
+        @keyframes gridMove {
+            0% { background-position: 0 0; }
+            100% { background-position: 50px 50px; }
+        }
+
+        /* Live Glowing Laser Animation Beam */
+        .laser-beam {
+            position: fixed;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 2px;
+            background: linear-gradient(90deg, transparent, var(--primary), transparent);
+            box-shadow: 0 0 15px var(--primary);
+            z-index: -2;
+            animation: laserScan 6s ease-in-out infinite;
+        }
+
+        @keyframes laserScan {
+            0% { top: 0%; left: -100%; }
+            50% { top: 100%; left: 100%; }
+            100% { top: 0%; left: -100%; }
+        }
+
+        /* Fully Transparent Background Hacking Terminal */
+        #terminal-bg {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            font-family: 'Fira Code', monospace;
+            font-size: 13px;
+            color: var(--primary);
+            background: rgba(2, 5, 4, 0.88);
+            padding: 40px;
+            z-index: -1;
+            overflow: hidden;
+            white-space: pre-wrap;
+            opacity: 0.25;
+            pointer-events: none;
+            line-height: 1.6;
+        }
+
+        /* Navigation Bar */
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px 8%;
+            background: rgba(2, 5, 4, 0.75);
+            backdrop-filter: blur(12px);
+            border-bottom: 1px solid var(--border-color);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .logo {
+            font-size: 22px;
+            font-weight: 800;
+            color: #ffffff;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            cursor: pointer;
+        }
+
+        .logo span {
+            color: var(--primary);
+            text-shadow: 0 0 15px var(--primary-glow);
+        }
+
+        /* Views (Pages container) */
+        .page-view {
+            display: none;
+        }
+
+        .page-view.active {
+            display: block;
+        }
+
+        /* Hero / Front Section with Split Layout */
+        .hero-login-container {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            min-height: calc(100vh - 85px);
+            padding: 40px 8%;
+            gap: 50px;
+        }
+
+        .hero-left {
+            flex: 1;
+        }
+
+        .hero-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: rgba(0, 255, 102, 0.1);
+            border: 1px solid var(--border-color);
+            padding: 6px 16px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            color: var(--primary);
+            margin-bottom: 20px;
+            font-family: 'Fira Code', monospace;
+            box-shadow: 0 0 10px rgba(0, 255, 102, 0.1);
+        }
+
+        .hero-left h1 {
+            font-size: 3.5rem;
+            font-weight: 800;
+            margin-bottom: 20px;
+            line-height: 1.15;
+            background: linear-gradient(180deg, #ffffff 30%, #a0fca8 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .hero-left h1 span {
+            background: linear-gradient(45deg, var(--primary), #00bfff);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .hero-left p {
+            font-size: 1.05rem;
+            color: #94a3b8;
+            max-width: 550px;
+            margin-bottom: 30px;
+            line-height: 1.6;
+        }
+
+        .features-tags {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+
+        .tag {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 8px 14px;
+            border-radius: 8px;
+            font-size: 0.85rem;
+            color: #cbd5e1;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .tag i {
+            color: var(--primary);
+        }
+
+        /* Front Login Card */
+        .login-card {
+            flex: 0 0 400px;
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            padding: 35px 30px;
+            border-radius: 16px;
+            backdrop-filter: blur(16px);
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.5), 0 0 25px rgba(0, 255, 102, 0.1);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .login-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 3px;
+            background: linear-gradient(90deg, transparent, var(--primary), transparent);
+        }
+
+        .login-card h2 {
+            font-size: 1.6rem;
+            font-weight: 700;
+            margin-bottom: 8px;
+            color: #ffffff;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .login-card h2 i {
+            color: var(--primary);
+        }
+
+        .login-card p.subtitle {
+            font-size: 0.85rem;
+            color: #94a3b8;
+            margin-bottom: 25px;
+        }
+
+        .input-group {
+            margin-bottom: 20px;
+        }
+
+        .input-group label {
+            display: block;
+            font-size: 0.85rem;
+            color: #cbd5e1;
+            margin-bottom: 8px;
+            font-weight: 500;
+        }
+
+        .input-with-icon {
+            position: relative;
+        }
+
+        .input-with-icon i {
+            position: absolute;
+            left: 14px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #64748b;
+            font-size: 0.95rem;
+        }
+
+        .input-with-icon input {
+            width: 100%;
+            background: rgba(2, 5, 4, 0.6);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 12px 15px 12px 42px;
+            border-radius: 8px;
+            color: #ffffff;
+            font-size: 0.95rem;
+            outline: none;
+            transition: 0.3s;
+        }
+
+        .input-with-icon input:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 12px var(--primary-glow);
+        }
+
+        .login-btn {
+            width: 100%;
+            padding: 12px;
+            background: var(--primary);
+            color: #020504;
+            font-weight: 700;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: 0.3s;
+            font-size: 1rem;
+            box-shadow: 0 0 20px var(--primary-glow);
+            margin-top: 10px;
+        }
+
+        .login-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 0 30px rgba(0, 255, 102, 0.7);
+        }
+
+        .error-msg {
+            color: #ff4d4d;
+            font-size: 0.8rem;
+            margin-top: 10px;
+            text-align: center;
+            display: none;
+        }
+
+        /* --- DASHBOARD STYLES (After Login) --- */
+        .dashboard-topbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 18px 8%;
+            background: rgba(2, 5, 4, 0.9);
+            border-bottom: 1px solid var(--border-color);
+            backdrop-filter: blur(12px);
+            position: relative;
+        }
+
+        /* Profile Dropdown Container */
+        .profile-menu-container {
+            position: relative;
+        }
+
+        .profile-circle {
+            width: 44px;
+            height: 44px;
+            background: rgba(0, 255, 102, 0.15);
+            border: 2px solid var(--primary);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: var(--primary);
+            box-shadow: 0 0 12px var(--primary-glow);
+            cursor: pointer;
+            transition: 0.3s;
+        }
+
+        .profile-circle:hover {
+            background: var(--primary);
+            color: #020504;
+            box-shadow: 0 0 20px var(--primary-glow);
+        }
+
+        /* Dropdown Box */
+        .profile-dropdown {
+            position: absolute;
+            right: 0;
+            top: 55px;
+            width: 240px;
+            background: #04120a;
+            border: 1px solid var(--primary);
+            border-radius: 12px;
+            padding: 18px;
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.9);
+            display: none;
+            z-index: 9999;
+        }
+
+        .profile-dropdown.active {
+            display: block !important;
+        }
+
+        .dropdown-username {
+            font-size: 1.05rem;
+            font-weight: 700;
+            color: #ffffff;
+            margin-bottom: 6px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .dropdown-role {
+            font-size: 0.75rem;
+            color: #94a3b8;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.15);
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .dropdown-logout-btn {
+            width: 100%;
+            background: #ff4d4d !important;
+            color: #ffffff !important;
+            border: none !important;
+            padding: 10px 14px;
+            border-radius: 8px;
+            font-weight: 700;
+            font-size: 0.9rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            cursor: pointer;
+            transition: 0.3s;
+            box-shadow: 0 0 15px rgba(255, 77, 77, 0.4);
+        }
+
+        .dropdown-logout-btn:hover {
+            background: #ff1a1a !important;
+            box-shadow: 0 0 22px rgba(255, 77, 77, 0.8);
+        }
+
+        .dashboard-container {
+            max-width: 1100px;
+            margin: 40px auto;
+            padding: 0 20px;
+        }
+
+        .back-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            color: #ffffff;
+            padding: 8px 16px;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            cursor: pointer;
+            margin-bottom: 30px;
+            transition: 0.3s;
+        }
+
+        .back-btn:hover {
+            border-color: var(--primary);
+            color: var(--primary);
+        }
+
+        /* 3 Options Cards Grid (Main Dashboard) */
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: 30px;
+        }
+
+        .dash-card {
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            padding: 40px 30px;
+            border-radius: 16px;
+            backdrop-filter: blur(12px);
+            text-align: center;
+            transition: all 0.4s ease;
+            position: relative;
+            overflow: hidden;
+            cursor: pointer;
+        }
+
+        .dash-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 3px;
+            background: linear-gradient(90deg, transparent, var(--primary), transparent);
+            opacity: 0;
+            transition: 0.4s;
+        }
+
+        .dash-card:hover {
+            border-color: var(--primary);
+            transform: translateY(-8px);
+            box-shadow: 0 15px 35px rgba(0, 255, 102, 0.2);
+        }
+
+        .dash-card:hover::before {
+            opacity: 1;
+        }
+
+        .dash-icon {
+            font-size: 3rem;
+            color: var(--primary);
+            margin-bottom: 20px;
+            text-shadow: 0 0 15px var(--primary-glow);
+        }
+
+        .dash-card h3 {
+            font-size: 1.5rem;
+            margin-bottom: 12px;
+            font-weight: 700;
+            color: #ffffff;
+        }
+
+        .dash-card p {
+            color: #94a3b8;
+            font-size: 0.95rem;
+            line-height: 1.5;
+            margin-bottom: 25px;
+        }
+
+        .dash-action-btn {
+            background: rgba(0, 255, 102, 0.1);
+            border: 1px solid var(--primary);
+            color: var(--primary);
+            padding: 10px 24px;
+            border-radius: 8px;
+            font-weight: 600;
+            text-decoration: none;
+            display: inline-block;
+            transition: 0.3s;
+        }
+
+        .dash-card:hover .dash-action-btn {
+            background: var(--primary);
+            color: #020504;
+            box-shadow: 0 0 15px var(--primary-glow);
+        }
+
+        /* Sub-section views styling */
+        .sub-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 25px;
+        }
+
+        .sub-card {
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            padding: 30px;
+            border-radius: 12px;
+            text-align: center;
+            text-decoration: none;
+            color: #ffffff;
+            transition: 0.3s;
+            display: block;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .sub-card:hover {
+            border-color: var(--primary);
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(0, 255, 102, 0.2);
+        }
+
+        .sub-card h4 {
+            font-size: 1.3rem;
+            color: var(--primary);
+            margin-bottom: 10px;
+        }
+
+        .sub-card p {
+            color: #94a3b8;
+            font-size: 0.85rem;
+        }
+
+        /* Mobile Responsive */
+        @media (max-width: 968px) {
+            .hero-login-container {
+                flex-direction: column;
+                justify-content: center;
+                text-align: center;
+                padding: 40px 20px;
+            }
+            .hero-left h1 { font-size: 2.8rem; }
+            .hero-left p { margin: 0 auto 30px auto; }
+            .features-tags { justify-content: center; }
+            .login-card { width: 100%; max-width: 420px; }
+            .dashboard-topbar { padding: 15px 5%; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Dynamic Background Elements -->
+    <div class="cyber-grid"></div>
+    <div class="laser-beam"></div>
+    <div id="terminal-bg"></div>
+
+    <!-- ================= VIEW 1: FRONT LOGIN PAGE ================= -->
+    <div id="login-view" class="page-view active">
+        <header>
+            <div class="logo">
+                <i class="fa-solid fa-shield-halved" style="color: var(--primary);"></i> RJ <span>Study Academy</span>
+            </div>
+        </header>
+
+        <div class="hero-login-container">
+            <div class="hero-left">
+                <div class="hero-badge">
+                    <i class="fa-solid fa-terminal"></i> SECURE_GATEWAY // v5.1
+                </div>
+                <h1>Elite Cyber & Coding <span>Education Portal</span></h1>
+                <p>Apna naam daalkar secure login karein aur apne student dashboard tak pahunchein.</p>
+                <div class="features-tags">
+                    <div class="tag"><i class="fa-solid fa-check"></i> Competitive Exams</div>
+                    <div class="tag"><i class="fa-solid fa-check"></i> Board Exams</div>
+                    <div class="tag"><i class="fa-solid fa-check"></i> Live Updates</div>
+                </div>
+            </div>
+
+            <div class="login-card">
+                <h2><i class="fa-solid fa-lock"></i> Student Portal</h2>
+                <p class="subtitle">Enter your name & password to access profile.</p>
+                
+                <form id="loginForm">
+                    <div class="input-group">
+                        <label>Your Name</label>
+                        <div class="input-with-icon">
+                            <i class="fa-solid fa-user"></i>
+                            <input type="text" id="usernameInput" placeholder="Enter your name" required>
+                        </div>
+                    </div>
+
+                    <div class="input-group">
+                        <label>Password</label>
+                        <div class="input-with-icon">
+                            <i class="fa-solid fa-key"></i>
+                            <input type="password" id="passwordInput" placeholder="Enter password" required>
+                        </div>
+                    </div>
+
+                    <div id="errorMsg" class="error-msg" role="alert" aria-live="polite">Incorrect password. Please try again.</div>
+
+                    <button type="submit" class="login-btn">Authenticate & Login</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- ================= VIEW 2: MAIN DASHBOARD ================= -->
+    <div id="dashboard-view" class="page-view">
+        <div class="dashboard-topbar">
+            <div class="logo" onclick="goHome()">
+                <i class="fa-solid fa-shield-halved" style="color: var(--primary);"></i> RJ <span>Study Academy</span>
+            </div>
+            
+            <div class="profile-menu-container">
+                <div class="profile-circle" id="profileInitial" onclick="toggleProfileMenu(event)" title="Open Profile">A</div>
+                
+                <div class="profile-dropdown" id="profileDropdown">
+                    <div class="dropdown-username" id="displayUsername">Student Name</div>
+                    <div class="dropdown-role"><i class="fa-solid fa-circle" style="color: var(--primary); font-size: 7px;"></i> Active Student</div>
+                    <button class="dropdown-logout-btn" onclick="logout()"><i class="fa-solid fa-right-from-bracket"></i> Logout</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="dashboard-container">
+            <div class="dashboard-grid">
+                <!-- Option 1 -->
+                <div class="dash-card" onclick="switchSubView('competitive-view')">
+                    <div class="dash-icon"><i class="fa-solid fa-trophy"></i></div>
+                    <h3>Competitive Exams</h3>
+                    <p>Access high-level practice tests, PYQs, mock tests, and strategies for JEE, NEET, UPSC & Tech certifications.</p>
+                    <span class="dash-action-btn">Explore Section <i class="fa-solid fa-arrow-right"></i></span>
+                </div>
+
+                <!-- Option 2 -->
+                <div class="dash-card" onclick="switchSubView('boards-view')">
+                    <div class="dash-icon"><i class="fa-solid fa-book-open"></i></div>
+                    <h3>Board Exams</h3>
+                    <p>Get chapter-wise notes, sample papers, important questions, and revision modules for class 9th & 10th boards.</p>
+                    <span class="dash-action-btn">Explore Section <i class="fa-solid fa-arrow-right"></i></span>
+                </div>
+
+                <!-- Option 3 -->
+                <div class="dash-card" onclick="switchSubView('notifications-view')">
+                    <div class="dash-icon"><i class="fa-solid fa-bell"></i></div>
+                    <h3>Notifications And Updates</h3>
+                    <p>Stay updated with latest exam dates, scholarship announcements, live batch alerts, and academy notices.</p>
+                    <span class="dash-action-btn">View Updates <i class="fa-solid fa-arrow-right"></i></span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ================= VIEW 3: COMPETITIVE EXAMS SUB-SECTION ================= -->
+    <div id="competitive-view" class="page-view">
+        <div class="dashboard-topbar">
+            <div class="logo" onclick="goHome()">
+                <i class="fa-solid fa-shield-halved" style="color: var(--primary);"></i> RJ <span>Study Academy</span>
+            </div>
+            <div class="profile-menu-container">
+                <div class="profile-circle" id="profileInitial2" onclick="toggleProfileMenu(event)">A</div>
+                <div class="profile-dropdown">
+                    <div class="dropdown-username displayUsernameCopy">Student Name</div>
+                    <div class="dropdown-role"><i class="fa-solid fa-circle" style="color: var(--primary); font-size: 7px;"></i> Active Student</div>
+                    <button class="dropdown-logout-btn" onclick="logout()"><i class="fa-solid fa-right-from-bracket"></i> Logout</button>
+                </div>
+            </div>
+        </div>
+        <div class="dashboard-container">
+            <button class="back-btn" onclick="goHome()"><i class="fa-solid fa-arrow-left"></i> Back to Dashboard</button>
+            <div style="margin-bottom: 25px;">
+                <h2>Competitive Exams Batches</h2>
+                <p style="color: #94a3b8; font-size: 0.95rem;">Select your preferred coaching platform batch below.</p>
+            </div>
+            <div class="sub-grid">
+                <!-- URL Placeholder 1: PW Batches -->
+                <a href="https://www.learnxpw.site/study/batches" target="_self" class="sub-card">
+                    <h4>PW Batches</h4>
+                    <p>Click here to access Physics Wallah live classes & study modules.</p>
+                </a>
+                <!-- URL Placeholder 2: RWA Batches -->
+                <a href="https://studybeepro.site/rwax/" target="_self" class="sub-card">
+                    <h4>RWA Batches</h4>
+                    <p>Click here to access Rojgar with Ankit batches & practice sets.</p>
+                </a>
+                <!-- URL Placeholder 3: Vidyagram Batches -->
+                <a href="https://studybeepro.site/vidyagram/content.html?id=41" target="_self" class="sub-card">
+                    <h4>Vidyagram Batches</h4>
+                    <p>Click here to access Vidyagram elite exam prep materials.</p>
+                </a>
+                <!-- URL Placeholder 4: KGS Batches -->
+                <a href="https://gb.ayushindmods1.workers.dev/KGSNEW/" target="_self" class="sub-card">
+                    <h4>KGS Batches</h4>
+                    <p>Click here to access Khan Global Studies batches & video lectures.</p>
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- ================= VIEW 4: BOARD EXAMS SUB-SECTION ================= -->
+    <div id="boards-view" class="page-view">
+        <div class="dashboard-topbar">
+            <div class="logo" onclick="goHome()">
+                <i class="fa-solid fa-shield-halved" style="color: var(--primary);"></i> RJ <span>Study Academy</span>
+            </div>
+            <div class="profile-menu-container">
+                <div class="profile-circle" id="profileInitial3" onclick="toggleProfileMenu(event)">A</div>
+                <div class="profile-dropdown">
+                    <div class="dropdown-username displayUsernameCopy">Student Name</div>
+                    <div class="dropdown-role"><i class="fa-solid fa-circle" style="color: var(--primary); font-size: 7px;"></i> Active Student</div>
+                    <button class="dropdown-logout-btn" onclick="logout()"><i class="fa-solid fa-right-from-bracket"></i> Logout</button>
+                </div>
+            </div>
+        </div>
+        <div class="dashboard-container">
+            <button class="back-btn" onclick="goHome()"><i class="fa-solid fa-arrow-left"></i> Back to Dashboard</button>
+            <div style="margin-bottom: 25px;">
+                <h2>Board Exams Batches & Servers</h2>
+                <p style="color: #94a3b8; font-size: 0.95rem;">Select your target class, practice exercises, or servers below.</p>
+            </div>
+            <div class="sub-grid">
+                <!-- Class 9th -->
+                <a href="https://www.learnxpw.site/study/batches/69734ce1b0c696dcee5c35a9" target="_self" class="sub-card">
+                    <h4>Class 9th</h4>
+                    <p>Access Class 9th lecture videos, notes, important questions & sample papers.</p>
+                </a>
+                <!-- Class 10th -->
+                <a href="https://www.learnxpw.site/study/batches/69737cfccbe58ca6dbccb146" target="_self" class="sub-card">
+                    <h4>Class 10th</h4>
+                    <p>Access Class 10th board prep materials, previous year papers & solutions.</p>
+                </a>
+                <!-- Practice Exercise -->
+                <a href="YAHAN_APNA_URL_DAALEIN" target="_self" class="sub-card">
+                    <h4>Practice Exercise</h4>
+                    <p>Access chapter-wise tests and interactive problem sets for practice.</p>
+                </a>
+                <!-- Servers Option -->
+                <a href="YAHAN_APNA_URL_DAALEIN" target="_self" class="sub-card" style="border-color: rgba(0, 191, 255, 0.4);">
+                    <h4 style="color: #00bfff;">Servers</h4>
+                    <p>Access dedicated streaming servers:<br>• Class 9th Rj1 & Rj2<br>• Class 10th Rj1 & Rj2</p>
+                </a>
+            </div>
+
+            <!-- Detailed Server Links Sub-Grid Section -->
+            <div style="margin-top: 40px; margin-bottom: 20px;">
+                <h3>Dedicated Class Servers</h3>
+                <p style="color: #94a3b8; font-size: 0.9rem;">Direct links for individual class servers (Rj1 & Rj2)</p>
+            </div>
+            <div class="sub-grid">
+                <a href="https://vidcloud.eu.org/#BatchDetails/batch/69734ce1b0c696dcee5c35a9" target="_self" class="sub-card">
+                    <h4>Class 9th Rj1</h4>
+                    <p>Primary server link for Class 9th video modules.</p>
+                </a>
+                <a href="YAHAN_APNA_URL_DAALEIN" target="_self" class="sub-card">
+                    <h4>Class 9th Rj2</h4>
+                    <p>Secondary high-speed server link for Class 9th.</p>
+                </a>
+                <a href="https://vidcloud.eu.org/#BatchDetails/batch/69737cfccbe58ca6dbccb146" target="_self" class="sub-card">
+                    <h4>Class 10th Rj1</h4>
+                    <p>Primary server link for Class 10th video modules.</p>
+                </a>
+                <a href="YAHAN_APNA_URL_DAALEIN" target="_self" class="sub-card">
+                    <h4>Class 10th Rj2</h4>
+                    <p>Secondary high-speed server link for Class 10th.</p>
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- ================= VIEW 5: NOTIFICATIONS SUB-SECTION ================= -->
+    <div id="notifications-view" class="page-view">
+        <div class="dashboard-topbar">
+            <div class="logo" onclick="goHome()">
+                <i class="fa-solid fa-shield-halved" style="color: var(--primary);"></i> RJ <span>Study Academy</span>
+            </div>
+            <div class="profile-menu-container">
+                <div class="profile-circle" id="profileInitial4" onclick="toggleProfileMenu(event)">A</div>
+                <div class="profile-dropdown">
+                    <div class="dropdown-username displayUsernameCopy">Student Name</div>
+                    <div class="dropdown-role"><i class="fa-solid fa-circle" style="color: var(--primary); font-size: 7px;"></i> Active Student</div>
+                    <button class="dropdown-logout-btn" onclick="logout()"><i class="fa-solid fa-right-from-bracket"></i> Logout</button>
+                </div>
+            </div>
+        </div>
+        <div class="dashboard-container">
+            <button class="back-btn" onclick="goHome()"><i class="fa-solid fa-arrow-left"></i> Back to Dashboard</button>
+            <div style="margin-bottom: 25px;">
+                <h2>Notifications And Updates</h2>
+                <p style="color: #94a3b8; font-size: 0.95rem;">Latest announcements and schedule updates.</p>
+            </div>
+            <div class="sub-card" style="text-align: left; cursor: default;">
+                <h4 style="margin-bottom: 5px;"><i class="fa-solid fa-circle-info"></i> New Batch & Server Links Released</h4>
+                <p style="color: #cbd5e1; margin-bottom: 5px;">All competitive and board servers (Rj1, Rj2) are fully configured and updated.</p>
+                <span style="font-size: 0.75rem; color: #64748b;">Updated: Today</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- JavaScript for Routing & Dropdown Management -->
+    <script>
+        const loginForm = document.getElementById('loginForm');
+        const usernameInput = document.getElementById('usernameInput');
+        const passwordInput = document.getElementById('passwordInput');
+        const errorMsg = document.getElementById('errorMsg');
+        
+        const loginView = document.getElementById('login-view');
+        const dashboardView = document.getElementById('dashboard-view');
+        const competitiveView = document.getElementById('competitive-view');
+        const boardsView = document.getElementById('boards-view');
+        const notificationsView = document.getElementById('notifications-view');
+
+        const displayUsername = document.getElementById('displayUsername');
+        const profileInitial = document.getElementById('profileInitial');
+        const profileInitial2 = document.getElementById('profileInitial2');
+        const profileInitial3 = document.getElementById('profileInitial3');
+        const profileInitial4 = document.getElementById('profileInitial4');
+        const profileDropdown = document.getElementById('profileDropdown');
+
+        function hideAllViews() {
+            loginView.classList.remove('active');
+            dashboardView.classList.remove('active');
+            competitiveView.classList.remove('active');
+            boardsView.classList.remove('active');
+            notificationsView.classList.remove('active');
+        }
+
+        // Handle Login Submission
+        loginForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            const enteredName = usernameInput.value.trim();
+            const enteredPass = passwordInput.value.trim();
+
+            if (enteredPass === "4181723") {
+                errorMsg.style.display = "none";
+                
+                // Set Name & Circular Initial Letters across views
+                displayUsername.innerText = enteredName;
+                document.querySelectorAll('.displayUsernameCopy').forEach(el => el.innerText = enteredName);
+                
+                const initial = enteredName.charAt(0).toUpperCase();
+                profileInitial.innerText = initial;
+                profileInitial2.innerText = initial;
+                profileInitial3.innerText = initial;
+                profileInitial4.innerText = initial;
+
+                // Keep the login active across browser/app restarts until explicit logout.
+                localStorage.setItem('rjStudyLoggedIn', 'true');
+                localStorage.setItem('rjStudyUsername', enteredName);
+                hideAllViews();
+                dashboardView.classList.add('active');
+            } else {
+                errorMsg.style.display = "block";
+                passwordInput.value = "";
+            }
+        });
+
+        function goHome() {
+            closeAllDropdowns();
+            hideAllViews();
+            dashboardView.classList.add('active');
+        }
+
+        function switchSubView(viewId) {
+            closeAllDropdowns();
+            hideAllViews();
+            document.getElementById(viewId).classList.add('active');
+        }
+
+        // Toggle Profile Dropdown Menu with robust check
+        function toggleProfileMenu(event) {
+            event.stopPropagation();
+            const currentContainer = event.currentTarget.closest('.profile-menu-container');
+            const dropdown = currentContainer.querySelector('.profile-dropdown');
+            
+            // Close all others first
+            closeAllDropdowns();
+            
+            // Toggle current
+            dropdown.classList.toggle('active');
+        }
+
+        function closeAllDropdowns() {
+            document.querySelectorAll('.profile-dropdown').forEach(d => {
+                d.classList.remove('active');
+            });
+        }
+
+        // Close dropdown when clicking outside
+        window.addEventListener('click', function(e) {
+            if (!e.target.closest('.profile-menu-container')) {
+                closeAllDropdowns();
+            }
+        });
+
+        // Handle Logout
+        function logout() {
+            localStorage.removeItem('rjStudyLoggedIn');
+            localStorage.removeItem('rjStudyUsername');
+            usernameInput.value = "";
+            passwordInput.value = "";
+            closeAllDropdowns();
+            hideAllViews();
+            errorMsg.style.display = "none";
+            loginView.classList.add('active');
+        }
+
+        // Restore the previous login after reopening the page/browser.
+        // This is local to this browser and lasts until logout or site data is cleared.
+        function restoreLogin() {
+            if (localStorage.getItem('rjStudyLoggedIn') !== 'true') return;
+
+            const savedName = localStorage.getItem('rjStudyUsername') || '';
+            displayUsername.innerText = savedName;
+            document.querySelectorAll('.displayUsernameCopy').forEach(el => el.innerText = savedName);
+            const initial = savedName.charAt(0).toUpperCase() || 'A';
+            profileInitial.innerText = initial;
+            profileInitial2.innerText = initial;
+            profileInitial3.innerText = initial;
+            profileInitial4.innerText = initial;
+            hideAllViews();
+            dashboardView.classList.add('active');
+        }
+
+        restoreLogin();
+
+        // Background Terminal Animation Script
+        const terminal = document.getElementById('terminal-bg');
+        const hackerLogs = [
+            "Initializing secure hypervisor environment...",
+            "Loading root credentials for RJ_STUDY_ACADEMY_PORTAL...",
+            "Establishing encrypted handshake with node 127.0.0.1:443 [SECURE]",
+            "Injecting neural-net study pathways: [PW, RWA, VIDYAGRAM, KGS, SERVERS]",
+            "Bypassing perimeter security filters... ACCESS GRANTED.",
+            "Live system telemetry: CPU load 3.8% | Memory footprint: 1.1 GB",
+            "Mounting student database: Encrypted via AES-256-GCM",
+            "Listening for incoming student authentication packets on port 8080...",
+            "Status: All cyber modules operating at peak efficiency."
+        ];
+
+        let lineIndex = 0;
+        let charIndex = 0;
+        let currentText = "";
+
+        function typeTerminal() {
+            if (lineIndex < hackerLogs.length) {
+                if (charIndex < hackerLogs[lineIndex].length) {
+                    currentText += hackerLogs[lineIndex].charAt(charIndex);
+                    terminal.innerText = currentText + "█";
+                    charIndex++;
+                    setTimeout(typeTerminal, 20);
+                } else {
+                    currentText += "\n\n";
+                    lineIndex++;
+                    charIndex = 0;
+                    setTimeout(typeTerminal, 350);
+                }
+            } else {
+                currentText += "> root@rj-academy-system:~$ ";
+                terminal.innerText = currentText;
+                setTimeout(() => {
+                    currentText = "";
+                    lineIndex = 0;
+                    typeTerminal();
+                }, 4000);
+            }
+        }
+
+        typeTerminal();
+    </script>
+</body>
+</html>
