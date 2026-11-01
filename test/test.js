@@ -1,6 +1,23 @@
 // ==========================================
-// RJ STUDY ACADEMY - DYNAMIC EXAM CONTROLLER (DIRECT START - NO MODAL)
+// RJ STUDY ACADEMY - DIRECT TEST ENGINE (MODAL KILLER)
 // ==========================================
+
+// 1. INJECT GLOBAL CSS TO PERMANENTLY KILL CREDENTIALS MODAL
+const killModalStyle = document.createElement('style');
+killModalStyle.innerHTML = `
+    #student-modal, .student-modal, .modal-overlay, .credentials-modal, [class*="modal"] {
+        display: none !important;
+        visibility: hidden !important;
+        opacity: 0 !important;
+        pointer-events: none !important;
+    }
+    #exam-app {
+        display: block !important;
+        visibility: visible !important;
+        opacity: 1 !important;
+    }
+`;
+document.head.appendChild(killModalStyle);
 
 const WORKER_URL = "https://rj-test-backen.internationalbgi.workers.dev";
 
@@ -12,8 +29,19 @@ let remainingSeconds = 0;
 let studentName = "";
 
 document.addEventListener("DOMContentLoaded", () => {
+    // Extra safety DOM wipe for modal elements
+    removeModalFromDOM();
     fetchConfigAndInit();
 });
+
+function removeModalFromDOM() {
+    const allDivs = document.querySelectorAll('div, section, article');
+    allDivs.forEach(el => {
+        if (el.textContent && el.textContent.includes("ENTER EXAM CREDENTIALS")) {
+            el.style.setProperty('display', 'none', 'important');
+        }
+    });
+}
 
 async function fetchConfigAndInit() {
     try {
@@ -51,30 +79,33 @@ function checkLockStatus() {
         }
     }
 
-    // Auto-detect student name from login session (No modal popups needed!)
-    studentName = sessionStorage.getItem("student_name") || localStorage.getItem("rjStudyUsername") || "Guest Student";
+    // Auto detect student name from login
+    studentName = sessionStorage.getItem("student_name") || localStorage.getItem("rjStudyUsername") || "Student";
     sessionStorage.setItem("student_name", studentName);
-
-    // Hide credentials modal permanently if present in DOM
-    const modal = document.getElementById("student-modal");
-    if (modal) modal.classList.add("hidden");
 
     // DIRECT START EXAM
     initExam();
 }
 
 function initExam() {
+    removeModalFromDOM();
+
+    // Update candidate displays
     const studentDisplay = document.getElementById("student-display-name");
     if (studentDisplay) studentDisplay.innerText = studentName;
 
-    const candidateHeader = document.querySelector('.candidate-info') || document.querySelector('header');
-    if (candidateHeader) {
-        const candidateEl = Array.from(document.querySelectorAll('*')).find(el => el.children.length === 0 && el.textContent.includes('CANDIDATE:'));
-        if (candidateEl) candidateEl.textContent = `CANDIDATE: ${studentName}`;
-    }
+    const allElements = document.querySelectorAll('*');
+    allElements.forEach(el => {
+        if (el.children.length === 0 && el.textContent.includes('CANDIDATE:')) {
+            el.textContent = `CANDIDATE: ${studentName}`;
+        }
+    });
 
     const examApp = document.getElementById("exam-app");
-    if (examApp) examApp.classList.remove("hidden");
+    if (examApp) {
+        examApp.classList.remove("hidden");
+        examApp.style.setProperty('display', 'block', 'important');
+    }
 
     remainingSeconds = (testConfig.durationMinutes || 45) * 60;
     renderPalette();
@@ -270,9 +301,6 @@ function autoSubmitExam() {
 function showLockedScreen(title, msg) {
     const examApp = document.getElementById("exam-app");
     if (examApp) examApp.classList.add("hidden");
-
-    const studentModal = document.getElementById("student-modal");
-    if (studentModal) studentModal.classList.add("hidden");
 
     const lTitle = document.getElementById("locked-title");
     if (lTitle) lTitle.innerText = title;
