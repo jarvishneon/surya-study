@@ -1,11 +1,13 @@
 // ==========================================
-// RJ STUDY ACADEMY - DIRECT TEST ENGINE (MODAL KILLER)
+// RJ STUDY ACADEMY - DIRECT TEST ENGINE (SUBMIT FIXED)
 // ==========================================
 
-// 1. INJECT GLOBAL CSS TO PERMANENTLY KILL CREDENTIALS MODAL
+// Sirf CREDENTIALS modal ko hide karo — Confirm/Submit modal ko MAT chhua
 const killModalStyle = document.createElement('style');
 killModalStyle.innerHTML = `
-    #student-modal, .student-modal, .modal-overlay, .credentials-modal, [class*="modal"] {
+    #student-modal,
+    .student-modal,
+    .credentials-modal {
         display: none !important;
         visibility: hidden !important;
         opacity: 0 !important;
@@ -15,6 +17,20 @@ killModalStyle.innerHTML = `
         display: block !important;
         visibility: visible !important;
         opacity: 1 !important;
+    }
+    /* Confirm modal hamesha upar rahe */
+    #confirm-modal:not(.hidden) {
+        display: flex !important;
+        visibility: visible !important;
+        opacity: 1 !important;
+        pointer-events: auto !important;
+        z-index: 9999 !important;
+    }
+    #locked-screen:not(.hidden) {
+        display: flex !important;
+        visibility: visible !important;
+        opacity: 1 !important;
+        z-index: 9999 !important;
     }
 `;
 document.head.appendChild(killModalStyle);
@@ -27,18 +43,21 @@ let userAnswers = {};
 let timerInterval = null;
 let remainingSeconds = 0;
 let studentName = "";
+let isSubmitting = false;
 
 document.addEventListener("DOMContentLoaded", () => {
-    // Extra safety DOM wipe for modal elements
-    removeModalFromDOM();
+    removeCredentialsModal();
     fetchConfigAndInit();
 });
 
-function removeModalFromDOM() {
-    const allDivs = document.querySelectorAll('div, section, article');
-    allDivs.forEach(el => {
-        if (el.textContent && el.textContent.includes("ENTER EXAM CREDENTIALS")) {
-            el.style.setProperty('display', 'none', 'important');
+function removeCredentialsModal() {
+    const el = document.getElementById("student-modal");
+    if (el) el.style.setProperty("display", "none", "important");
+
+    document.querySelectorAll("div, section").forEach((node) => {
+        const t = (node.textContent || "").trim();
+        if (t.includes("ENTER EXAM CREDENTIALS") && node.children.length < 12) {
+            node.style.setProperty("display", "none", "important");
         }
     });
 }
@@ -50,7 +69,10 @@ async function fetchConfigAndInit() {
         testConfig = await res.json();
 
         if (testConfig.status !== "open") {
-            showLockedScreen("TEST CURRENTLY CLOSED", "This test is currently closed or locked by Admin. Please contact Academy Admin.");
+            showLockedScreen(
+                "TEST CURRENTLY CLOSED",
+                "This test is currently closed or locked by Admin. Please contact Academy Admin."
+            );
             return;
         }
 
@@ -79,24 +101,23 @@ function checkLockStatus() {
         }
     }
 
-    // Auto detect student name from login
-    studentName = sessionStorage.getItem("student_name") || localStorage.getItem("rjStudyUsername") || "Student";
+    studentName =
+        sessionStorage.getItem("student_name") ||
+        localStorage.getItem("rjStudyUsername") ||
+        "Student";
     sessionStorage.setItem("student_name", studentName);
 
-    // DIRECT START EXAM
     initExam();
 }
 
 function initExam() {
-    removeModalFromDOM();
+    removeCredentialsModal();
 
-    // Update candidate displays
     const studentDisplay = document.getElementById("student-display-name");
     if (studentDisplay) studentDisplay.innerText = studentName;
 
-    const allElements = document.querySelectorAll('*');
-    allElements.forEach(el => {
-        if (el.children.length === 0 && el.textContent.includes('CANDIDATE:')) {
+    document.querySelectorAll("*").forEach((el) => {
+        if (el.children.length === 0 && (el.textContent || "").includes("CANDIDATE")) {
             el.textContent = `CANDIDATE: ${studentName}`;
         }
     });
@@ -104,7 +125,7 @@ function initExam() {
     const examApp = document.getElementById("exam-app");
     if (examApp) {
         examApp.classList.remove("hidden");
-        examApp.style.setProperty('display', 'block', 'important');
+        examApp.style.setProperty("display", "block", "important");
     }
 
     remainingSeconds = (testConfig.durationMinutes || 45) * 60;
@@ -117,11 +138,12 @@ function renderPalette() {
     const grid = document.getElementById("palette-grid");
     if (!grid) return;
     grid.innerHTML = "";
-    testConfig.questions.forEach((q, idx) => {
+    testConfig.questions.forEach((_, idx) => {
         const btn = document.createElement("button");
         btn.className = "palette-num";
         btn.innerText = idx + 1;
         btn.id = `palette-item-${idx}`;
+        btn.type = "button";
         btn.onclick = () => jumpToQuestion(idx);
         grid.appendChild(btn);
     });
@@ -173,7 +195,8 @@ function loadQuestion(index) {
         const val = userAnswers[index] || "";
         const textarea = document.createElement("textarea");
         textarea.placeholder = "Type your answer here...";
-        textarea.style.cssText = "width:100%; height:120px; background:#111; color:#00f2ff; border:1px solid #00f2ff; padding:12px; font-family:monospace; border-radius:5px;";
+        textarea.style.cssText =
+            "width:100%;height:120px;background:#111;color:#00E5FF;border:1px solid #00E5FF;padding:12px;font-family:inherit;border-radius:8px;";
         textarea.value = val;
         textarea.oninput = (e) => {
             userAnswers[index] = e.target.value;
@@ -186,7 +209,10 @@ function loadQuestion(index) {
     if (prevBtn) prevBtn.disabled = index === 0;
 
     const nextBtn = document.getElementById("next-btn");
-    if (nextBtn) nextBtn.innerText = index === testConfig.questions.length - 1 ? "FINISH ►" : "NEXT ►";
+    if (nextBtn) {
+        nextBtn.innerText =
+            index === testConfig.questions.length - 1 ? "FINISH ►" : "Next →";
+    }
 
     updatePaletteUI();
 }
@@ -234,80 +260,15 @@ function updateTimerDisplay() {
     const hours = Math.floor(remainingSeconds / 3600);
     const mins = Math.floor((remainingSeconds % 3600) / 60);
     const secs = remainingSeconds % 60;
-    const formatted = `${String(hours).padStart(2, '0')}:${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
-    
+    const formatted = `${String(hours).padStart(2, "0")}:${String(mins).padStart(2, "0")}:${String(secs).padStart(2, "0")}`;
+
     const timerElem = document.getElementById("exam-timer");
     if (timerElem) {
         timerElem.innerText = formatted;
-        if (remainingSeconds <= 60) timerElem.style.color = "#ff0055";
+        if (remainingSeconds <= 60) timerElem.style.color = "#EF4444";
     }
 }
 
 function confirmSubmission() {
-    const answeredCount = Object.keys(userAnswers).filter(k => userAnswers[k] !== "").length;
-    const totalCount = testConfig.questions.length;
-    
-    const summary = document.getElementById("submission-summary");
-    if (summary) {
-        summary.innerText = `You have answered ${answeredCount} out of ${totalCount} questions. Submit test now?`;
-    }
-    
-    const modal = document.getElementById("confirm-modal");
-    if (modal) modal.classList.remove("hidden");
-}
-
-function closeConfirmModal() {
-    const modal = document.getElementById("confirm-modal");
-    if (modal) modal.classList.add("hidden");
-}
-
-async function finalSubmitExam() {
-    if (timerInterval) clearInterval(timerInterval);
-    closeConfirmModal();
-
-    const now = Date.now();
-    const payload = {
-        studentName: studentName || "Student",
-        testId: testConfig.testId,
-        answers: userAnswers,
-        submittedAt: now
-    };
-
-    try {
-        const res = await fetch(`${WORKER_URL}/api/submit`, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify(payload)
-        });
-        const result = await res.json();
-
-        if (result.success) {
-            localStorage.setItem(`submitted_${testConfig.testId}`, "true");
-            localStorage.setItem(`submitted_time_${testConfig.testId}`, now.toString());
-            showLockedScreen("TEST SUBMITTED SUCCESSFULLY", `Thank you, ${studentName}. Score: ${result.score}. Result sent to Admin Telegram!`);
-        } else {
-            alert(result.error || "Submission failed.");
-        }
-    } catch (err) {
-        alert("Submission failed. Check network connection.");
-    }
-}
-
-function autoSubmitExam() {
-    alert("Time limit reached! Auto-submitting your exam.");
-    finalSubmitExam();
-}
-
-function showLockedScreen(title, msg) {
-    const examApp = document.getElementById("exam-app");
-    if (examApp) examApp.classList.add("hidden");
-
-    const lTitle = document.getElementById("locked-title");
-    if (lTitle) lTitle.innerText = title;
-
-    const lMsg = document.getElementById("locked-message");
-    if (lMsg) lMsg.innerText = msg;
-
-    const lockedScreen = document.getElementById("locked-screen");
-    if (lockedScreen) lockedScreen.classList.remove("hidden");
-}
+    const answeredCount = Object.keys(userAnswers).filter(
+        (k) => userAnswers[k] !== undefined && userAnswers[k] !== 
