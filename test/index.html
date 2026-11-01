@@ -3,112 +3,106 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Secure Exam Terminal // RJ STUDY ACADEMY</title>
+    <title>RJ Academy | Advanced Assessment</title>
+    <!-- Google Fonts for Clean Professional Look -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="test.css">
-    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600;800&family=Fira+Code:wght@400;600&display=swap" rel="stylesheet">
 </head>
 <body>
-    <div class="cyber-scanline"></div>
 
-    <!-- MAIN EXAM UI -->
-    <div id="exam-app" class="exam-container">
+    <!-- LOCKED / SUBMITTED SCREEN -->
+    <div id="locked-screen" class="locked-container hidden">
+        <div class="locked-card">
+            <div class="locked-icon">🛡️</div>
+            <h1 id="locked-title">SYSTEM LOCKED</h1>
+            <p id="locked-message">Please contact the administrator.</p>
+            <button class="retry-btn" onclick="location.reload()">REFRESH SYSTEM</button>
+        </div>
+    </div>
+
+    <!-- MAIN EXAM APPLICATION -->
+    <div id="exam-app" class="hidden">
         
-        <!-- TOP NAVIGATION & TIMER BAR -->
+        <!-- HEADER -->
         <header class="exam-header">
-            <div class="brand">
-                <span class="glitch-text" data-text="RJ_TEST_CORE">RJ_TEST_CORE</span>
-                <span class="status-badge" id="test-status-badge">SYSTEM ACTIVE</span>
+            <div class="brand-logo">
+                <span class="logo-text">RJ_ACADEMY</span>
+                <span class="pro-badge">PRO</span>
             </div>
             
-            <div class="student-info-strip">
-                <span>CANDIDATE: <strong id="student-display-name">Loading...</strong></span>
+            <div class="timer-box">
+                <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"></circle><path d="M12 6v6l4 2"></path></svg>
+                <span id="exam-timer">00:00:00</span>
             </div>
 
-            <div class="timer-box">
-                <span class="timer-label">TIME REMAINING:</span>
-                <span id="exam-timer" class="timer-digits">00:00:00</span>
+            <div class="candidate-badge">
+                <div class="avatar"></div>
+                <span id="student-display-name">CANDIDATE</span>
             </div>
         </header>
 
-        <!-- MAIN LAYOUT (QUESTION AREA + PALETTE) -->
-        <main class="exam-body">
+        <!-- MAIN LAYOUT -->
+        <main class="exam-layout">
             
-            <!-- LEFT: QUESTION DISPLAY AREA -->
+            <!-- LEFT COLUMN: QUESTION AREA -->
             <section class="question-section">
                 <div class="question-header">
-                    <span id="question-number">QUESTION -- OF --</span>
-                    <span id="question-type-badge" class="type-badge">MCQ</span>
+                    <span id="question-number" class="q-num">QUESTION -- OF --</span>
+                    <span id="question-type-badge" class="q-type">MCQ</span>
+                </div>
+                
+                <div class="question-content">
+                    <h2 id="question-text">Initializing parameters...</h2>
                 </div>
 
-                <div class="question-content" id="question-text">
-                    Initializing assessment parameters...
+                <div id="options-container" class="options-grid">
+                    <!-- Options injected via JS -->
                 </div>
 
-                <!-- DYNAMIC OPTIONS CONTAINER (MCQ / TYPED) -->
-                <div class="options-container" id="options-container">
-                    <!-- MCQ buttons or Textarea rendered via JS -->
-                </div>
-
-                <!-- NAVIGATION BUTTONS -->
-                <div class="navigation-bar">
-                    <button id="prev-btn" class="cyber-btn nav-btn" onclick="prevQuestion()" disabled>◄ PREVIOUS</button>
-                    <button id="clear-btn" class="cyber-btn nav-btn clear-btn" onclick="clearAnswer()">CLEAR RESPONSE</button>
-                    <button id="next-btn" class="cyber-btn nav-btn primary-btn" onclick="nextQuestion()">NEXT ►</button>
+                <div class="action-footer">
+                    <button id="prev-btn" class="nav-btn prev" onclick="prevQuestion()" disabled>&#8592; Previous</button>
+                    <button class="nav-btn clear" onclick="clearAnswer()">Clear Selection</button>
+                    <button id="next-btn" class="nav-btn next" onclick="nextQuestion()">Next &#8594;</button>
                 </div>
             </section>
 
-            <!-- RIGHT: QUESTION PALETTE SIDEBAR -->
-            <aside class="palette-sidebar">
-                <h3>QUESTION MATRIX</h3>
-                <div class="palette-grid" id="palette-grid">
-                    <!-- 1, 2, 3... buttons generated via JS -->
+            <!-- RIGHT COLUMN: MATRIX & SUBMIT -->
+            <aside class="sidebar-section">
+                <div class="matrix-card">
+                    <h3 class="matrix-title">QUESTION MATRIX</h3>
+                    
+                    <div class="matrix-legend">
+                        <div class="legend-item"><span class="dot answered"></span> Answered</div>
+                        <div class="legend-item"><span class="dot current"></span> Current</div>
+                        <div class="legend-item"><span class="dot unanswered"></span> Unanswered</div>
+                    </div>
+
+                    <div id="palette-grid" class="palette-grid">
+                        <!-- Buttons injected via JS -->
+                    </div>
                 </div>
 
-                <div class="palette-legend">
-                    <div class="legend-item"><span class="legend-box answered"></span> Answered</div>
-                    <div class="legend-item"><span class="legend-box active"></span> Current</div>
-                    <div class="legend-item"><span class="legend-box unanswered"></span> Unanswered</div>
-                </div>
-
-                <div class="submit-block">
-                    <button id="submit-exam-btn" class="cyber-btn submit-btn" onclick="confirmSubmission()">SUBMIT TEST</button>
-                </div>
+                <button class="submit-exam-btn" onclick="confirmSubmission()">
+                    <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M5 12l5 5L20 7"></path></svg>
+                    SUBMIT ASSESSMENT
+                </button>
             </aside>
+
         </main>
     </div>
 
-    <!-- STUDENT LOGIN / NAME INPUT MODAL -->
-    <div id="student-modal" class="modal-overlay">
-        <div class="cyber-modal">
-            <h2>ENTER EXAM CREDENTIALS</h2>
-            <p>Please enter your Full Name or Roll Number to begin this test session.</p>
-            <input type="text" id="student-name-input" class="cyber-input" placeholder="e.g. Rahul Sharma (Roll 102)" maxlength="50">
-            <button class="cyber-btn primary-btn full-width" onclick="startExamSession()">START ASSESSMENT</button>
-        </div>
-    </div>
-
-    <!-- CONFIRM SUBMISSION MODAL -->
+    <!-- SUBMISSION CONFIRMATION MODAL -->
     <div id="confirm-modal" class="modal-overlay hidden">
-        <div class="cyber-modal">
-            <h2>CONFIRM SUBMISSION</h2>
-            <p id="submission-summary">Are you sure you want to finalize and submit your test?</p>
+        <div class="modal-card">
+            <h2>Confirm Submission</h2>
+            <p id="submission-summary">You are about to submit the test.</p>
             <div class="modal-actions">
-                <button class="cyber-btn clear-btn" onclick="closeConfirmModal()">CANCEL</button>
-                <button class="cyber-btn primary-btn" onclick="finalSubmitExam()">YES, SUBMIT NOW</button>
+                <button class="cancel-btn" onclick="closeConfirmModal()">Cancel</button>
+                <button class="confirm-btn" onclick="finalSubmitExam()">Yes, Submit</button>
             </div>
-        </div>
-    </div>
-
-    <!-- TEST LOCKED / ALREADY SUBMITTED / CLOSED SCREEN -->
-    <div id="locked-screen" class="locked-overlay hidden">
-        <div class="locked-card">
-            <div class="lock-icon">🔒</div>
-            <h1 id="locked-title">ACCESS TERMINATED</h1>
-            <p id="locked-message">This test is currently locked, closed, or you have already submitted your response.</p>
-            <button class="cyber-btn primary-btn" onclick="window.location.href='../index.html'">RETURN TO DASHBOARD</button>
         </div>
     </div>
 
     <script src="test.js"></script>
 </body>
-</html>
+</html>s
