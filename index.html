@@ -115,12 +115,20 @@
                     <span class="dash-action-btn">View Updates <i class="fa-solid fa-arrow-right"></i></span>
                 </div>
 
-                <!-- Card 4: NEW ONLINE TEST CARD -->
+                <!-- Card 4: ONLINE TEST CARD -->
                 <div class="dash-card" onclick="sessionStorage.setItem('student_name', localStorage.getItem('rjStudyUsername')); window.location.href='test/index.html'">
                     <div class="dash-icon"><i class="fa-solid fa-user-shield"></i></div>
                     <h3>Secure Online Test</h3>
                     <p>Attempt live timed MCQs and subjective tests. Secured environment with instant auto-submission and admin monitoring.</p>
                     <span class="dash-action-btn">Start Test <i class="fa-solid fa-arrow-right"></i></span>
+                </div>
+
+                <!-- Card 5: NEW DISCUSS DOUBTS CARD -->
+                <div class="dash-card" onclick="openDoubtChat()">
+                    <div class="dash-icon"><i class="fa-solid fa-comments"></i></div>
+                    <h3>Discuss Doubts</h3>
+                    <p>Live chat with the Administrator. Ask your questions and get real-time explanations instantly.</p>
+                    <span class="dash-action-btn">Open Chat <i class="fa-solid fa-arrow-right"></i></span>
                 </div>
 
             </div>
@@ -259,6 +267,23 @@
                 <h4 style="margin-bottom: 5px;"><i class="fa-solid fa-circle-info"></i> New Batch & Server Links Released</h4>
                 <p style="color: #cbd5e1; margin-bottom: 5px;">All competitive and board servers (Rj1, Rj2) are fully configured and updated.</p>
                 <span style="font-size: 0.75rem; color: #64748b;">Updated: Today</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- ================= DOUBT CHAT MODAL (HIDDEN BY DEFAULT) ================= -->
+    <div id="chatModalOverlay" class="chat-overlay" style="display: none;">
+        <div class="chat-modal">
+            <div class="chat-header">
+                <h3>💬 Realtime Support</h3>
+                <button class="chat-close-btn" onclick="closeDoubtChat()">✖</button>
+            </div>
+            <div class="chat-body" id="chatHistory">
+                <!-- Dynamic Messages Yahan Aayenge -->
+            </div>
+            <div class="chat-footer">
+                <input type="text" id="doubtInput" placeholder="Type your doubt..." onkeypress="handleChatEnter(event)">
+                <button onclick="sendDoubtMsg()">Send</button>
             </div>
         </div>
     </div>
