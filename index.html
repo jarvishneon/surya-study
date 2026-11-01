@@ -123,7 +123,7 @@
                     <span class="dash-action-btn">Start Test <i class="fa-solid fa-arrow-right"></i></span>
                 </div>
 
-                <!-- Card 5: DISCUSS DOUBTS CARD -->
+                <!-- Card 5: NEW DISCUSS DOUBTS CARD -->
                 <div class="dash-card" onclick="openDoubtChat()">
                     <div class="dash-icon"><i class="fa-solid fa-comments"></i></div>
                     <h3>Discuss Doubts</h3>
@@ -281,23 +281,9 @@
             <div class="chat-body" id="chatHistory">
                 <!-- Dynamic Messages Yahan Aayenge -->
             </div>
-            
-            <!-- Audio Recording Bar (Hidden by Default) -->
-            <div id="recordingStatus" class="recording-status-bar" style="display:none;">
-                <span class="pulse-dot"></span> Recording Voice Note... <span id="recTimer">0s</span>
-                <button onclick="stopAndSendVoice()" class="rec-send-btn">Send 🚀</button>
-                <button onclick="cancelVoiceRecord()" class="rec-cancel-btn">✖</button>
-            </div>
-
             <div class="chat-footer">
-                <!-- Hidden File Input for Image -->
-                <input type="file" id="chatImageInput" accept="image/*" style="display:none;" onchange="handleImageUpload(event)">
-                
-                <button class="chat-action-btn" onclick="document.getElementById('chatImageInput').click()" title="Send Image">📷</button>
-                <button class="chat-action-btn" id="micBtn" onclick="toggleVoiceRecording()" title="Record Voice">🎙️</button>
-                
                 <input type="text" id="doubtInput" placeholder="Type your doubt..." onkeypress="handleChatEnter(event)">
-                <button class="send-btn" onclick="sendDoubtMsg()">Send</button>
+                <button onclick="sendDoubtMsg()">Send</button>
             </div>
         </div>
     </div>
@@ -306,4 +292,4 @@
     <script src="script.js"></script>
 
 </body>
-</html>
+</html>  
