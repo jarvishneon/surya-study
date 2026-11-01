@@ -6,40 +6,42 @@ let timerInterval;
 
 async function init() {
     try {
-        // Step 1: ALWAYS Fetch Server Config FIRST
-        const response = await fetch(`${WORKER_URL}/api/config`);
+        // Cache bypass (?t=...) to get latest server config immediately
+        const response = await fetch(`${WORKER_URL}/api/config?t=${Date.now()}`);
         testConfig = await response.json();
 
-        // Step 2: Check if Admin CLOSED the test
+        // 1. Check if Admin CLOSED the test
         if (testConfig.status !== "open") {
             showLockedScreen("TEST CLOSED", "The administrator has closed this test.");
             return;
         }
 
-        // Step 3: Check REOPEN Override from Admin
+        // 2. REOPEN & LOCK CHECK LOGIC
         const testId = testConfig.testId;
         const isSubmitted = localStorage.getItem(`submitted_${testId}`);
-        const submittedTime = localStorage.getItem(`submitted_time_${testId}`);
+        const submittedTimeRaw = localStorage.getItem(`submitted_time_${testId}`);
 
         if (isSubmitted) {
-            // Agar Admin ne /reopen kiya hai (reopenTimestamp > student submission time)
-            if (testConfig.reopenTimestamp && submittedTime && parseInt(submittedTime) < testConfig.reopenTimestamp) {
-                // Lock unlock kar do!
+            const reopenTime = testConfig.reopenTimestamp || 0;
+            const submittedTime = submittedTimeRaw ? parseInt(submittedTimeRaw, 10) : 0;
+
+            // Agar Admin ne /reopen kiya hai AUR submission reopen se pehle ki hai
+            if (reopenTime > 0 && submittedTime < reopenTime) {
                 localStorage.removeItem(`submitted_${testId}`);
                 localStorage.removeItem(`submitted_time_${testId}`);
-                console.log("Admin reopened the test. Lock cleared!");
+                console.log("Admin reopened test. Lock cleared!");
             } else {
                 showLockedScreen("ALREADY SUBMITTED", "You have already completed this test.");
                 return;
             }
         }
 
-        // Sab sahi hai toh test shuru karo
+        // Everything OK -> Start Test
         startTest();
 
     } catch (error) {
         console.error("Failed to load test:", error);
-        alert("Failed to load test. Please check your connection.");
+        alert("Failed to load test configuration.");
     }
 }
 
@@ -165,11 +167,12 @@ async function submitTest(isAuto = false) {
 
     clearInterval(timerInterval);
     const studentName = sessionStorage.getItem('student_name') || "Guest Student";
+    const now = Date.now();
 
     const payload = {
         studentName: studentName,
         answers: userAnswers,
-        submittedAt: Date.now()
+        submittedAt: now
     };
 
     try {
@@ -182,9 +185,8 @@ async function submitTest(isAuto = false) {
         const result = await response.json();
         
         if (result.success) {
-            // Lock test in student's browser
             localStorage.setItem(`submitted_${testConfig.testId}`, "true");
-            localStorage.setItem(`submitted_time_${testConfig.testId}`, Date.now().toString());
+            localStorage.setItem(`submitted_time_${testConfig.testId}`, now.toString());
 
             alert(`Test Submitted Successfully!\nYour Score: ${result.score}`);
             location.href = "../index.html";
@@ -196,5 +198,5 @@ async function submitTest(isAuto = false) {
     }
 }
 
-// Shuruat
+// Start execution
 init();
