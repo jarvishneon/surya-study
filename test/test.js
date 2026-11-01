@@ -1,5 +1,5 @@
 // ==========================================
-// RJ STUDY ACADEMY - DYNAMIC EXAM CONTROLLER (INSTANT SYNC)
+// RJ STUDY ACADEMY - DYNAMIC EXAM CONTROLLER (CLEAN CORS)
 // ==========================================
 
 const WORKER_URL = "https://rj-test-backen.internationalbgi.workers.dev";
@@ -17,15 +17,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
 async function fetchConfigAndInit() {
     try {
-        // Cache bypass (?t=...) + no-store header for 0-second instant unlock on /reopen command
-        const res = await fetch(`${WORKER_URL}/api/config?t=${Date.now()}`, {
-            cache: "no-store",
-            headers: { 
-                "Pragma": "no-cache",
-                "Cache-Control": "no-cache, no-store, must-revalidate"
-            }
-        });
-        
+        // Clean URL parameter timestamp bypasses cache WITHOUT CORS header errors
+        const res = await fetch(`${WORKER_URL}/api/config?t=${Date.now()}`);
         if (!res.ok) throw new Error("Server Error");
         testConfig = await res.json();
 
@@ -37,8 +30,8 @@ async function fetchConfigAndInit() {
         checkLockStatus();
     } catch (err) {
         console.error("Config load error:", err);
-        alert("Server connection error. Retrying in 2 seconds...");
-        setTimeout(fetchConfigAndInit, 2000);
+        // Silent retry without blocking alert popups
+        setTimeout(fetchConfigAndInit, 3000);
     }
 }
 
@@ -50,7 +43,6 @@ function checkLockStatus() {
         const reopenTime = testConfig.reopenTimestamp || 0;
         const submittedTime = submittedTimeRaw ? parseInt(submittedTimeRaw, 10) : 0;
 
-        // If Admin issued /reopen command AFTER student submitted -> Unlock test!
         if (reopenTime > 0 && (submittedTime === 0 || submittedTime < reopenTime)) {
             localStorage.removeItem(`submitted_${testConfig.testId}`);
             localStorage.removeItem(`submitted_time_${testConfig.testId}`);
@@ -61,7 +53,6 @@ function checkLockStatus() {
         }
     }
 
-    // Auto-fetch student name from portal login if available
     const savedName = sessionStorage.getItem("student_name") || localStorage.getItem("rjStudyUsername");
     if (savedName) {
         studentName = savedName;
@@ -159,7 +150,6 @@ function loadQuestion(index) {
             container.appendChild(card);
         });
     } else {
-        // Typed / Subjective Answer textarea
         const val = userAnswers[index] || "";
         const textarea = document.createElement("textarea");
         textarea.placeholder = "Type your answer here...";
