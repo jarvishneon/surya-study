@@ -1,5 +1,5 @@
 // ==========================================
-// RJ STUDY ACADEMY - DYNAMIC EXAM CONTROLLER (CLEAN CORS)
+// RJ STUDY ACADEMY - DYNAMIC EXAM CONTROLLER (DIRECT START - NO MODAL)
 // ==========================================
 
 const WORKER_URL = "https://rj-test-backen.internationalbgi.workers.dev";
@@ -17,7 +17,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
 async function fetchConfigAndInit() {
     try {
-        // Clean URL parameter timestamp bypasses cache WITHOUT CORS header errors
         const res = await fetch(`${WORKER_URL}/api/config?t=${Date.now()}`);
         if (!res.ok) throw new Error("Server Error");
         testConfig = await res.json();
@@ -30,7 +29,6 @@ async function fetchConfigAndInit() {
         checkLockStatus();
     } catch (err) {
         console.error("Config load error:", err);
-        // Silent retry without blocking alert popups
         setTimeout(fetchConfigAndInit, 3000);
     }
 }
@@ -53,36 +51,27 @@ function checkLockStatus() {
         }
     }
 
-    const savedName = sessionStorage.getItem("student_name") || localStorage.getItem("rjStudyUsername");
-    if (savedName) {
-        studentName = savedName;
-        const modal = document.getElementById("student-modal");
-        if (modal) modal.classList.add("hidden");
-        initExam();
-    } else {
-        const modal = document.getElementById("student-modal");
-        if (modal) modal.classList.remove("hidden");
-    }
-}
-
-function startExamSession() {
-    const inputField = document.getElementById("student-name-input");
-    const input = inputField ? inputField.value.trim() : "";
-    if (!input) {
-        alert("Please enter your name.");
-        return;
-    }
-    studentName = input;
+    // Auto-detect student name from login session (No modal popups needed!)
+    studentName = sessionStorage.getItem("student_name") || localStorage.getItem("rjStudyUsername") || "Guest Student";
     sessionStorage.setItem("student_name", studentName);
-    
+
+    // Hide credentials modal permanently if present in DOM
     const modal = document.getElementById("student-modal");
     if (modal) modal.classList.add("hidden");
+
+    // DIRECT START EXAM
     initExam();
 }
 
 function initExam() {
     const studentDisplay = document.getElementById("student-display-name");
     if (studentDisplay) studentDisplay.innerText = studentName;
+
+    const candidateHeader = document.querySelector('.candidate-info') || document.querySelector('header');
+    if (candidateHeader) {
+        const candidateEl = Array.from(document.querySelectorAll('*')).find(el => el.children.length === 0 && el.textContent.includes('CANDIDATE:'));
+        if (candidateEl) candidateEl.textContent = `CANDIDATE: ${studentName}`;
+    }
 
     const examApp = document.getElementById("exam-app");
     if (examApp) examApp.classList.remove("hidden");
