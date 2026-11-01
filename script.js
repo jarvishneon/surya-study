@@ -15,6 +15,13 @@ const profileInitial2 = document.getElementById('profileInitial2');
 const profileInitial3 = document.getElementById('profileInitial3');
 const profileInitial4 = document.getElementById('profileInitial4');
 
+// 🔒 ALLOWED 3 PASSWORDS LIST (Base64 Encoded)
+const allowedPasswords = [
+    "NDE4MTcyMw==", // Pass 1: 4181723
+    "MDQ3ODM=",     // Pass 2: 04783
+    "UGFkaGxv"      // Pass 3: Padhlo
+];
+
 function hideAllViews() {
     loginView.classList.remove('active');
     dashboardView.classList.remove('active');
@@ -35,7 +42,10 @@ loginForm.addEventListener('submit', function(e) {
     loginBtn.style.pointerEvents = 'none';
 
     setTimeout(() => {
-        if (btoa(enteredPass) === "NDE4MTcyMw==") {
+        // Check if entered password matches ANY of the 3 passwords
+        const encodedPass = btoa(enteredPass);
+
+        if (allowedPasswords.includes(encodedPass)) {
             errorMsg.style.display = "none";
             
             displayUsername.innerText = enteredName;
