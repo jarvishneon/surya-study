@@ -1,235 +1,200 @@
-// ==========================================
-// RJ STUDY ACADEMY - DYNAMIC EXAM CONTROLLER
-// ==========================================
-
 const WORKER_URL = "https://rj-test-backen.internationalbgi.workers.dev";
-
 let testConfig = null;
 let currentQuestionIndex = 0;
 let userAnswers = {};
-let timerInterval = null;
-let remainingSeconds = 0;
-let studentName = "";
+let timerInterval;
 
-document.addEventListener("DOMContentLoaded", () => {
-    fetchConfigAndInit();
-});
-
-async function fetchConfigAndInit() {
+async function init() {
     try {
-        const res = await fetch(`${WORKER_URL}/api/config`);
-        testConfig = await res.json();
+        // Step 1: ALWAYS Fetch Server Config FIRST
+        const response = await fetch(`${WORKER_URL}/api/config`);
+        testConfig = await response.json();
 
+        // Step 2: Check if Admin CLOSED the test
         if (testConfig.status !== "open") {
-            showLockedScreen("TEST CURRENTLY CLOSED", "This test is currently closed or locked by Admin. Please contact Academy Admin.");
+            showLockedScreen("TEST CLOSED", "The administrator has closed this test.");
             return;
         }
 
-        checkLockStatus();
-    } catch (err) {
-        alert("Server connection error. Please refresh.");
-    }
-}
+        // Step 3: Check REOPEN Override from Admin
+        const testId = testConfig.testId;
+        const isSubmitted = localStorage.getItem(`submitted_${testId}`);
+        const submittedTime = localStorage.getItem(`submitted_time_${testId}`);
 
-function checkLockStatus() {
-    const isSubmitted = localStorage.getItem(`submitted_${testConfig.testId}`);
-    const submittedTime = localStorage.getItem(`submitted_time_${testConfig.testId}`);
-
-    if (isSubmitted) {
-        // If Admin issued /reopen command AFTER student submitted -> Unlock test!
-        if (testConfig.reopenTimestamp && submittedTime && parseInt(submittedTime) < testConfig.reopenTimestamp) {
-            localStorage.removeItem(`submitted_${testConfig.testId}`);
-            localStorage.removeItem(`submitted_time_${testConfig.testId}`);
-        } else {
-            showLockedScreen("TEST ALREADY SUBMITTED", "You have already completed this test.");
-            return;
+        if (isSubmitted) {
+            // Agar Admin ne /reopen kiya hai (reopenTimestamp > student submission time)
+            if (testConfig.reopenTimestamp && submittedTime && parseInt(submittedTime) < testConfig.reopenTimestamp) {
+                // Lock unlock kar do!
+                localStorage.removeItem(`submitted_${testId}`);
+                localStorage.removeItem(`submitted_time_${testId}`);
+                console.log("Admin reopened the test. Lock cleared!");
+            } else {
+                showLockedScreen("ALREADY SUBMITTED", "You have already completed this test.");
+                return;
+            }
         }
-    }
 
-    const savedName = sessionStorage.getItem("student_name");
-    if (savedName) {
-        studentName = savedName;
-        document.getElementById("student-modal").classList.add("hidden");
-        initExam();
-    } else {
-        document.getElementById("student-modal").classList.remove("hidden");
+        // Sab sahi hai toh test shuru karo
+        startTest();
+
+    } catch (error) {
+        console.error("Failed to load test:", error);
+        alert("Failed to load test. Please check your connection.");
     }
 }
 
-function startExamSession() {
-    const input = document.getElementById("student-name-input").value.trim();
-    if (!input) {
-        alert("Please enter your name.");
-        return;
-    }
-    studentName = input;
-    sessionStorage.setItem("student_name", studentName);
-    document.getElementById("student-modal").classList.add("hidden");
-    initExam();
+function showLockedScreen(title, message) {
+    document.body.innerHTML = `
+        <div style="display:flex; flex-direction:column; align-items:center; justify-content:center; height:100vh; background:#0a0a0a; color:#ff0055; font-family:sans-serif; text-align:center; padding:20px;">
+            <h1 style="font-size:2.5rem; text-shadow: 0 0 10px #ff0055; margin-bottom:10px;">${title}</h1>
+            <p style="color:#00f2ff; font-size:1.1rem; max-width:500px;">${message}</p>
+            <button onclick="location.reload()" style="margin-top:25px; padding:12px 25px; background:transparent; border:1px solid #00f2ff; color:#00f2ff; cursor:pointer; font-weight:bold; border-radius:5px;">RETRY / REFRESH</button>
+        </div>
+    `;
 }
 
-function initExam() {
-    document.getElementById("student-display-name").innerText = studentName;
-    remainingSeconds = testConfig.durationMinutes * 60;
-    renderPalette();
-    loadQuestion(0);
-    startTimer();
+function startTest() {
+    document.getElementById('student-name-display').textContent = sessionStorage.getItem('student_name') || "Student";
+    renderQuestionPalette();
+    showQuestion(0);
+    startTimer(testConfig.durationMinutes * 60);
 }
 
-function renderPalette() {
-    const grid = document.getElementById("palette-grid");
-    grid.innerHTML = "";
-    testConfig.questions.forEach((q, idx) => {
-        const btn = document.createElement("button");
-        btn.className = "palette-num";
-        btn.innerText = idx + 1;
-        btn.id = `palette-item-${idx}`;
-        btn.onclick = () => jumpToQuestion(idx);
-        grid.appendChild(btn);
+function renderQuestionPalette() {
+    const palette = document.getElementById('question-palette');
+    palette.innerHTML = '';
+    testConfig.questions.forEach((_, idx) => {
+        const btn = document.createElement('button');
+        btn.textContent = idx + 1;
+        btn.id = `palette-btn-${idx}`;
+        btn.onclick = () => showQuestion(idx);
+        palette.appendChild(btn);
     });
+}
+
+function showQuestion(index) {
+    currentQuestionIndex = index;
+    const q = testConfig.questions[index];
+    const container = document.getElementById('question-container');
+    
+    let html = `<h3>Question ${index + 1} of ${testConfig.questions.length}</h3><p style="font-size:1.2rem; margin:15px 0;">${q.question}</p>`;
+    
+    if (q.type === "mcq") {
+        html += `<div class="options">`;
+        q.options.forEach((opt, i) => {
+            const isChecked = userAnswers[index] === i ? "checked" : "";
+            html += `
+                <label class="option-card" style="display:block; margin:8px 0; padding:10px; background:rgba(255,255,255,0.05); border-radius:5px; cursor:pointer;">
+                    <input type="radio" name="q${index}" value="${i}" ${isChecked} onchange="saveAnswer(${index}, ${i})">
+                    <span style="margin-left:10px;">${opt}</span>
+                </label>
+            `;
+        });
+        html += `</div>`;
+    } else {
+        const val = userAnswers[index] || "";
+        html += `<textarea placeholder="Type your answer here..." style="width:100%; height:100px; background:#111; color:#fff; padding:10px;" oninput="saveAnswer(${index}, this.value)">${val}</textarea>`;
+    }
+    
+    container.innerHTML = html;
+    updatePaletteUI();
+}
+
+function saveAnswer(index, value) {
+    userAnswers[index] = value;
     updatePaletteUI();
 }
 
 function updatePaletteUI() {
     testConfig.questions.forEach((_, idx) => {
-        const btn = document.getElementById(`palette-item-${idx}`);
+        const btn = document.getElementById(`palette-btn-${idx}`);
         if (!btn) return;
-        btn.className = "palette-num";
-        if (idx === currentQuestionIndex) btn.classList.add("active");
+        
         if (userAnswers[idx] !== undefined && userAnswers[idx] !== "") {
-            btn.classList.add("answered");
+            btn.classList.add('answered');
+            btn.style.background = "#00f2ff";
+            btn.style.color = "#000";
+        } else {
+            btn.classList.remove('answered');
+            btn.style.background = "";
+            btn.style.color = "";
+        }
+        
+        if (idx === currentQuestionIndex) {
+            btn.style.outline = "2px solid #fff";
+        } else {
+            btn.style.outline = "none";
         }
     });
 }
 
-function loadQuestion(index) {
-    currentQuestionIndex = index;
-    const q = testConfig.questions[index];
-
-    document.getElementById("question-number").innerText = `QUESTION ${index + 1} OF ${testConfig.questions.length}`;
-    document.getElementById("question-type-badge").innerText = q.type.toUpperCase();
-    document.getElementById("question-text").innerText = q.question;
-
-    const container = document.getElementById("options-container");
-    container.innerHTML = "";
-
-    if (q.type === "mcq") {
-        q.options.forEach((optText, optIdx) => {
-            const card = document.createElement("div");
-            card.className = "option-card";
-            if (userAnswers[index] === optIdx) card.classList.add("selected");
-            card.onclick = () => selectMCQOption(optIdx);
-            card.innerHTML = `
-                <input type="radio" name="option" ${userAnswers[index] === optIdx ? "checked" : ""}>
-                <span>${optText}</span>
-            `;
-            container.appendChild(card);
-        });
-    }
-
-    document.getElementById("prev-btn").disabled = index === 0;
-    document.getElementById("next-btn").innerText = index === testConfig.questions.length - 1 ? "FINISH ►" : "NEXT ►";
-    updatePaletteUI();
-}
-
-function selectMCQOption(optIdx) {
-    userAnswers[currentQuestionIndex] = optIdx;
-    loadQuestion(currentQuestionIndex);
-}
-
-function clearAnswer() {
-    delete userAnswers[currentQuestionIndex];
-    loadQuestion(currentQuestionIndex);
-}
-
 function nextQuestion() {
     if (currentQuestionIndex < testConfig.questions.length - 1) {
-        loadQuestion(currentQuestionIndex + 1);
-    } else {
-        confirmSubmission();
+        showQuestion(currentQuestionIndex + 1);
     }
 }
 
 function prevQuestion() {
-    if (currentQuestionIndex > 0) loadQuestion(currentQuestionIndex - 1);
-}
-
-function jumpToQuestion(idx) {
-    loadQuestion(idx);
-}
-
-function startTimer() {
-    updateTimerDisplay();
-    timerInterval = setInterval(() => {
-        remainingSeconds--;
-        updateTimerDisplay();
-        if (remainingSeconds <= 0) {
-            clearInterval(timerInterval);
-            autoSubmitExam();
-        }
-    }, 1000);
-}
-
-function updateTimerDisplay() {
-    const hours = Math.floor(remainingSeconds / 3600);
-    const mins = Math.floor((remainingSeconds % 3600) / 60);
-    const secs = remainingSeconds % 60;
-    const formatted = `${String(hours).padStart(2, '0')}:${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
-    document.getElementById("exam-timer").innerText = formatted;
-}
-
-function confirmSubmission() {
-    const answeredCount = Object.keys(userAnswers).filter(k => userAnswers[k] !== "").length;
-    const totalCount = testConfig.questions.length;
-    document.getElementById("submission-summary").innerText =
-        `You have answered ${answeredCount} out of ${totalCount} questions. Submit test now?`;
-    document.getElementById("confirm-modal").classList.remove("hidden");
-}
-
-function closeConfirmModal() {
-    document.getElementById("confirm-modal").classList.add("hidden");
-}
-
-async function finalSubmitExam() {
-    clearInterval(timerInterval);
-    document.getElementById("confirm-modal").classList.add("hidden");
-
-    const payload = {
-        studentName: studentName,
-        testId: testConfig.testId,
-        answers: userAnswers,
-        submittedAt: new Date().toISOString()
-    };
-
-    try {
-        const res = await fetch(`${WORKER_URL}/api/submit`, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify(payload)
-        });
-        const result = await res.json();
-
-        if (result.success) {
-            localStorage.setItem(`submitted_${testConfig.testId}`, "true");
-            localStorage.setItem(`submitted_time_${testConfig.testId}`, Date.now().toString());
-            showLockedScreen("TEST SUBMITTED SUCCESSFULLY", `Thank you, ${studentName}. Score logged and sent to Admin Telegram!`);
-        } else {
-            alert(result.error || "Submission failed.");
-        }
-    } catch (err) {
-        alert("Submission failed. Check network connection.");
+    if (currentQuestionIndex > 0) {
+        showQuestion(currentQuestionIndex - 1);
     }
 }
 
-function autoSubmitExam() {
-    alert("Time limit reached! Auto-submitting your exam.");
-    finalSubmitExam();
+function startTimer(seconds) {
+    let timeLeft = seconds;
+    const timerDisplay = document.getElementById('timer');
+    
+    timerInterval = setInterval(() => {
+        const mins = Math.floor(timeLeft / 60);
+        const secs = timeLeft % 60;
+        if (timerDisplay) {
+            timerDisplay.textContent = `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+            if (timeLeft <= 60) timerDisplay.style.color = "#ff0055";
+        }
+        
+        if (timeLeft <= 0) {
+            clearInterval(timerInterval);
+            submitTest(true);
+        }
+        timeLeft--;
+    }, 1000);
 }
 
-function showLockedScreen(title, msg) {
-    document.getElementById("exam-app").classList.add("hidden");
-    document.getElementById("student-modal").classList.add("hidden");
-    document.getElementById("locked-title").innerText = title;
-    document.getElementById("locked-message").innerText = msg;
-    document.getElementById("locked-screen").classList.remove("hidden");
+async function submitTest(isAuto = false) {
+    if (!isAuto && !confirm("Are you sure you want to submit the test?")) return;
+
+    clearInterval(timerInterval);
+    const studentName = sessionStorage.getItem('student_name') || "Guest Student";
+
+    const payload = {
+        studentName: studentName,
+        answers: userAnswers,
+        submittedAt: Date.now()
+    };
+
+    try {
+        const response = await fetch(`${WORKER_URL}/api/submit`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+        });
+
+        const result = await response.json();
+        
+        if (result.success) {
+            // Lock test in student's browser
+            localStorage.setItem(`submitted_${testConfig.testId}`, "true");
+            localStorage.setItem(`submitted_time_${testConfig.testId}`, Date.now().toString());
+
+            alert(`Test Submitted Successfully!\nYour Score: ${result.score}`);
+            location.href = "../index.html";
+        } else {
+            alert(result.error || "Submission failed.");
+        }
+    } catch (error) {
+        alert("Submission failed. Please check your internet connection.");
+    }
 }
+
+// Shuruat
+init();
