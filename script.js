@@ -42,7 +42,6 @@ loginForm.addEventListener('submit', function(e) {
     loginBtn.style.pointerEvents = 'none';
 
     setTimeout(() => {
-        // Check if entered password matches ANY of the 3 passwords
         const encodedPass = btoa(enteredPass);
 
         if (allowedPasswords.includes(encodedPass)) {
@@ -59,7 +58,6 @@ loginForm.addEventListener('submit', function(e) {
 
             localStorage.setItem('rjStudyLoggedIn', 'true');
             localStorage.setItem('rjStudyUsername', enteredName);
-            // Chat + Test ke liye session me bhi naam set
             sessionStorage.setItem('student_name', enteredName);
             
             hideAllViews();
@@ -117,7 +115,7 @@ function logout() {
     usernameInput.value = "";
     passwordInput.value = "";
     closeAllDropdowns();
-    closeDoubtChat(); // Chat band kar do agar open ho
+    closeDoubtChat();
     hideAllViews();
     errorMsg.style.display = "none";
     loginView.classList.add('active');
@@ -136,7 +134,6 @@ function restoreLogin() {
     profileInitial3.innerText = initial;
     profileInitial4.innerText = initial;
 
-    // Chat/Test ke liye session restore
     sessionStorage.setItem('student_name', savedName);
 
     hideAllViews();
@@ -191,7 +188,7 @@ typeTerminal();
 
 
 // ======================================================
-// REALTIME DISCUSS DOUBTS CHAT (Cloudflare Worker + Telegram)
+// ZERO-LATENCY REALTIME DISCUSS DOUBTS CHAT ENGINE
 // ======================================================
 
 const WORKER_URL = "https://rj-test-backen.internationalbgi.workers.dev";
@@ -201,7 +198,6 @@ function getChatStudentName() {
     return sessionStorage.getItem('student_name') || localStorage.getItem('rjStudyUsername') || "Guest";
 }
 
-// Modal open + super-fast 0.8s polling
 function openDoubtChat() {
     const overlay = document.getElementById('chatModalOverlay');
     if (!overlay) return;
@@ -210,10 +206,9 @@ function openDoubtChat() {
     fetchChatHistory();
 
     if (chatPollInterval) clearInterval(chatPollInterval);
-    chatPollInterval = setInterval(fetchChatHistory, 800); // ~realtime
+    chatPollInterval = setInterval(fetchChatHistory, 800); // Super Fast 0.8s Check
 }
 
-// Modal close + polling band
 function closeDoubtChat() {
     const overlay = document.getElementById('chatModalOverlay');
     if (overlay) overlay.style.display = 'none';
@@ -224,13 +219,15 @@ function closeDoubtChat() {
     }
 }
 
-// History fetch (GET)
+// POST Polling bypasses Cloudflare CDN cache completely
 async function fetchChatHistory() {
     const sName = getChatStudentName();
     try {
-        const response = await fetch(
-            `${WORKER_URL}/api/chat?studentName=${encodeURIComponent(sName)}&t=${Date.now()}`
-        );
+        const response = await fetch(`${WORKER_URL}/api/chat`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ action: "get", studentName: sName })
+        });
         const data = await response.json();
         if (data && data.success) {
             renderChat(data.chat || []);
@@ -240,15 +237,13 @@ async function fetchChatHistory() {
     }
 }
 
-// UI render (max 3 msgs server se aate hain)
 function renderChat(chatArray) {
     const box = document.getElementById('chatHistory');
     if (!box) return;
 
-    // Blink/lag avoid: same data pe re-render mat karo
     const currentJSON = box.getAttribute('data-last-json');
     const newJSON = JSON.stringify(chatArray);
-    if (currentJSON === newJSON) return;
+    if (currentJSON === newJSON) return; // Prevent lag
 
     box.setAttribute('data-last-json', newJSON);
     box.innerHTML = '';
@@ -277,12 +272,10 @@ function renderChat(chatArray) {
     box.scrollTop = box.scrollHeight;
 }
 
-// Enter key se send
 function handleChatEnter(e) {
     if (e.key === 'Enter') sendDoubtMsg();
 }
 
-// Message send (POST)
 async function sendDoubtMsg() {
     const inputField = document.getElementById('doubtInput');
     if (!inputField) return;
