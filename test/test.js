@@ -1,5 +1,5 @@
 // ==========================================
-// RJ STUDY ACADEMY - DYNAMIC EXAM CONTROLLER
+// RJ STUDY ACADEMY - DYNAMIC EXAM CONTROLLER (INSTANT SYNC)
 // ==========================================
 
 const WORKER_URL = "https://rj-test-backen.internationalbgi.workers.dev";
@@ -17,7 +17,16 @@ document.addEventListener("DOMContentLoaded", () => {
 
 async function fetchConfigAndInit() {
     try {
-        const res = await fetch(`${WORKER_URL}/api/config`);
+        // Cache bypass (?t=...) + no-store header for 0-second instant unlock on /reopen command
+        const res = await fetch(`${WORKER_URL}/api/config?t=${Date.now()}`, {
+            cache: "no-store",
+            headers: { 
+                "Pragma": "no-cache",
+                "Cache-Control": "no-cache, no-store, must-revalidate"
+            }
+        });
+        
+        if (!res.ok) throw new Error("Server Error");
         testConfig = await res.json();
 
         if (testConfig.status !== "open") {
@@ -27,50 +36,67 @@ async function fetchConfigAndInit() {
 
         checkLockStatus();
     } catch (err) {
-        alert("Server connection error. Please refresh.");
+        console.error("Config load error:", err);
+        alert("Server connection error. Retrying in 2 seconds...");
+        setTimeout(fetchConfigAndInit, 2000);
     }
 }
 
 function checkLockStatus() {
     const isSubmitted = localStorage.getItem(`submitted_${testConfig.testId}`);
-    const submittedTime = localStorage.getItem(`submitted_time_${testConfig.testId}`);
+    const submittedTimeRaw = localStorage.getItem(`submitted_time_${testConfig.testId}`);
 
     if (isSubmitted) {
+        const reopenTime = testConfig.reopenTimestamp || 0;
+        const submittedTime = submittedTimeRaw ? parseInt(submittedTimeRaw, 10) : 0;
+
         // If Admin issued /reopen command AFTER student submitted -> Unlock test!
-        if (testConfig.reopenTimestamp && submittedTime && parseInt(submittedTime) < testConfig.reopenTimestamp) {
+        if (reopenTime > 0 && (submittedTime === 0 || submittedTime < reopenTime)) {
             localStorage.removeItem(`submitted_${testConfig.testId}`);
             localStorage.removeItem(`submitted_time_${testConfig.testId}`);
+            console.log("Admin issued /reopen. Lock cleared!");
         } else {
             showLockedScreen("TEST ALREADY SUBMITTED", "You have already completed this test.");
             return;
         }
     }
 
-    const savedName = sessionStorage.getItem("student_name");
+    // Auto-fetch student name from portal login if available
+    const savedName = sessionStorage.getItem("student_name") || localStorage.getItem("rjStudyUsername");
     if (savedName) {
         studentName = savedName;
-        document.getElementById("student-modal").classList.add("hidden");
+        const modal = document.getElementById("student-modal");
+        if (modal) modal.classList.add("hidden");
         initExam();
     } else {
-        document.getElementById("student-modal").classList.remove("hidden");
+        const modal = document.getElementById("student-modal");
+        if (modal) modal.classList.remove("hidden");
     }
 }
 
 function startExamSession() {
-    const input = document.getElementById("student-name-input").value.trim();
+    const inputField = document.getElementById("student-name-input");
+    const input = inputField ? inputField.value.trim() : "";
     if (!input) {
         alert("Please enter your name.");
         return;
     }
     studentName = input;
     sessionStorage.setItem("student_name", studentName);
-    document.getElementById("student-modal").classList.add("hidden");
+    
+    const modal = document.getElementById("student-modal");
+    if (modal) modal.classList.add("hidden");
     initExam();
 }
 
 function initExam() {
-    document.getElementById("student-display-name").innerText = studentName;
-    remainingSeconds = testConfig.durationMinutes * 60;
+    const studentDisplay = document.getElementById("student-display-name");
+    if (studentDisplay) studentDisplay.innerText = studentName;
+
+    const examApp = document.getElementById("exam-app");
+    if (examApp) examApp.classList.remove("hidden");
+
+    remainingSeconds = (testConfig.durationMinutes || 45) * 60;
     renderPalette();
     loadQuestion(0);
     startTimer();
@@ -78,6 +104,7 @@ function initExam() {
 
 function renderPalette() {
     const grid = document.getElementById("palette-grid");
+    if (!grid) return;
     grid.innerHTML = "";
     testConfig.questions.forEach((q, idx) => {
         const btn = document.createElement("button");
@@ -106,11 +133,17 @@ function loadQuestion(index) {
     currentQuestionIndex = index;
     const q = testConfig.questions[index];
 
-    document.getElementById("question-number").innerText = `QUESTION ${index + 1} OF ${testConfig.questions.length}`;
-    document.getElementById("question-type-badge").innerText = q.type.toUpperCase();
-    document.getElementById("question-text").innerText = q.question;
+    const qNum = document.getElementById("question-number");
+    if (qNum) qNum.innerText = `QUESTION ${index + 1} OF ${testConfig.questions.length}`;
+
+    const qBadge = document.getElementById("question-type-badge");
+    if (qBadge) qBadge.innerText = (q.type || "mcq").toUpperCase();
+
+    const qText = document.getElementById("question-text");
+    if (qText) qText.innerText = q.question;
 
     const container = document.getElementById("options-container");
+    if (!container) return;
     container.innerHTML = "";
 
     if (q.type === "mcq") {
@@ -125,10 +158,26 @@ function loadQuestion(index) {
             `;
             container.appendChild(card);
         });
+    } else {
+        // Typed / Subjective Answer textarea
+        const val = userAnswers[index] || "";
+        const textarea = document.createElement("textarea");
+        textarea.placeholder = "Type your answer here...";
+        textarea.style.cssText = "width:100%; height:120px; background:#111; color:#00f2ff; border:1px solid #00f2ff; padding:12px; font-family:monospace; border-radius:5px;";
+        textarea.value = val;
+        textarea.oninput = (e) => {
+            userAnswers[index] = e.target.value;
+            updatePaletteUI();
+        };
+        container.appendChild(textarea);
     }
 
-    document.getElementById("prev-btn").disabled = index === 0;
-    document.getElementById("next-btn").innerText = index === testConfig.questions.length - 1 ? "FINISH ►" : "NEXT ►";
+    const prevBtn = document.getElementById("prev-btn");
+    if (prevBtn) prevBtn.disabled = index === 0;
+
+    const nextBtn = document.getElementById("next-btn");
+    if (nextBtn) nextBtn.innerText = index === testConfig.questions.length - 1 ? "FINISH ►" : "NEXT ►";
+
     updatePaletteUI();
 }
 
@@ -159,6 +208,7 @@ function jumpToQuestion(idx) {
 }
 
 function startTimer() {
+    if (timerInterval) clearInterval(timerInterval);
     updateTimerDisplay();
     timerInterval = setInterval(() => {
         remainingSeconds--;
@@ -175,30 +225,42 @@ function updateTimerDisplay() {
     const mins = Math.floor((remainingSeconds % 3600) / 60);
     const secs = remainingSeconds % 60;
     const formatted = `${String(hours).padStart(2, '0')}:${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
-    document.getElementById("exam-timer").innerText = formatted;
+    
+    const timerElem = document.getElementById("exam-timer");
+    if (timerElem) {
+        timerElem.innerText = formatted;
+        if (remainingSeconds <= 60) timerElem.style.color = "#ff0055";
+    }
 }
 
 function confirmSubmission() {
     const answeredCount = Object.keys(userAnswers).filter(k => userAnswers[k] !== "").length;
     const totalCount = testConfig.questions.length;
-    document.getElementById("submission-summary").innerText =
-        `You have answered ${answeredCount} out of ${totalCount} questions. Submit test now?`;
-    document.getElementById("confirm-modal").classList.remove("hidden");
+    
+    const summary = document.getElementById("submission-summary");
+    if (summary) {
+        summary.innerText = `You have answered ${answeredCount} out of ${totalCount} questions. Submit test now?`;
+    }
+    
+    const modal = document.getElementById("confirm-modal");
+    if (modal) modal.classList.remove("hidden");
 }
 
 function closeConfirmModal() {
-    document.getElementById("confirm-modal").classList.add("hidden");
+    const modal = document.getElementById("confirm-modal");
+    if (modal) modal.classList.add("hidden");
 }
 
 async function finalSubmitExam() {
-    clearInterval(timerInterval);
-    document.getElementById("confirm-modal").classList.add("hidden");
+    if (timerInterval) clearInterval(timerInterval);
+    closeConfirmModal();
 
+    const now = Date.now();
     const payload = {
-        studentName: studentName,
+        studentName: studentName || "Student",
         testId: testConfig.testId,
         answers: userAnswers,
-        submittedAt: new Date().toISOString()
+        submittedAt: now
     };
 
     try {
@@ -211,8 +273,8 @@ async function finalSubmitExam() {
 
         if (result.success) {
             localStorage.setItem(`submitted_${testConfig.testId}`, "true");
-            localStorage.setItem(`submitted_time_${testConfig.testId}`, Date.now().toString());
-            showLockedScreen("TEST SUBMITTED SUCCESSFULLY", `Thank you, ${studentName}. Score logged and sent to Admin Telegram!`);
+            localStorage.setItem(`submitted_time_${testConfig.testId}`, now.toString());
+            showLockedScreen("TEST SUBMITTED SUCCESSFULLY", `Thank you, ${studentName}. Score: ${result.score}. Result sent to Admin Telegram!`);
         } else {
             alert(result.error || "Submission failed.");
         }
@@ -227,9 +289,18 @@ function autoSubmitExam() {
 }
 
 function showLockedScreen(title, msg) {
-    document.getElementById("exam-app").classList.add("hidden");
-    document.getElementById("student-modal").classList.add("hidden");
-    document.getElementById("locked-title").innerText = title;
-    document.getElementById("locked-message").innerText = msg;
-    document.getElementById("locked-screen").classList.remove("hidden");
+    const examApp = document.getElementById("exam-app");
+    if (examApp) examApp.classList.add("hidden");
+
+    const studentModal = document.getElementById("student-modal");
+    if (studentModal) studentModal.classList.add("hidden");
+
+    const lTitle = document.getElementById("locked-title");
+    if (lTitle) lTitle.innerText = title;
+
+    const lMsg = document.getElementById("locked-message");
+    if (lMsg) lMsg.innerText = msg;
+
+    const lockedScreen = document.getElementById("locked-screen");
+    if (lockedScreen) lockedScreen.classList.remove("hidden");
 }
