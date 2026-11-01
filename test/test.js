@@ -6,6 +6,7 @@ let timerInterval;
 
 async function init() {
     try {
+        // Fetch config from worker
         const response = await fetch(`${WORKER_URL}/api/config?t=${Date.now()}`);
         if (!response.ok) {
             throw new Error(`HTTP Error: ${response.status}`);
@@ -37,13 +38,81 @@ async function init() {
             }
         }
 
-        // Start Test UI
-        startTest();
+        // Setup Modal "START ASSESSMENT" Button Handler
+        setupModalHandler();
 
     } catch (error) {
         console.error("Failed to load test:", error);
-        alert("Failed to load test configuration. Retrying...");
-        setTimeout(init, 2000);
+        alert("Failed to load test configuration.");
+    }
+}
+
+function setupModalHandler() {
+    // Find input field and start button dynamically
+    const nameInput = document.querySelector('input[type="text"]') || 
+                      document.getElementById('student-name-input') || 
+                      document.getElementById('candidate-name');
+
+    const startBtn = Array.from(document.querySelectorAll('button')).find(
+        b => b.textContent.toUpperCase().includes('START') || b.textContent.toUpperCase().includes('ASSESSMENT')
+    ) || document.getElementById('start-btn');
+
+    // Auto-fill student name if present in localStorage / sessionStorage
+    const existingName = sessionStorage.getItem('student_name') || localStorage.getItem('rjStudyUsername') || "";
+    if (nameInput && existingName) {
+        nameInput.value = existingName;
+    }
+
+    const startExamAction = () => {
+        const enteredName = nameInput ? nameInput.value.trim() : "";
+        if (!enteredName) {
+            alert("Please enter your Full Name or Roll Number to start.");
+            if (nameInput) nameInput.focus();
+            return;
+        }
+
+        sessionStorage.setItem('student_name', enteredName);
+
+        // Find modal container and hide it
+        const modalOverlay = document.querySelector('.modal-overlay') || 
+                             document.querySelector('.credentials-modal') ||
+                             document.getElementById('credentials-modal') ||
+                             nameInput?.closest('div[style*="fixed"]') ||
+                             nameInput?.parentElement?.parentElement;
+
+        if (modalOverlay) {
+            modalOverlay.style.display = 'none';
+        } else if (nameInput) {
+            // Backup hide
+            let parent = nameInput.parentElement;
+            for (let i = 0; i < 3; i++) {
+                if (parent) {
+                    parent.style.display = 'none';
+                    parent = parent.parentElement;
+                }
+            }
+        }
+
+        // Update Top Header Candidate Name
+        const allElements = document.querySelectorAll('*');
+        allElements.forEach(el => {
+            if (el.children.length === 0 && el.textContent.includes('Loading')) {
+                el.textContent = `CANDIDATE: ${enteredName}`;
+            }
+        });
+
+        // Start Test Engine
+        startTest();
+    };
+
+    if (startBtn) {
+        startBtn.onclick = startExamAction;
+    }
+
+    if (nameInput) {
+        nameInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') startExamAction();
+        });
     }
 }
 
@@ -58,17 +127,13 @@ function showLockedScreen(title, message) {
 }
 
 function startTest() {
-    const studentNameDisplay = document.getElementById('student-name-display');
-    if (studentNameDisplay) {
-        studentNameDisplay.textContent = sessionStorage.getItem('student_name') || "Student";
-    }
     renderQuestionPalette();
     showQuestion(0);
     startTimer((testConfig.durationMinutes || 45) * 60);
 }
 
 function renderQuestionPalette() {
-    const palette = document.getElementById('question-palette');
+    const palette = document.getElementById('question-palette') || document.querySelector('.palette-grid') || document.querySelector('.matrix-grid');
     if (!palette) return;
     palette.innerHTML = '';
     testConfig.questions.forEach((_, idx) => {
@@ -83,26 +148,26 @@ function renderQuestionPalette() {
 function showQuestion(index) {
     currentQuestionIndex = index;
     const q = testConfig.questions[index];
-    const container = document.getElementById('question-container');
+    const container = document.getElementById('question-container') || document.querySelector('.question-box') || document.querySelector('.question-card');
     if (!container) return;
     
     let html = `<h3>Question ${index + 1} of ${testConfig.questions.length}</h3><p style="font-size:1.2rem; margin:15px 0;">${q.question}</p>`;
     
     if (q.type === "mcq") {
-        html += `<div class="options">`;
+        html += `<div class="options" style="margin-top:15px;">`;
         q.options.forEach((opt, i) => {
             const isChecked = userAnswers[index] === i ? "checked" : "";
             html += `
-                <label class="option-card" style="display:block; margin:8px 0; padding:10px; background:rgba(255,255,255,0.05); border-radius:5px; cursor:pointer;">
+                <label class="option-card" style="display:block; margin:10px 0; padding:12px 15px; background:rgba(255,255,255,0.05); border:1px solid #00f2ff33; border-radius:5px; cursor:pointer;">
                     <input type="radio" name="q${index}" value="${i}" ${isChecked} onchange="saveAnswer(${index}, ${i})">
-                    <span style="margin-left:10px;">${opt}</span>
+                    <span style="margin-left:10px; color:#fff;">${opt}</span>
                 </label>
             `;
         });
         html += `</div>`;
     } else {
         const val = userAnswers[index] || "";
-        html += `<textarea placeholder="Type your answer here..." style="width:100%; height:100px; background:#111; color:#fff; padding:10px;" oninput="saveAnswer(${index}, this.value)">${val}</textarea>`;
+        html += `<textarea placeholder="Type your answer here..." style="width:100%; height:120px; background:#111; color:#00f2ff; border:1px solid #00f2ff; padding:10px; margin-top:10px; border-radius:5px;" oninput="saveAnswer(${index}, this.value)">${val}</textarea>`;
     }
     
     container.innerHTML = html;
@@ -151,8 +216,10 @@ function prevQuestion() {
 
 function startTimer(seconds) {
     let timeLeft = seconds;
-    const timerDisplay = document.getElementById('timer');
+    const timerDisplay = document.getElementById('timer') || document.querySelector('.timer-display') || document.querySelector('.time-remaining');
     
+    if (timerInterval) clearInterval(timerInterval);
+
     timerInterval = setInterval(() => {
         const mins = Math.floor(timeLeft / 60);
         const secs = timeLeft % 60;
@@ -205,5 +272,5 @@ async function submitTest(isAuto = false) {
     }
 }
 
-// Automatic Run
+// Run
 init();
