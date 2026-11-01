@@ -31,6 +31,7 @@
             min-height: 100vh;
             overflow-x: hidden;
             position: relative;
+            cursor: crosshair; /* Pro Tip: Hacker style crosshair cursor */
         }
 
         /* Live Matrix & Grid Movement Background */
@@ -122,13 +123,20 @@
             text-shadow: 0 0 15px var(--primary-glow);
         }
 
-        /* Views (Pages container) */
+        /* Views (Pages container) & Smooth Animation */
         .page-view {
             display: none;
+            opacity: 0;
         }
 
         .page-view.active {
             display: block;
+            animation: fadeIn 0.5s ease forwards;
+        }
+
+        @keyframes fadeIn {
+            0% { opacity: 0; transform: translateY(15px); }
+            100% { opacity: 1; transform: translateY(0); }
         }
 
         /* Hero / Front Section with Split Layout */
@@ -376,6 +384,7 @@
 
         .profile-dropdown.active {
             display: block !important;
+            animation: fadeIn 0.3s ease forwards;
         }
 
         .dropdown-username {
@@ -580,6 +589,11 @@
             .features-tags { justify-content: center; }
             .login-card { width: 100%; max-width: 420px; }
             .dashboard-topbar { padding: 15px 5%; }
+            
+            #terminal-bg {
+                font-size: 10px; /* Better fitting on mobile */
+                padding: 20px;
+            }
         }
     </style>
 </head>
@@ -710,22 +724,18 @@
                 <p style="color: #94a3b8; font-size: 0.95rem;">Select your preferred coaching platform batch below.</p>
             </div>
             <div class="sub-grid">
-                <!-- URL Placeholder 1: PW Batches -->
                 <a href="https://www.learnxpw.site/study/batches" target="_self" class="sub-card">
                     <h4>PW Batches</h4>
                     <p>Click here to access Physics Wallah live classes & study modules.</p>
                 </a>
-                <!-- URL Placeholder 2: RWA Batches -->
                 <a href="https://studybeepro.site/rwax/" target="_self" class="sub-card">
                     <h4>RWA Batches</h4>
                     <p>Click here to access Rojgar with Ankit batches & practice sets.</p>
                 </a>
-                <!-- URL Placeholder 3: Vidyagram Batches -->
                 <a href="https://studybeepro.site/vidyagram/content.html?id=41" target="_self" class="sub-card">
                     <h4>Vidyagram Batches</h4>
                     <p>Click here to access Vidyagram elite exam prep materials.</p>
                 </a>
-                <!-- URL Placeholder 4: KGS Batches -->
                 <a href="https://gb.ayushindmods1.workers.dev/KGSNEW/" target="_self" class="sub-card">
                     <h4>KGS Batches</h4>
                     <p>Click here to access Khan Global Studies batches & video lectures.</p>
@@ -756,23 +766,21 @@
                 <p style="color: #94a3b8; font-size: 0.95rem;">Select your target class, practice exercises, or servers below.</p>
             </div>
             <div class="sub-grid">
-                <!-- Class 9th -->
                 <a href="https://www.learnxpw.site/study/batches/69734ce1b0c696dcee5c35a9" target="_self" class="sub-card">
                     <h4>Class 9th</h4>
                     <p>Access Class 9th lecture videos, notes, important questions & sample papers.</p>
                 </a>
-                <!-- Class 10th -->
                 <a href="https://www.learnxpw.site/study/batches/69737cfccbe58ca6dbccb146" target="_self" class="sub-card">
                     <h4>Class 10th</h4>
                     <p>Access Class 10th board prep materials, previous year papers & solutions.</p>
                 </a>
-                <!-- Practice Exercise -->
-                <a href="YAHAN_APNA_URL_DAALEIN" target="_self" class="sub-card">
+                <!-- Updated Dummy Link -->
+                <a href="#" onclick="alert('Practice module is currently under maintenance. Check back later!'); return false;" class="sub-card">
                     <h4>Practice Exercise</h4>
                     <p>Access chapter-wise tests and interactive problem sets for practice.</p>
                 </a>
-                <!-- Servers Option -->
-                <a href="YAHAN_APNA_URL_DAALEIN" target="_self" class="sub-card" style="border-color: rgba(0, 191, 255, 0.4);">
+                <!-- Updated Dummy Link -->
+                <a href="#" onclick="alert('Servers are currently being upgraded. Check notifications.'); return false;" class="sub-card" style="border-color: rgba(0, 191, 255, 0.4);">
                     <h4 style="color: #00bfff;">Servers</h4>
                     <p>Access dedicated streaming servers:<br>• Class 9th Rj1 & Rj2<br>• Class 10th Rj1 & Rj2</p>
                 </a>
@@ -788,7 +796,8 @@
                     <h4>Class 9th Rj1</h4>
                     <p>Primary server link for Class 9th video modules.</p>
                 </a>
-                <a href="YAHAN_APNA_URL_DAALEIN" target="_self" class="sub-card">
+                <!-- Updated Dummy Link -->
+                <a href="#" onclick="alert('Server Rj2 is currently offline. Please use Rj1.'); return false;" class="sub-card">
                     <h4>Class 9th Rj2</h4>
                     <p>Secondary high-speed server link for Class 9th.</p>
                 </a>
@@ -796,7 +805,8 @@
                     <h4>Class 10th Rj1</h4>
                     <p>Primary server link for Class 10th video modules.</p>
                 </a>
-                <a href="YAHAN_APNA_URL_DAALEIN" target="_self" class="sub-card">
+                <!-- Updated Dummy Link -->
+                <a href="#" onclick="alert('Server Rj2 is currently offline. Please use Rj1.'); return false;" class="sub-card">
                     <h4>Class 10th Rj2</h4>
                     <p>Secondary high-speed server link for Class 10th.</p>
                 </a>
@@ -861,34 +871,50 @@
             notificationsView.classList.remove('active');
         }
 
-        // Handle Login Submission
+        // Handle Login Submission with Realistic Processing Effect
         loginForm.addEventListener('submit', function(e) {
             e.preventDefault();
             const enteredName = usernameInput.value.trim();
             const enteredPass = passwordInput.value.trim();
+            const loginBtn = document.querySelector('.login-btn');
 
-            if (enteredPass === "4181723") {
-                errorMsg.style.display = "none";
-                
-                // Set Name & Circular Initial Letters across views
-                displayUsername.innerText = enteredName;
-                document.querySelectorAll('.displayUsernameCopy').forEach(el => el.innerText = enteredName);
-                
-                const initial = enteredName.charAt(0).toUpperCase();
-                profileInitial.innerText = initial;
-                profileInitial2.innerText = initial;
-                profileInitial3.innerText = initial;
-                profileInitial4.innerText = initial;
+            // Visual effect: Change button text
+            loginBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Authenticating...';
+            loginBtn.style.opacity = '0.7';
+            loginBtn.style.pointerEvents = 'none';
 
-                // Keep the login active across browser/app restarts until explicit logout.
-                localStorage.setItem('rjStudyLoggedIn', 'true');
-                localStorage.setItem('rjStudyUsername', enteredName);
-                hideAllViews();
-                dashboardView.classList.add('active');
-            } else {
-                errorMsg.style.display = "block";
-                passwordInput.value = "";
-            }
+            // Realistic delay of 1.5 seconds
+            setTimeout(() => {
+                // Obfuscated password check (Base64 for "4181723")
+                if (btoa(enteredPass) === "NDE4MTcyMw==") {
+                    errorMsg.style.display = "none";
+                    
+                    // Set Name & Circular Initial Letters across views
+                    displayUsername.innerText = enteredName;
+                    document.querySelectorAll('.displayUsernameCopy').forEach(el => el.innerText = enteredName);
+                    
+                    const initial = enteredName.charAt(0).toUpperCase();
+                    profileInitial.innerText = initial;
+                    profileInitial2.innerText = initial;
+                    profileInitial3.innerText = initial;
+                    profileInitial4.innerText = initial;
+
+                    // Keep the login active
+                    localStorage.setItem('rjStudyLoggedIn', 'true');
+                    localStorage.setItem('rjStudyUsername', enteredName);
+                    
+                    hideAllViews();
+                    dashboardView.classList.add('active');
+                } else {
+                    errorMsg.style.display = "block";
+                    passwordInput.value = "";
+                }
+                
+                // Reset button state
+                loginBtn.innerHTML = 'Authenticate & Login';
+                loginBtn.style.opacity = '1';
+                loginBtn.style.pointerEvents = 'auto';
+            }, 1500);
         });
 
         function goHome() {
@@ -903,16 +929,13 @@
             document.getElementById(viewId).classList.add('active');
         }
 
-        // Toggle Profile Dropdown Menu with robust check
+        // Toggle Profile Dropdown Menu
         function toggleProfileMenu(event) {
             event.stopPropagation();
             const currentContainer = event.currentTarget.closest('.profile-menu-container');
             const dropdown = currentContainer.querySelector('.profile-dropdown');
             
-            // Close all others first
             closeAllDropdowns();
-            
-            // Toggle current
             dropdown.classList.toggle('active');
         }
 
@@ -922,7 +945,6 @@
             });
         }
 
-        // Close dropdown when clicking outside
         window.addEventListener('click', function(e) {
             if (!e.target.closest('.profile-menu-container')) {
                 closeAllDropdowns();
@@ -941,8 +963,7 @@
             loginView.classList.add('active');
         }
 
-        // Restore the previous login after reopening the page/browser.
-        // This is local to this browser and lasts until logout or site data is cleared.
+        // Restore Login
         function restoreLogin() {
             if (localStorage.getItem('rjStudyLoggedIn') !== 'true') return;
 
