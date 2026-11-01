@@ -1,8 +1,7 @@
 // ==========================================
-// RJ STUDY ACADEMY - DIRECT TEST ENGINE (FIXED SUBMIT)
+// RJ STUDY ACADEMY - DIRECT TEST ENGINE (FIXED SUBMIT & DASHBOARD REDIRECT)
 // ==========================================
 
-// Sirf credentials modal ko hide karo — confirm/locked modal mat chhuna
 const killModalStyle = document.createElement('style');
 killModalStyle.innerHTML = `
     #student-modal,
@@ -18,7 +17,6 @@ killModalStyle.innerHTML = `
         visibility: visible !important;
         opacity: 1 !important;
     }
-    /* Confirm modal force-visible when open */
     #confirm-modal:not(.hidden) {
         display: flex !important;
         visibility: visible !important;
@@ -77,7 +75,8 @@ async function fetchConfigAndInit() {
         if (testConfig.status !== "open") {
             showLockedScreen(
                 "TEST CURRENTLY CLOSED",
-                "This test is currently closed or locked by Admin. Please contact Academy Admin."
+                "This test is currently closed or locked by Admin. Please contact Academy Admin.",
+                "🔴"
             );
             return;
         }
@@ -102,7 +101,7 @@ function checkLockStatus() {
             localStorage.removeItem(`submitted_time_${testConfig.testId}`);
             console.log("Admin issued /reopen. Lock cleared!");
         } else {
-            showLockedScreen("TEST ALREADY SUBMITTED", "You have already completed this test.");
+            showLockedScreen("TEST ALREADY SUBMITTED", "You have already completed this test session.", "🔒");
             return;
         }
     }
@@ -293,7 +292,6 @@ function confirmSubmission() {
         modal.style.setProperty("pointer-events", "auto", "important");
         modal.style.setProperty("z-index", "9999", "important");
     } else {
-        // Fallback agar HTML me confirm-modal na mile
         if (window.confirm(msg)) {
             finalSubmitExam();
         }
@@ -339,7 +337,8 @@ async function finalSubmitExam() {
             localStorage.setItem(`submitted_time_${testConfig.testId}`, now.toString());
             showLockedScreen(
                 "TEST SUBMITTED SUCCESSFULLY",
-                `Thank you, ${studentName}. Score: ${result.score}. Result sent to Admin Telegram!`
+                `Thank you, ${studentName}. Score logged: ${result.score}. Result sent to Admin!`,
+                "🎉"
             );
         } else {
             isSubmitting = false;
@@ -357,9 +356,12 @@ function autoSubmitExam() {
     finalSubmitExam();
 }
 
-function showLockedScreen(title, msg) {
+function showLockedScreen(title, msg, icon = "🛡️") {
     const examApp = document.getElementById("exam-app");
     if (examApp) examApp.classList.add("hidden");
+
+    const lIcon = document.getElementById("locked-icon");
+    if (lIcon) lIcon.innerText = icon;
 
     const lTitle = document.getElementById("locked-title");
     if (lTitle) lTitle.innerText = title;
@@ -374,19 +376,10 @@ function showLockedScreen(title, msg) {
         lockedScreen.style.setProperty("visibility", "visible", "important");
         lockedScreen.style.setProperty("opacity", "1", "important");
         lockedScreen.style.setProperty("z-index", "9999", "important");
-    } else {
-        // Fallback
-        document.body.innerHTML = `
-            <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;height:100vh;background:#0B0F19;color:#EF4444;font-family:Inter,sans-serif;text-align:center;padding:20px;">
-                <h1 style="font-size:2rem;margin-bottom:12px;">${title}</h1>
-                <p style="color:#9CA3AF;max-width:420px;">${msg}</p>
-                <button onclick="location.href='../index.html'" style="margin-top:24px;padding:12px 24px;background:transparent;border:1px solid #00E5FF;color:#00E5FF;border-radius:8px;cursor:pointer;font-weight:600;">BACK TO DASHBOARD</button>
-            </div>
-        `;
     }
 }
 
-// Global hooks for HTML onclick attributes
+// Global hooks for HTML
 window.prevQuestion = prevQuestion;
 window.nextQuestion = nextQuestion;
 window.clearAnswer = clearAnswer;
