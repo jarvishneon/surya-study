@@ -6,17 +6,19 @@ let timerInterval;
 
 async function init() {
     try {
-        // Cache bypass (?t=...) to get latest server config immediately
         const response = await fetch(`${WORKER_URL}/api/config?t=${Date.now()}`);
+        if (!response.ok) {
+            throw new Error(`HTTP Error: ${response.status}`);
+        }
         testConfig = await response.json();
 
-        // 1. Check if Admin CLOSED the test
+        // 1. Check if closed by Admin
         if (testConfig.status !== "open") {
             showLockedScreen("TEST CLOSED", "The administrator has closed this test.");
             return;
         }
 
-        // 2. REOPEN & LOCK CHECK LOGIC
+        // 2. Reopen / Lock checks
         const testId = testConfig.testId;
         const isSubmitted = localStorage.getItem(`submitted_${testId}`);
         const submittedTimeRaw = localStorage.getItem(`submitted_time_${testId}`);
@@ -25,7 +27,6 @@ async function init() {
             const reopenTime = testConfig.reopenTimestamp || 0;
             const submittedTime = submittedTimeRaw ? parseInt(submittedTimeRaw, 10) : 0;
 
-            // Agar Admin ne /reopen kiya hai AUR submission reopen se pehle ki hai
             if (reopenTime > 0 && submittedTime < reopenTime) {
                 localStorage.removeItem(`submitted_${testId}`);
                 localStorage.removeItem(`submitted_time_${testId}`);
@@ -36,12 +37,13 @@ async function init() {
             }
         }
 
-        // Everything OK -> Start Test
+        // Start Test UI
         startTest();
 
     } catch (error) {
         console.error("Failed to load test:", error);
-        alert("Failed to load test configuration.");
+        alert("Failed to load test configuration. Retrying...");
+        setTimeout(init, 2000);
     }
 }
 
@@ -56,14 +58,18 @@ function showLockedScreen(title, message) {
 }
 
 function startTest() {
-    document.getElementById('student-name-display').textContent = sessionStorage.getItem('student_name') || "Student";
+    const studentNameDisplay = document.getElementById('student-name-display');
+    if (studentNameDisplay) {
+        studentNameDisplay.textContent = sessionStorage.getItem('student_name') || "Student";
+    }
     renderQuestionPalette();
     showQuestion(0);
-    startTimer(testConfig.durationMinutes * 60);
+    startTimer((testConfig.durationMinutes || 45) * 60);
 }
 
 function renderQuestionPalette() {
     const palette = document.getElementById('question-palette');
+    if (!palette) return;
     palette.innerHTML = '';
     testConfig.questions.forEach((_, idx) => {
         const btn = document.createElement('button');
@@ -78,6 +84,7 @@ function showQuestion(index) {
     currentQuestionIndex = index;
     const q = testConfig.questions[index];
     const container = document.getElementById('question-container');
+    if (!container) return;
     
     let html = `<h3>Question ${index + 1} of ${testConfig.questions.length}</h3><p style="font-size:1.2rem; margin:15px 0;">${q.question}</p>`;
     
@@ -166,7 +173,7 @@ async function submitTest(isAuto = false) {
     if (!isAuto && !confirm("Are you sure you want to submit the test?")) return;
 
     clearInterval(timerInterval);
-    const studentName = sessionStorage.getItem('student_name') || "Guest Student";
+    const studentName = sessionStorage.getItem('student_name') || "Student";
     const now = Date.now();
 
     const payload = {
@@ -198,5 +205,5 @@ async function submitTest(isAuto = false) {
     }
 }
 
-// Start execution
+// Automatic Run
 init();
