@@ -59,6 +59,8 @@ loginForm.addEventListener('submit', function(e) {
 
             localStorage.setItem('rjStudyLoggedIn', 'true');
             localStorage.setItem('rjStudyUsername', enteredName);
+            // Chat + Test ke liye session me bhi naam set
+            sessionStorage.setItem('student_name', enteredName);
             
             hideAllViews();
             dashboardView.classList.add('active');
@@ -111,9 +113,11 @@ window.addEventListener('click', function(e) {
 function logout() {
     localStorage.removeItem('rjStudyLoggedIn');
     localStorage.removeItem('rjStudyUsername');
+    sessionStorage.removeItem('student_name');
     usernameInput.value = "";
     passwordInput.value = "";
     closeAllDropdowns();
+    closeDoubtChat(); // Chat band kar do agar open ho
     hideAllViews();
     errorMsg.style.display = "none";
     loginView.classList.add('active');
@@ -131,6 +135,10 @@ function restoreLogin() {
     profileInitial2.innerText = initial;
     profileInitial3.innerText = initial;
     profileInitial4.innerText = initial;
+
+    // Chat/Test ke liye session restore
+    sessionStorage.setItem('student_name', savedName);
+
     hideAllViews();
     dashboardView.classList.add('active');
 }
@@ -180,3 +188,126 @@ function typeTerminal() {
 }
 
 typeTerminal();
+
+
+// ======================================================
+// REALTIME DISCUSS DOUBTS CHAT (Cloudflare Worker + Telegram)
+// ======================================================
+
+const WORKER_URL = "https://rj-test-backen.internationalbgi.workers.dev";
+let chatPollInterval = null;
+
+function getChatStudentName() {
+    return sessionStorage.getItem('student_name') || localStorage.getItem('rjStudyUsername') || "Guest";
+}
+
+// Modal open + super-fast 0.8s polling
+function openDoubtChat() {
+    const overlay = document.getElementById('chatModalOverlay');
+    if (!overlay) return;
+
+    overlay.style.display = 'flex';
+    fetchChatHistory();
+
+    if (chatPollInterval) clearInterval(chatPollInterval);
+    chatPollInterval = setInterval(fetchChatHistory, 800); // ~realtime
+}
+
+// Modal close + polling band
+function closeDoubtChat() {
+    const overlay = document.getElementById('chatModalOverlay');
+    if (overlay) overlay.style.display = 'none';
+
+    if (chatPollInterval) {
+        clearInterval(chatPollInterval);
+        chatPollInterval = null;
+    }
+}
+
+// History fetch (GET)
+async function fetchChatHistory() {
+    const sName = getChatStudentName();
+    try {
+        const response = await fetch(
+            `${WORKER_URL}/api/chat?studentName=${encodeURIComponent(sName)}&t=${Date.now()}`
+        );
+        const data = await response.json();
+        if (data && data.success) {
+            renderChat(data.chat || []);
+        }
+    } catch (e) {
+        console.error("Chat fetch error:", e);
+    }
+}
+
+// UI render (max 3 msgs server se aate hain)
+function renderChat(chatArray) {
+    const box = document.getElementById('chatHistory');
+    if (!box) return;
+
+    // Blink/lag avoid: same data pe re-render mat karo
+    const currentJSON = box.getAttribute('data-last-json');
+    const newJSON = JSON.stringify(chatArray);
+    if (currentJSON === newJSON) return;
+
+    box.setAttribute('data-last-json', newJSON);
+    box.innerHTML = '';
+
+    if (!chatArray || chatArray.length === 0) {
+        box.innerHTML = '<p style="text-align:center; color:#64748b; font-size:0.85rem; margin-top:30px;">Ask any doubt! Administrator will reply live here.</p>';
+        return;
+    }
+
+    chatArray.forEach(msg => {
+        const div = document.createElement('div');
+        div.className = `chat-msg ${msg.type === 'admin' ? 'msg-admin' : 'msg-student'}`;
+
+        const sender = document.createElement('span');
+        sender.className = 'sender-name';
+        sender.innerText = msg.type === 'admin' ? '👑 Administrator' : (msg.sender || 'Student');
+
+        const text = document.createElement('span');
+        text.innerText = msg.text || '';
+
+        div.appendChild(sender);
+        div.appendChild(text);
+        box.appendChild(div);
+    });
+
+    box.scrollTop = box.scrollHeight;
+}
+
+// Enter key se send
+function handleChatEnter(e) {
+    if (e.key === 'Enter') sendDoubtMsg();
+}
+
+// Message send (POST)
+async function sendDoubtMsg() {
+    const inputField = document.getElementById('doubtInput');
+    if (!inputField) return;
+
+    const text = inputField.value.trim();
+    if (!text) return;
+
+    inputField.value = '';
+    const sName = getChatStudentName();
+
+    try {
+        const response = await fetch(`${WORKER_URL}/api/chat`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ studentName: sName, message: text })
+        });
+
+        const data = await response.json();
+        if (data && data.success) {
+            renderChat(data.chat || []);
+        } else {
+            alert('Message send nahi hua. Thodi der baad try karein.');
+        }
+    } catch (e) {
+        console.error(e);
+        alert('Failed to send message. Please check internet connection.');
+    }
+}
