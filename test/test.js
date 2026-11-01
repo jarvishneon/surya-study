@@ -1,8 +1,8 @@
 // ==========================================
-// RJ STUDY ACADEMY - DIRECT TEST ENGINE (SUBMIT FIXED)
+// RJ STUDY ACADEMY - DIRECT TEST ENGINE (FIXED SUBMIT)
 // ==========================================
 
-// Sirf CREDENTIALS modal ko hide karo — Confirm/Submit modal ko MAT chhua
+// Sirf credentials modal ko hide karo — confirm/locked modal mat chhuna
 const killModalStyle = document.createElement('style');
 killModalStyle.innerHTML = `
     #student-modal,
@@ -13,12 +13,12 @@ killModalStyle.innerHTML = `
         opacity: 0 !important;
         pointer-events: none !important;
     }
-    #exam-app {
+    #exam-app:not(.hidden) {
         display: block !important;
         visibility: visible !important;
         opacity: 1 !important;
     }
-    /* Confirm modal hamesha upar rahe */
+    /* Confirm modal force-visible when open */
     #confirm-modal:not(.hidden) {
         display: flex !important;
         visibility: visible !important;
@@ -30,6 +30,7 @@ killModalStyle.innerHTML = `
         display: flex !important;
         visibility: visible !important;
         opacity: 1 !important;
+        pointer-events: auto !important;
         z-index: 9999 !important;
     }
 `;
@@ -52,11 +53,16 @@ document.addEventListener("DOMContentLoaded", () => {
 
 function removeCredentialsModal() {
     const el = document.getElementById("student-modal");
-    if (el) el.style.setProperty("display", "none", "important");
+    if (el) el.remove();
 
     document.querySelectorAll("div, section").forEach((node) => {
-        const t = (node.textContent || "").trim();
-        if (t.includes("ENTER EXAM CREDENTIALS") && node.children.length < 12) {
+        if (
+            node.id !== "confirm-modal" &&
+            node.id !== "locked-screen" &&
+            node.id !== "exam-app" &&
+            node.textContent &&
+            node.textContent.includes("ENTER EXAM CREDENTIALS")
+        ) {
             node.style.setProperty("display", "none", "important");
         }
     });
@@ -117,7 +123,7 @@ function initExam() {
     if (studentDisplay) studentDisplay.innerText = studentName;
 
     document.querySelectorAll("*").forEach((el) => {
-        if (el.children.length === 0 && (el.textContent || "").includes("CANDIDATE")) {
+        if (el.children.length === 0 && el.textContent && el.textContent.includes("CANDIDATE:")) {
             el.textContent = `CANDIDATE: ${studentName}`;
         }
     });
@@ -143,7 +149,6 @@ function renderPalette() {
         btn.className = "palette-num";
         btn.innerText = idx + 1;
         btn.id = `palette-item-${idx}`;
-        btn.type = "button";
         btn.onclick = () => jumpToQuestion(idx);
         grid.appendChild(btn);
     });
@@ -210,8 +215,7 @@ function loadQuestion(index) {
 
     const nextBtn = document.getElementById("next-btn");
     if (nextBtn) {
-        nextBtn.innerText =
-            index === testConfig.questions.length - 1 ? "FINISH ►" : "Next →";
+        nextBtn.innerText = index === testConfig.questions.length - 1 ? "FINISH ►" : "NEXT ►";
     }
 
     updatePaletteUI();
@@ -266,9 +270,127 @@ function updateTimerDisplay() {
     if (timerElem) {
         timerElem.innerText = formatted;
         if (remainingSeconds <= 60) timerElem.style.color = "#EF4444";
+        else timerElem.style.color = "";
     }
 }
 
 function confirmSubmission() {
-    const answeredCount = Object.keys(userAnswers).filter(
-        (k) => userAnswers[k] !== undefined && userAnswers[k] !== 
+    if (isSubmitting) return;
+
+    const answeredCount = Object.keys(userAnswers).filter((k) => userAnswers[k] !== "").length;
+    const totalCount = testConfig.questions.length;
+    const msg = `You have answered ${answeredCount} out of ${totalCount} questions. Submit test now?`;
+
+    const summary = document.getElementById("submission-summary");
+    if (summary) summary.innerText = msg;
+
+    const modal = document.getElementById("confirm-modal");
+    if (modal) {
+        modal.classList.remove("hidden");
+        modal.style.setProperty("display", "flex", "important");
+        modal.style.setProperty("visibility", "visible", "important");
+        modal.style.setProperty("opacity", "1", "important");
+        modal.style.setProperty("pointer-events", "auto", "important");
+        modal.style.setProperty("z-index", "9999", "important");
+    } else {
+        // Fallback agar HTML me confirm-modal na mile
+        if (window.confirm(msg)) {
+            finalSubmitExam();
+        }
+    }
+}
+
+function closeConfirmModal() {
+    const modal = document.getElementById("confirm-modal");
+    if (modal) {
+        modal.classList.add("hidden");
+        modal.style.removeProperty("display");
+        modal.style.removeProperty("visibility");
+        modal.style.removeProperty("opacity");
+        modal.style.removeProperty("pointer-events");
+    }
+}
+
+async function finalSubmitExam() {
+    if (isSubmitting) return;
+    isSubmitting = true;
+
+    if (timerInterval) clearInterval(timerInterval);
+    closeConfirmModal();
+
+    const now = Date.now();
+    const payload = {
+        studentName: studentName || "Student",
+        testId: testConfig.testId,
+        answers: userAnswers,
+        submittedAt: now
+    };
+
+    try {
+        const res = await fetch(`${WORKER_URL}/api/submit`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(payload)
+        });
+        const result = await res.json();
+
+        if (result.success) {
+            localStorage.setItem(`submitted_${testConfig.testId}`, "true");
+            localStorage.setItem(`submitted_time_${testConfig.testId}`, now.toString());
+            showLockedScreen(
+                "TEST SUBMITTED SUCCESSFULLY",
+                `Thank you, ${studentName}. Score: ${result.score}. Result sent to Admin Telegram!`
+            );
+        } else {
+            isSubmitting = false;
+            alert(result.error || "Submission failed.");
+        }
+    } catch (err) {
+        isSubmitting = false;
+        alert("Submission failed. Check network connection.");
+    }
+}
+
+function autoSubmitExam() {
+    if (isSubmitting) return;
+    alert("Time limit reached! Auto-submitting your exam.");
+    finalSubmitExam();
+}
+
+function showLockedScreen(title, msg) {
+    const examApp = document.getElementById("exam-app");
+    if (examApp) examApp.classList.add("hidden");
+
+    const lTitle = document.getElementById("locked-title");
+    if (lTitle) lTitle.innerText = title;
+
+    const lMsg = document.getElementById("locked-message");
+    if (lMsg) lMsg.innerText = msg;
+
+    const lockedScreen = document.getElementById("locked-screen");
+    if (lockedScreen) {
+        lockedScreen.classList.remove("hidden");
+        lockedScreen.style.setProperty("display", "flex", "important");
+        lockedScreen.style.setProperty("visibility", "visible", "important");
+        lockedScreen.style.setProperty("opacity", "1", "important");
+        lockedScreen.style.setProperty("z-index", "9999", "important");
+    } else {
+        // Fallback
+        document.body.innerHTML = `
+            <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;height:100vh;background:#0B0F19;color:#EF4444;font-family:Inter,sans-serif;text-align:center;padding:20px;">
+                <h1 style="font-size:2rem;margin-bottom:12px;">${title}</h1>
+                <p style="color:#9CA3AF;max-width:420px;">${msg}</p>
+                <button onclick="location.href='../index.html'" style="margin-top:24px;padding:12px 24px;background:transparent;border:1px solid #00E5FF;color:#00E5FF;border-radius:8px;cursor:pointer;font-weight:600;">BACK TO DASHBOARD</button>
+            </div>
+        `;
+    }
+}
+
+// Global hooks for HTML onclick attributes
+window.prevQuestion = prevQuestion;
+window.nextQuestion = nextQuestion;
+window.clearAnswer = clearAnswer;
+window.confirmSubmission = confirmSubmission;
+window.closeConfirmModal = closeConfirmModal;
+window.finalSubmitExam = finalSubmitExam;
+window.jumpToQuestion = jumpToQuestion;
