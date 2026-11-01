@@ -1,8 +1,11 @@
-// Sample Test Structure
+// ==========================================
+// RJ STUDY ACADEMY - SECURE EXAM CONTROLLER
+// ==========================================
+
 const testConfig = {
     testId: "TEST_001",
     testName: "Secured Entrance Test",
-    durationMinutes: 30, // Default 30 min timer
+    durationMinutes: 30, // Test duration in minutes
     questions: [
         {
             id: 1,
@@ -25,6 +28,9 @@ const testConfig = {
         }
     ]
 };
+
+// ⚠️ यहाँ अपना CLOUDFLARE WORKER URL पेस्ट करें:
+const WORKER_URL = "https://rj-test-backen.internationalbgi.workers.dev/";
 
 // Global State
 let currentQuestionIndex = 0;
@@ -202,7 +208,6 @@ function updateTimerDisplay() {
     document.getElementById("exam-timer").innerText = formatted;
 }
 
-// Submissions
 function confirmSubmission() {
     const answeredCount = Object.keys(userAnswers).filter(k => userAnswers[k] !== "").length;
     const totalCount = testConfig.questions.length;
@@ -216,7 +221,7 @@ function closeConfirmModal() {
     document.getElementById("confirm-modal").classList.add("hidden");
 }
 
-function finalSubmitExam() {
+async function finalSubmitExam() {
     clearInterval(timerInterval);
     document.getElementById("confirm-modal").classList.add("hidden");
 
@@ -232,7 +237,30 @@ function finalSubmitExam() {
         }
     });
 
+    const payload = {
+        studentName: studentName,
+        testId: testConfig.testId,
+        score: `${score}/${mcqTotal}`,
+        answers: userAnswers,
+        submittedAt: new Date().toISOString()
+    };
+
+    // Lock local access
     localStorage.setItem(`submitted_${testConfig.testId}`, "true");
+
+    // Send payload to Cloudflare Worker -> Telegram Admin
+    try {
+        if (WORKER_URL && !WORKER_URL.includes("YOUR_WORKER_SUBDOMAIN")) {
+            await fetch(`${WORKER_URL}/api/submit`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(payload)
+            });
+        }
+    } catch (err) {
+        console.error("Failed to post submission to backend:", err);
+    }
+
     showLockedScreen("TEST SUBMITTED SUCCESSFULLY", `Thank you, ${studentName}. Your answers have been recorded.`);
 }
 
