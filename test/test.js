@@ -33,9 +33,17 @@ async function fetchConfigAndInit() {
 
 function checkLockStatus() {
     const isSubmitted = localStorage.getItem(`submitted_${testConfig.testId}`);
+    const submittedTime = localStorage.getItem(`submitted_time_${testConfig.testId}`);
+
     if (isSubmitted) {
-        showLockedScreen("TEST ALREADY SUBMITTED", "You have already completed this test.");
-        return;
+        // If Admin issued /reopen command AFTER student submitted -> Unlock test!
+        if (testConfig.reopenTimestamp && submittedTime && parseInt(submittedTime) < testConfig.reopenTimestamp) {
+            localStorage.removeItem(`submitted_${testConfig.testId}`);
+            localStorage.removeItem(`submitted_time_${testConfig.testId}`);
+        } else {
+            showLockedScreen("TEST ALREADY SUBMITTED", "You have already completed this test.");
+            return;
+        }
     }
 
     const savedName = sessionStorage.getItem("student_name");
@@ -203,6 +211,7 @@ async function finalSubmitExam() {
 
         if (result.success) {
             localStorage.setItem(`submitted_${testConfig.testId}`, "true");
+            localStorage.setItem(`submitted_time_${testConfig.testId}`, Date.now().toString());
             showLockedScreen("TEST SUBMITTED SUCCESSFULLY", `Thank you, ${studentName}. Score logged and sent to Admin Telegram!`);
         } else {
             alert(result.error || "Submission failed.");
