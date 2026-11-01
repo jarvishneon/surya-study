@@ -13,10 +13,17 @@
     <!-- LOCKED / SUBMITTED SCREEN -->
     <div id="locked-screen" class="locked-container hidden">
         <div class="locked-card">
-            <div class="locked-icon">🛡️</div>
+            <div class="locked-icon" id="locked-icon">🛡️</div>
             <h1 id="locked-title">SYSTEM LOCKED</h1>
             <p id="locked-message">Please contact the administrator.</p>
-            <button class="retry-btn" onclick="location.reload()">REFRESH SYSTEM</button>
+            <div class="locked-actions">
+                <button class="dashboard-btn" onclick="location.href='../index.html'">
+                    &#8592; RETURN TO DASHBOARD
+                </button>
+                <button class="retry-btn" onclick="location.reload()">
+                    REFRESH
+                </button>
+            </div>
         </div>
     </div>
 
@@ -105,4 +112,4 @@
 
     <script src="test.js"></script>
 </body>
-</html>s
+</html>
