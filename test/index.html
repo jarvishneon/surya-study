@@ -7,7 +7,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="test.css?v=19.0">
+    <link rel="stylesheet" href="test.css?v=20.0">
 </head>
 <body>
 
@@ -33,7 +33,7 @@
                     </svg>
                     <span id="time-left">00:00:00</span>
                 </div>
-                <button class="desktop-submit-btn" id="header-submit-btn">Submit</button>
+                <button type="button" class="desktop-submit-btn" id="header-submit-btn">Submit</button>
             </div>
         </header>
 
@@ -45,7 +45,7 @@
 
                 <div class="question-header-row">
                     <span class="q-number-tag" id="q-number">Q.1</span>
-                    <button class="flag-btn" id="flag-btn" onclick="toggleFlag()">
+                    <button type="button" class="flag-btn" id="flag-btn" onclick="toggleFlag()">
                         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                             <path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"></path>
                             <line x1="4" y1="22" x2="4" y2="15"></line>
@@ -77,7 +77,7 @@
                 <div class="matrix-card">
                     <div class="matrix-header">
                         <h3>Question Palette</h3>
-                        <button class="close-matrix-btn" id="close-matrix" onclick="toggleMatrix()">✕</button>
+                        <button type="button" class="close-matrix-btn" id="close-matrix" onclick="toggleMatrix()">✕</button>
                     </div>
 
                     <!-- Status Legend -->
@@ -95,7 +95,7 @@
 
                     <!-- Submit Button inside Matrix Sheet -->
                     <div class="sheet-submit-container">
-                        <button class="primary-submit-btn" onclick="openSubmitConfirm()">Submit Assessment</button>
+                        <button type="button" class="primary-submit-btn" onclick="openSubmitConfirm()">Submit Assessment</button>
                     </div>
                 </div>
             </aside>
@@ -103,11 +103,11 @@
 
         <!-- Sticky Footer for Mobile Controls -->
         <footer class="mobile-sticky-footer">
-            <button class="nav-btn sec-btn" id="mob-prev-btn" onclick="prevQuestion()">
+            <button type="button" class="nav-btn sec-btn" id="mob-prev-btn" onclick="prevQuestion()">
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"></polyline></svg>
                 Previous
             </button>
-            <button class="nav-btn main-btn" id="mob-next-btn" onclick="nextQuestion()">
+            <button type="button" class="nav-btn main-btn" id="mob-next-btn" onclick="nextQuestion()">
                 Next
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"></polyline></svg>
             </button>
@@ -135,8 +135,8 @@
                 <div class="sum-item danger"><span id="sum-unanswered">0</span><span>Left</span></div>
             </div>
             <div class="modal-actions">
-                <button class="modal-btn cancel" onclick="closeSubmitConfirm()">Resume</button>
-                <button class="modal-btn confirm" onclick="submitTestFinal()">Confirm Submit</button>
+                <button type="button" class="modal-btn cancel" onclick="closeSubmitConfirm()">Resume</button>
+                <button type="button" class="modal-btn confirm" onclick="submitTestFinal()">Confirm Submit</button>
             </div>
         </div>
     </div>
@@ -149,8 +149,8 @@
             <p id="locked-message">Your response has been successfully recorded.</p>
             <div class="locked-time" id="locked-timestamp"></div>
             
-            <!-- New Back to Dashboard Button -->
-            <button class="back-dashboard-btn" onclick="goToDashboard()">
+            <!-- Direct Back to Dashboard Button -->
+            <button type="button" class="back-dashboard-btn" id="dash-btn" onclick="goToDashboard()">
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
                     <line x1="19" y1="12" x2="5" y2="12"></line>
                     <polyline points="12 19 5 12 12 5"></polyline>
@@ -160,6 +160,6 @@
         </div>
     </div>
 
-    <script src="test.js?v=19.0"></script>
+    <script src="test.js?v=20.0"></script>
 </body>
 </html>
