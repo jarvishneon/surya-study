@@ -1,5 +1,5 @@
 // ==========================================
-// RJ STUDY ACADEMY - DIRECT TEST ENGINE (PRO)
+// RJ STUDY ACADEMY - DIRECT TEST ENGINE (PRO) v13
 // ==========================================
 
 const WORKER_URL = "https://rj-test-backen.internationalbgi.workers.dev";
@@ -135,9 +135,15 @@ function loadQuestion(index) {
     if (prevBtn) prevBtn.disabled = index === 0;
 
     var nextBtn = document.getElementById("next-btn");
-    if (nextBtn) nextBtn.innerText = index === testConfig.questions.length - 1 ? "FINISH ►" : "NEXT ►";
+    if (nextBtn) nextBtn.innerText = index === testConfig.questions.length - 1 ? "FINISH →" : "Next →";
 
     updatePaletteUI();
+    
+    // Scroll to top of question when changing
+    try {
+        document.querySelector('.question-section').scrollTop = 0;
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    } catch(e){}
 }
 
 function selectMCQOption(optIdx) {
@@ -162,26 +168,23 @@ function prevQuestion() {
     if (currentQuestionIndex > 0) loadQuestion(currentQuestionIndex - 1);
 }
 
-// ==========================================
-// MATRIX POPUP & JUMP LOGIC
-// ==========================================
 function toggleMatrix() {
     var sidebar = document.querySelector('.sidebar-section');
     if (sidebar) {
         sidebar.classList.toggle('active-matrix');
+        // Prevent body scroll when matrix open
+        document.body.style.overflow = sidebar.classList.contains('active-matrix') ? 'hidden' : '';
     }
 }
 
 function jumpToQuestion(idx) {
     loadQuestion(idx);
     var sidebar = document.querySelector('.sidebar-section');
-    // Mobile par matrix khula hai to band kardo click karne pe
     if (window.innerWidth <= 992 && sidebar && sidebar.classList.contains('active-matrix')) {
         sidebar.classList.remove('active-matrix');
+        document.body.style.overflow = '';
     }
 }
-
-// ==========================================
 
 function startTimer() {
     if (timerInterval) clearInterval(timerInterval);
@@ -219,6 +222,12 @@ function confirmSubmission() {
     var summary = document.getElementById("submission-summary");
     if (summary) {
         summary.innerText = "You have answered " + answered + " out of " + testConfig.questions.length + " questions. Submit test now?";
+    }
+    // Close matrix if open
+    var sidebar = document.querySelector('.sidebar-section');
+    if (sidebar) {
+        sidebar.classList.remove('active-matrix');
+        document.body.style.overflow = '';
     }
     var modal = document.getElementById("confirm-modal");
     if (modal) modal.classList.remove("hidden");
@@ -272,19 +281,14 @@ function autoSubmitExam() {
 
 function showLockedScreen(title, msg, icon) {
     if (!icon) icon = "🛡️";
-
     var app = document.getElementById("exam-app");
     if (app) app.classList.add("hidden");
-
     var iconEl = document.getElementById("locked-icon");
     if (iconEl) iconEl.innerText = icon;
-
     var titleEl = document.getElementById("locked-title");
     if (titleEl) titleEl.innerText = title;
-
     var msgEl = document.getElementById("locked-message");
     if (msgEl) msgEl.innerText = msg;
-
     var locked = document.getElementById("locked-screen");
     if (locked) locked.classList.remove("hidden");
 }
