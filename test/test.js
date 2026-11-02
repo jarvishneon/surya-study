@@ -1,5 +1,5 @@
 /* ==========================================================================
-   RJ ACADEMY PRO - Core Functional Script
+   RJ ACADEMY PRO - Core Functional Script (Fixed Student Name Issue)
    ========================================================================== */
 
 const WORKER_URL = "https://rj-test-backen.internationalbgi.workers.dev";
@@ -8,7 +8,7 @@ const WORKER_URL = "https://rj-test-backen.internationalbgi.workers.dev";
 let testConfig = {
     testId: "",
     title: "",
-    duration: 60, // in minutes
+    duration: 60,
     questions: []
 };
 
@@ -18,6 +18,7 @@ let flaggedQuestions = new Set();
 let visitedQuestions = new Set();
 let timerInterval = null;
 let timeRemaining = 0;
+let studentName = "Student"; // Default fallback
 
 // FAB Dragging & Click State
 let fabDragState = {
@@ -36,7 +37,10 @@ document.addEventListener("DOMContentLoaded", async () => {
     const urlParams = new URLSearchParams(window.location.search);
     const testId = urlParams.get("testId") || "demo_test";
 
-    // Check if already submitted
+    // Extract Student Name from URL (?name=Rahul or ?student=Rahul or ?userName=Rahul)
+    studentName = urlParams.get("name") || urlParams.get("student") || urlParams.get("userName") || urlParams.get("user") || "Student";
+
+    // Check if test was already submitted on this device
     if (localStorage.getItem(`submitted_${testId}`)) {
         showLockedScreen("Assessment already submitted on this device.");
         return;
@@ -120,7 +124,7 @@ function updateTimerDisplay() {
     document.getElementById("time-left").innerText = display;
 }
 
-// Question Rendering (FIXED: Supports all backend JSON property names)
+// Question Rendering (Supports all backend JSON property names)
 function renderQuestion(index) {
     if (!testConfig.questions || !testConfig.questions[index]) return;
     
@@ -341,8 +345,12 @@ async function submitTestFinal() {
     closeSubmitConfirm();
     clearInterval(timerInterval);
 
+    // FIX: Send Student Name using all possible key names to ensure Backend receives it
     const payload = {
         testId: testConfig.testId,
+        studentName: studentName,
+        userName: studentName,
+        name: studentName,
         answers: userAnswers,
         submittedAt: new Date().toISOString()
     };
