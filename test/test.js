@@ -1,5 +1,5 @@
 /* ==========================================================================
-   RJ ACADEMY PRO - Core Functional Script
+   RJ ACADEMY PRO - Core Functional Script (with Subjective Auto-Detect)
    ========================================================================== */
 
 const WORKER_URL = "https://rj-test-backen.internationalbgi.workers.dev";
@@ -8,7 +8,7 @@ const DASHBOARD_URL = "https://surya-study.pages.dev";
 // Global State
 let testConfig = null;
 let currentQIndex = 0;
-let userAnswers = {}; // { qIndex: selectedOptionIndex }
+let userAnswers = {}; // { qIndex: value } -> Integer for MCQ, String for Typing
 let flaggedQuestions = new Set();
 let visitedQuestions = new Set();
 let timerInterval = null;
@@ -16,7 +16,7 @@ let timeRemaining = 0;
 let studentName = "";
 let isSubmitting = false;
 
-// FAB Dragging & Click State
+// FAB Dragging State
 let fabDragState = {
     isDragging: false,
     startX: 0,
@@ -26,21 +26,19 @@ let fabDragState = {
     dragDistance: 0
 };
 
-// Application Initialization
+// Initialization
 document.addEventListener("DOMContentLoaded", () => {
     initFabDraggable();
     initDashboardBtn();
     fetchConfigAndInit();
 });
 
-// Fetch Test Config from Worker
 async function fetchConfigAndInit() {
     try {
         const res = await fetch(WORKER_URL + "/api/config?t=" + Date.now());
         if (!res.ok) throw new Error("Server Error");
         testConfig = await res.json();
 
-        // Check test open/closed status
         if (testConfig.status && testConfig.status !== "open") {
             showLockedScreen("TEST CURRENTLY CLOSED", "This test is currently closed or locked by Admin.");
             return;
@@ -53,7 +51,6 @@ async function fetchConfigAndInit() {
     }
 }
 
-// Lock Status & Reopen Logic
 function checkLockStatus() {
     const urlParams = new URLSearchParams(window.location.search);
     const testId = testConfig.testId || urlParams.get("testId") || "demo_test";
@@ -61,7 +58,6 @@ function checkLockStatus() {
     var isSubmitted = localStorage.getItem("submitted_" + testId);
     var submittedTimeRaw = localStorage.getItem("submitted_time_" + testId);
 
-    // Reopen test logic if Admin reset test timestamp
     if (isSubmitted) {
         var reopenTime = testConfig.reopenTimestamp || 0;
         var submittedTime = submittedTimeRaw ? parseInt(submittedTimeRaw, 10) : 0;
@@ -75,7 +71,6 @@ function checkLockStatus() {
         }
     }
 
-    // Student Name logic
     studentName = sessionStorage.getItem("student_name") || 
                   localStorage.getItem("rjStudyUsername") || 
                   urlParams.get("name") || 
@@ -83,7 +78,6 @@ function checkLockStatus() {
                   
     sessionStorage.setItem("student_name", studentName);
 
-    // Display test title
     document.getElementById("test-title-display").innerText = testConfig.title || "Assessment";
     timeRemaining = (testConfig.durationMinutes || testConfig.duration || 45) * 60;
 
@@ -92,7 +86,6 @@ function checkLockStatus() {
     renderMatrix();
 }
 
-// Fallback Mock Data
 function loadMockData() {
     testConfig = {
         testId: "demo_test",
@@ -102,12 +95,12 @@ function loadMockData() {
             {
                 id: "q1",
                 question: "Choose the grammatically correct sentence:",
-                options: [
-                    "I goes to school every day.",
-                    "I go to school every day.",
-                    "I going to school every day.",
-                    "I went to school every day."
-                ]
+                options: ["I goes to school.", "I go to school."]
+            },
+            {
+                id: "q2",
+                type: "text", // Auto-detects subjective
+                question: "Translate into English: राम स्कूल जाता है।"
             }
         ]
     };
@@ -123,7 +116,6 @@ function loadMockData() {
     renderMatrix();
 }
 
-// Timer Logic
 function startTimer() {
     if (timerInterval) clearInterval(timerInterval);
     updateTimerDisplay();
@@ -156,7 +148,7 @@ function updateTimerDisplay() {
     }
 }
 
-// Question Rendering
+// ---------------- QUESTION RENDER (MCQ & TYPING BOX SUPPORT) ----------------
 function renderQuestion(index) {
     if (!testConfig || !testConfig.questions || !testConfig.questions[index]) return;
     
@@ -166,7 +158,6 @@ function renderQuestion(index) {
     const q = testConfig.questions[index];
     
     const questionContent = q.question || q.text || q.questionText || q.title || "";
-    
     document.getElementById("q-number").innerText = `Q.${index + 1}`;
     document.getElementById("question-text").innerText = questionContent;
     
@@ -196,31 +187,53 @@ function renderQuestion(index) {
     if (!optsContainer) return;
     optsContainer.innerHTML = "";
 
-    const labels = ["A", "B", "C", "D", "E"];
     const optionsList = q.options || q.choices || [];
+    
+    // Auto-detect if question is subjective (typing)
+    const isSubjective = q.type === "subjective" || q.type === "text" || optionsList.length === 0;
 
-    optionsList.forEach((optText, optIdx) => {
-        const optCard = document.createElement("div");
-        optCard.className = `option-card ${userAnswers[index] === optIdx ? "selected" : ""}`;
-        optCard.onclick = () => selectOption(optIdx);
+    if (isSubjective) {
+        // Render Textarea for Subjective Typing
+        const textarea = document.createElement("textarea");
+        textarea.className = "subjective-textarea";
+        textarea.placeholder = "Type your answer here...";
+        
+        // Restore saved text if any
+        if (userAnswers[index] !== undefined) {
+            textarea.value = userAnswers[index];
+        }
 
-        optCard.innerHTML = `
-            <div class="opt-index">${labels[optIdx] || optIdx + 1}</div>
-            <div class="opt-label">${optText}</div>
-        `;
-        optsContainer.appendChild(optCard);
-    });
+        // Save instantly as user types (without reloading UI)
+        textarea.oninput = (e) => {
+            userAnswers[index] = e.target.value;
+            updateMatrixButtonState(index);
+        };
+
+        optsContainer.appendChild(textarea);
+    } else {
+        // Render MCQ Cards
+        const labels = ["A", "B", "C", "D", "E"];
+        optionsList.forEach((optText, optIdx) => {
+            const optCard = document.createElement("div");
+            optCard.className = `option-card ${userAnswers[index] === optIdx ? "selected" : ""}`;
+            optCard.onclick = () => selectOption(optIdx);
+
+            optCard.innerHTML = `
+                <div class="opt-index">${labels[optIdx] || optIdx + 1}</div>
+                <div class="opt-label">${optText}</div>
+            `;
+            optsContainer.appendChild(optCard);
+        });
+    }
 
     renderMatrix();
 }
 
-// Select MCQ Option
 function selectOption(optIndex) {
     userAnswers[currentQIndex] = optIndex;
     renderQuestion(currentQIndex);
 }
 
-// Toggle Flag Status
 function toggleFlag() {
     if (flaggedQuestions.has(currentQIndex)) {
         flaggedQuestions.delete(currentQIndex);
@@ -230,7 +243,6 @@ function toggleFlag() {
     renderQuestion(currentQIndex);
 }
 
-// Navigation Controls
 function nextQuestion() {
     if (currentQIndex < testConfig.questions.length - 1) {
         renderQuestion(currentQIndex + 1);
@@ -243,7 +255,7 @@ function prevQuestion() {
     }
 }
 
-// Render Palette Matrix
+// ---------------- MATRIX PALETTE ----------------
 function renderMatrix() {
     const grid = document.getElementById("palette-grid");
     if (!grid) return;
@@ -256,7 +268,10 @@ function renderMatrix() {
 
         if (idx === currentQIndex) btn.classList.add("active-q");
         
-        if (userAnswers[idx] !== undefined && userAnswers[idx] !== "") {
+        // Matrix Status Color check (works for Integer MCQ or String Subjective)
+        const isAnswered = userAnswers[idx] !== undefined && userAnswers[idx] !== "" && String(userAnswers[idx]).trim() !== "";
+        
+        if (isAnswered) {
             btn.classList.add("status-answered");
         } else if (flaggedQuestions.has(idx)) {
             btn.classList.add("status-flagged");
@@ -273,13 +288,29 @@ function renderMatrix() {
     });
 }
 
-// Toggle Bottom Sheet / Sidebar Matrix
+// Real-time matrix updater for Typing box
+function updateMatrixButtonState(idx) {
+    const grid = document.getElementById("palette-grid");
+    if (!grid) return;
+    const btn = grid.children[idx];
+    if (!btn) return;
+    
+    const isAnswered = userAnswers[idx] !== undefined && String(userAnswers[idx]).trim() !== "";
+    
+    if (isAnswered) {
+        btn.classList.add("status-answered");
+        btn.classList.remove("status-visited");
+    } else {
+        btn.classList.remove("status-answered");
+        if (visitedQuestions.has(idx)) btn.classList.add("status-visited");
+    }
+}
+
 function toggleMatrix() {
     const sidebar = document.getElementById("sidebar");
     if (sidebar) sidebar.classList.toggle("active-matrix");
 }
 
-// FAB Touch / Mouse Dragging Implementation
 function initFabDraggable() {
     const fab = document.getElementById("draggable-fab");
     if (!fab) return;
@@ -334,9 +365,7 @@ function initFabDraggable() {
         fabDragState.isDragging = false;
         fab.style.transition = 'transform 0.1s ease';
         
-        if (fabDragState.dragDistance < 12) {
-            toggleMatrix();
-        }
+        if (fabDragState.dragDistance < 12) toggleMatrix();
     };
 
     fab.addEventListener('touchstart', startDrag, { passive: true });
@@ -348,11 +377,11 @@ function initFabDraggable() {
     window.addEventListener('mouseup', stopDrag);
 }
 
-// Confirmation & Submission Logic
+// ---------------- SUBMISSION LOGIC ----------------
 function openSubmitConfirm() {
     if (isSubmitting) return;
     const total = testConfig.questions.length;
-    const answered = Object.keys(userAnswers).filter(k => userAnswers[k] !== "").length;
+    const answered = Object.keys(userAnswers).filter(k => userAnswers[k] !== undefined && String(userAnswers[k]).trim() !== "").length;
     const flagged = flaggedQuestions.size;
     const unanswered = total - answered;
 
@@ -371,7 +400,6 @@ function closeSubmitConfirm() {
 const headerSubBtn = document.getElementById("header-submit-btn");
 if (headerSubBtn) headerSubBtn.onclick = openSubmitConfirm;
 
-// Final Submission Logic
 async function submitTestFinal() {
     if (isSubmitting) return;
     isSubmitting = true;
@@ -380,7 +408,6 @@ async function submitTestFinal() {
     closeSubmitConfirm();
 
     var now = Date.now();
-    
     var finalStudentName = sessionStorage.getItem("student_name") || 
                            localStorage.getItem("rjStudyUsername") || 
                            studentName || 
@@ -443,12 +470,10 @@ function showLockedScreen(title, msg) {
     if (lockedScreen) lockedScreen.classList.remove("hidden");
 }
 
-// Redirect to Dashboard (Guaranteed Absolute URL)
 function goToDashboard() {
     window.location.href = DASHBOARD_URL;
 }
 
-// Direct event listener binding for Dashboard Button
 function initDashboardBtn() {
     const btn = document.getElementById("dash-btn");
     if (btn) {
