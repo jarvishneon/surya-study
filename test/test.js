@@ -1,251 +1,281 @@
-/* ==========================================
-   RJ STUDY PRO - PREMIUM ASSESSMENT STYLES
-   ========================================== */
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+// ==========================================
+// RJ STUDY ACADEMY - DIRECT TEST ENGINE (PRO)
+// ==========================================
 
-:root {
-    --bg-main: #060913;
-    --bg-panel: rgba(17, 24, 39, 0.7);
-    --text-primary: #F9FAFB;
-    --text-secondary: #9CA3AF;
-    --accent-color: #00E5FF;
-    --accent-hover: #00B2CC;
-    --danger-color: #EF4444;
-    --success-color: #10B981;
-    --border-color: rgba(255, 255, 255, 0.1);
-    --font-main: 'Inter', sans-serif;
-}
+const WORKER_URL = "https://rj-test-backen.internationalbgi.workers.dev";
 
-* { margin: 0; padding: 0; box-sizing: border-box; }
+let testConfig = null;
+let currentQuestionIndex = 0;
+let userAnswers = {};
+let timerInterval = null;
+let remainingSeconds = 0;
+let studentName = "";
+let isSubmitting = false;
 
-body {
-    background-color: var(--bg-main);
-    background-image: radial-gradient(circle at top right, rgba(0, 229, 255, 0.1), transparent 40%),
-                      radial-gradient(circle at bottom left, rgba(239, 68, 68, 0.05), transparent 40%);
-    color: var(--text-primary);
-    font-family: var(--font-main);
-    min-height: 100vh;
-    display: flex;
-    flex-direction: column;
-}
+document.addEventListener("DOMContentLoaded", () => {
+    fetchConfigAndInit();
+});
 
-.hidden { display: none !important; }
+async function fetchConfigAndInit() {
+    try {
+        const res = await fetch(WORKER_URL + "/api/config?t=" + Date.now());
+        if (!res.ok) throw new Error("Server Error");
+        testConfig = await res.json();
 
-/* Glassmorphism Panel */
-.glass-panel {
-    background: var(--bg-panel);
-    backdrop-filter: blur(16px);
-    -webkit-backdrop-filter: blur(16px);
-    border: 1px solid var(--border-color);
-    box-shadow: 0 4px 30px rgba(0, 0, 0, 0.5);
-}
-
-/* Header */
-.exam-header {
-    padding: 16px 32px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    position: sticky;
-    top: 0;
-    z-index: 100;
-    border-bottom: 1px solid var(--border-color);
-    background: rgba(6, 9, 19, 0.95);
-}
-
-.brand-logo { display: flex; align-items: center; gap: 8px; font-weight: 700; font-size: 1.2rem; }
-.pro-badge { background: linear-gradient(135deg, var(--accent-color), #0077FF); color: #000; font-size: 0.7rem; padding: 2px 6px; border-radius: 4px; font-weight: 800; }
-
-.timer-box {
-    display: flex; align-items: center; gap: 8px; font-size: 1.25rem; font-weight: 700;
-    color: var(--accent-color); padding: 8px 16px; border-radius: 8px;
-    background: rgba(0, 229, 255, 0.05); border: 1px solid rgba(0, 229, 255, 0.3);
-}
-.glow-effect { box-shadow: 0 0 15px rgba(0, 229, 255, 0.2); }
-
-.candidate-badge { display: flex; align-items: center; gap: 12px; background: rgba(255,255,255,0.05); padding: 6px 16px 6px 6px; border-radius: 50px; font-weight: 500; }
-.avatar { width: 30px; height: 30px; background: var(--accent-color); border-radius: 50%; display: flex; justify-content: center; align-items: center; color: #000; font-weight: bold;}
-
-/* Main Layout */
-.exam-layout { display: grid; grid-template-columns: 1fr 340px; gap: 24px; max-width: 1400px; width: 100%; margin: 0 auto; padding: 32px; flex-grow: 1; }
-
-/* Left Column */
-.question-section { border-radius: 16px; padding: 32px; display: flex; flex-direction: column; }
-.question-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-color); padding-bottom: 16px; margin-bottom: 24px; }
-.q-num { font-weight: 600; color: var(--accent-color); letter-spacing: 1px; font-size: 0.95rem; }
-.q-type { background: rgba(255, 255, 255, 0.1); padding: 4px 10px; border-radius: 6px; font-size: 0.8rem; }
-#question-text { font-size: 1.4rem; line-height: 1.6; font-weight: 500; margin-bottom: 32px; }
-
-/* Options Grid */
-.options-grid { display: flex; flex-direction: column; gap: 16px; margin-bottom: auto; }
-.option-card {
-    background: rgba(255, 255, 255, 0.03); border: 1px solid var(--border-color);
-    padding: 18px 24px; border-radius: 12px; cursor: pointer; display: flex; align-items: center; gap: 16px;
-    font-size: 1.05rem; transition: all 0.2s ease;
-}
-.option-card:hover { background: rgba(255, 255, 255, 0.08); transform: translateX(5px); }
-.option-card.selected { background: rgba(0, 229, 255, 0.1); border-color: var(--accent-color); box-shadow: 0 0 15px rgba(0, 229, 255, 0.15); }
-
-.option-card input[type="radio"] {
-    appearance: none; width: 22px; height: 22px; border: 2px solid var(--text-secondary);
-    border-radius: 50%; outline: none; cursor: pointer; position: relative; transition: 0.2s;
-    flex-shrink: 0;
-}
-.option-card.selected input[type="radio"] { border-color: var(--accent-color); }
-.option-card.selected input[type="radio"]::after {
-    content: ''; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
-    width: 12px; height: 12px; background: var(--accent-color); border-radius: 50%;
-}
-
-/* Footer Nav */
-.action-footer { display: flex; justify-content: space-between; margin-top: 40px; padding-top: 24px; border-top: 1px solid var(--border-color); }
-.nav-btn { padding: 12px 24px; border-radius: 8px; font-weight: 600; cursor: pointer; transition: 0.2s; font-family: inherit; }
-.nav-btn.prev, .nav-btn.clear { background: transparent; border: 1px solid var(--text-secondary); color: var(--text-primary); }
-.nav-btn.prev:hover:not(:disabled), .nav-btn.clear:hover { background: rgba(255,255,255,0.1); }
-.nav-btn:disabled { opacity: 0.3; cursor: not-allowed; }
-.nav-btn.next { background: var(--accent-color); color: #000; border: none; }
-.nav-btn.next:hover { background: var(--accent-hover); box-shadow: 0 4px 15px rgba(0, 229, 255, 0.3); }
-
-/* Right Column (Matrix) */
-.sidebar-section { display: flex; flex-direction: column; gap: 24px; }
-.matrix-card { border-radius: 16px; padding: 24px; }
-.matrix-title { font-size: 1rem; color: var(--text-secondary); margin-bottom: 20px; text-align: center; letter-spacing: 1px; }
-.matrix-legend { display: flex; justify-content: space-between; margin-bottom: 24px; font-size: 0.8rem; color: var(--text-secondary); }
-.legend-item { display: flex; align-items: center; gap: 6px; }
-.dot { width: 10px; height: 10px; border-radius: 50%; }
-.dot.answered { background: var(--success-color); box-shadow: 0 0 8px var(--success-color); }
-.dot.current { border: 2px solid var(--accent-color); }
-.dot.unanswered { background: transparent; border: 1px solid var(--text-secondary); }
-
-.palette-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 10px; }
-.palette-num { background: rgba(255,255,255,0.05); border: 1px solid var(--border-color); color: var(--text-primary); height: 44px; border-radius: 8px; font-weight: 600; cursor: pointer; transition: 0.2s; }
-.palette-num:hover { background: rgba(255,255,255,0.15); }
-.palette-num.answered { background: rgba(16, 185, 129, 0.15); color: var(--success-color); border-color: rgba(16, 185, 129, 0.4); }
-.palette-num.active { border: 2px solid var(--accent-color); color: var(--accent-color); transform: scale(1.05); box-shadow: 0 0 10px rgba(0, 229, 255, 0.2); }
-
-/* Submit Button */
-.submit-exam-btn {
-    background: linear-gradient(135deg, var(--danger-color), #BE123C); color: #fff; border: none; padding: 16px; border-radius: 12px; font-weight: 700; font-size: 1.05rem; letter-spacing: 1px; cursor: pointer; display: flex; justify-content: center; align-items: center; gap: 8px; transition: 0.3s;
-}
-.submit-exam-btn:hover { box-shadow: 0 8px 25px rgba(239, 68, 68, 0.5); transform: translateY(-2px); }
-
-/* Modals */
-.modal-overlay, .locked-container { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0, 0, 0, 0.9); display: flex; justify-content: center; align-items: center; z-index: 1000; }
-.modal-card, .locked-card { border-radius: 16px; padding: 40px; max-width: 450px; width: 90%; text-align: center; }
-.modal-card h2 { margin-bottom: 16px; font-size: 1.5rem; }
-.modal-card p { color: var(--text-secondary); margin-bottom: 32px; }
-.modal-actions { display: flex; gap: 16px; }
-.cancel-btn, .confirm-btn { flex: 1; padding: 12px; border-radius: 8px; font-weight: 600; cursor: pointer; }
-.cancel-btn { background: transparent; border: 1px solid var(--text-secondary); color: var(--text-primary); }
-.confirm-btn { background: var(--success-color); color: #fff; border: none; }
-
-/* Locked Screen */
-.locked-icon { font-size: 4rem; margin-bottom: 16px; }
-.locked-card h1 { color: var(--accent-color); margin-bottom: 12px; font-size: 2rem; text-shadow: 0 0 15px rgba(0,229,255,0.4); }
-.locked-card p { color: var(--text-secondary); margin-bottom: 24px; }
-.locked-actions { display: flex; gap: 12px; justify-content: center; }
-.dashboard-btn { background: var(--accent-color); color: #000; border: none; padding: 12px 24px; border-radius: 8px; font-weight: 700; cursor: pointer; transition: 0.2s; }
-.dashboard-btn:hover { background: var(--accent-hover); box-shadow: 0 4px 15px rgba(0, 229, 255, 0.3); }
-.retry-btn { background: transparent; border: 1px solid var(--border-color); color: var(--text-secondary); padding: 12px 20px; border-radius: 8px; font-weight: 600; cursor: pointer; transition: 0.2s; }
-.retry-btn:hover { border-color: #fff; color: #fff; }
-
-/* ==============================================================
-   MOBILE OPTIMIZATION (Compact, Thumb-friendly & Less Scrolling)
-   ============================================================== */
-
-@media (max-width: 992px) { 
-    .exam-layout { grid-template-columns: 1fr; } 
-    .action-footer { flex-wrap: wrap; gap: 16px; } 
-    .nav-btn { flex: 1; text-align: center; } 
-    .nav-btn.clear { order: 3; flex-basis: 100%; } 
-}
-
-@media (max-width: 768px) {
-    /* Layout Spacing */
-    .exam-layout { padding: 12px 16px; gap: 16px; padding-bottom: 90px; /* space for sticky footer */ }
-    
-    /* Header & Timer Fix */
-    .exam-header {
-        flex-direction: row;
-        flex-wrap: wrap;
-        padding: 10px 16px;
-        gap: 12px;
+        if (testConfig.status !== "open") {
+            showLockedScreen("TEST CURRENTLY CLOSED", "This test is currently closed or locked by Admin.", "🔴");
+            return;
+        }
+        checkLockStatus();
+    } catch (err) {
+        console.error(err);
+        setTimeout(fetchConfigAndInit, 3000);
     }
-    .brand-logo { font-size: 1.05rem; }
-    .candidate-badge { display: none; /* Hide name chip on mobile to save space */ }
-    .timer-box {
-        width: 100%;
-        justify-content: center;
-        font-size: 1.15rem;
-        padding: 6px 12px;
-        order: 3;
+}
+
+function checkLockStatus() {
+    var isSubmitted = localStorage.getItem("submitted_" + testConfig.testId);
+    var submittedTimeRaw = localStorage.getItem("submitted_time_" + testConfig.testId);
+
+    if (isSubmitted) {
+        var reopenTime = testConfig.reopenTimestamp || 0;
+        var submittedTime = submittedTimeRaw ? parseInt(submittedTimeRaw, 10) : 0;
+
+        if (reopenTime > 0 && (submittedTime === 0 || submittedTime < reopenTime)) {
+            localStorage.removeItem("submitted_" + testConfig.testId);
+            localStorage.removeItem("submitted_time_" + testConfig.testId);
+        } else {
+            showLockedScreen("TEST ALREADY SUBMITTED", "You have already completed this test session.", "🔒");
+            return;
+        }
     }
 
-    /* Question Card Formatting */
-    .question-section { padding: 16px; border-radius: 12px; }
-    .question-header { margin-bottom: 16px; padding-bottom: 12px; }
-    .q-num { font-size: 0.85rem; }
-    
-    #question-text { 
-        font-size: 1.15rem; /* Smaller font */
-        margin-bottom: 20px; 
-        line-height: 1.5;
-    }
-
-    /* Options Formatting */
-    .options-grid { gap: 10px; }
-    .option-card {
-        padding: 12px 14px;
-        font-size: 0.95rem;
-        gap: 12px;
-        border-radius: 10px;
-    }
-    .option-card input[type="radio"] { width: 18px; height: 18px; }
-
-    /* STICKY FOOTER - NAVIGATION BUTTONS */
-    .action-footer {
-        position: fixed;
-        bottom: 0;
-        left: 0;
-        right: 0;
-        margin: 0;
-        padding: 10px 16px;
-        padding-bottom: calc(10px + env(safe-area-inset-bottom));
-        background: rgba(6, 9, 19, 0.98);
-        border-top: 1px solid var(--border-color);
-        z-index: 1000;
-        display: flex;
-        flex-wrap: nowrap;
-        gap: 8px;
-        box-shadow: 0 -5px 20px rgba(0,0,0,0.5);
-    }
-    .nav-btn {
-        flex: 1;
-        padding: 10px;
-        font-size: 0.9rem;
-        min-height: 44px;
-        margin: 0;
-    }
-    .nav-btn.clear { flex: 0 0 auto; padding: 10px 14px; order: unset; }
-
-    /* Palette Matrix */
-    .sidebar-section { gap: 16px; }
-    .matrix-card { padding: 16px; border-radius: 12px; }
-    .palette-grid { gap: 8px; }
-    .palette-num { height: 38px; font-size: 0.85rem; }
-    .matrix-title { margin-bottom: 12px; }
-    .matrix-legend { flex-wrap: wrap; gap: 8px; margin-bottom: 16px; }
-
-    /* Submit Button */
-    .submit-exam-btn { padding: 14px; font-size: 1rem; }
-    
-    /* Hover overrides for touch screens */
-    .option-card:hover { transform: none; }
+    studentName = sessionStorage.getItem("student_name") || localStorage.getItem("rjStudyUsername") || "Student";
+    sessionStorage.setItem("student_name", studentName);
+    initExam();
 }
 
-@media (max-width: 400px) {
-    .timer-box { font-size: 1.05rem; }
-    #question-text { font-size: 1.05rem; }
-    .option-card { font-size: 0.9rem; padding: 10px 12px; }
-    .nav-btn { font-size: 0.85rem; padding: 8px; }
+function initExam() {
+    var nameEl = document.getElementById("student-display-name");
+    if (nameEl) nameEl.innerText = studentName;
+
+    var app = document.getElementById("exam-app");
+    if (app) app.classList.remove("hidden");
+
+    remainingSeconds = (testConfig.durationMinutes || 45) * 60;
+    renderPalette();
+    loadQuestion(0);
+    startTimer();
 }
+
+function renderPalette() {
+    var grid = document.getElementById("palette-grid");
+    if (!grid) return;
+    grid.innerHTML = "";
+    testConfig.questions.forEach(function (_, idx) {
+        var btn = document.createElement("button");
+        btn.className = "palette-num";
+        btn.innerText = idx + 1;
+        btn.id = "palette-item-" + idx;
+        btn.onclick = function () { jumpToQuestion(idx); };
+        grid.appendChild(btn);
+    });
+    updatePaletteUI();
+}
+
+function updatePaletteUI() {
+    testConfig.questions.forEach(function (_, idx) {
+        var btn = document.getElementById("palette-item-" + idx);
+        if (!btn) return;
+        btn.className = "palette-num";
+        if (idx === currentQuestionIndex) btn.classList.add("active");
+        if (userAnswers[idx] !== undefined && userAnswers[idx] !== "") btn.classList.add("answered");
+    });
+}
+
+function loadQuestion(index) {
+    currentQuestionIndex = index;
+    var q = testConfig.questions[index];
+
+    var qNum = document.getElementById("question-number");
+    if (qNum) qNum.innerText = "QUESTION " + (index + 1) + " OF " + testConfig.questions.length;
+
+    var qBadge = document.getElementById("question-type-badge");
+    if (qBadge) qBadge.innerText = (q.type || "mcq").toUpperCase();
+
+    var qText = document.getElementById("question-text");
+    if (qText) qText.innerText = q.question;
+
+    var container = document.getElementById("options-container");
+    if (!container) return;
+    container.innerHTML = "";
+
+    if (q.type === "mcq") {
+        q.options.forEach(function (optText, optIdx) {
+            var card = document.createElement("div");
+            card.className = "option-card";
+            if (userAnswers[index] === optIdx) card.classList.add("selected");
+            card.onclick = function () { selectMCQOption(optIdx); };
+            card.innerHTML = '<input type="radio" name="option" ' + (userAnswers[index] === optIdx ? "checked" : "") + '><span>' + optText + '</span>';
+            container.appendChild(card);
+        });
+    } else {
+        var textarea = document.createElement("textarea");
+        textarea.placeholder = "Type your answer here...";
+        textarea.style.cssText = "width:100%;height:120px;background:rgba(255,255,255,0.05);color:#00E5FF;border:1px solid rgba(255,255,255,0.1);padding:15px;border-radius:12px;font-size:1.1rem;outline:none;font-family:inherit;";
+        textarea.value = userAnswers[index] || "";
+        textarea.oninput = function (e) {
+            userAnswers[index] = e.target.value;
+            updatePaletteUI();
+        };
+        container.appendChild(textarea);
+    }
+
+    var prevBtn = document.getElementById("prev-btn");
+    if (prevBtn) prevBtn.disabled = index === 0;
+
+    var nextBtn = document.getElementById("next-btn");
+    if (nextBtn) nextBtn.innerText = index === testConfig.questions.length - 1 ? "FINISH ►" : "NEXT ►";
+
+    updatePaletteUI();
+}
+
+function selectMCQOption(optIdx) {
+    userAnswers[currentQuestionIndex] = optIdx;
+    loadQuestion(currentQuestionIndex);
+}
+
+function clearAnswer() {
+    delete userAnswers[currentQuestionIndex];
+    loadQuestion(currentQuestionIndex);
+}
+
+function nextQuestion() {
+    if (currentQuestionIndex < testConfig.questions.length - 1) {
+        loadQuestion(currentQuestionIndex + 1);
+    } else {
+        confirmSubmission();
+    }
+}
+
+function prevQuestion() {
+    if (currentQuestionIndex > 0) loadQuestion(currentQuestionIndex - 1);
+}
+
+function jumpToQuestion(idx) {
+    loadQuestion(idx);
+}
+
+function startTimer() {
+    if (timerInterval) clearInterval(timerInterval);
+    updateTimerDisplay();
+    timerInterval = setInterval(function () {
+        remainingSeconds--;
+        updateTimerDisplay();
+        if (remainingSeconds <= 0) {
+            clearInterval(timerInterval);
+            autoSubmitExam();
+        }
+    }, 1000);
+}
+
+function updateTimerDisplay() {
+    var hours = Math.floor(remainingSeconds / 3600);
+    var mins = Math.floor((remainingSeconds % 3600) / 60);
+    var secs = remainingSeconds % 60;
+    var timerElem = document.getElementById("exam-timer");
+    if (timerElem) {
+        timerElem.innerText =
+            String(hours).padStart(2, "0") + ":" +
+            String(mins).padStart(2, "0") + ":" +
+            String(secs).padStart(2, "0");
+        if (remainingSeconds <= 60) timerElem.style.color = "#EF4444";
+        else timerElem.style.color = "";
+    }
+}
+
+function confirmSubmission() {
+    if (isSubmitting) return;
+    var answered = Object.keys(userAnswers).filter(function (k) {
+        return userAnswers[k] !== "";
+    }).length;
+    var summary = document.getElementById("submission-summary");
+    if (summary) {
+        summary.innerText = "You have answered " + answered + " out of " + testConfig.questions.length + " questions. Submit test now?";
+    }
+    var modal = document.getElementById("confirm-modal");
+    if (modal) modal.classList.remove("hidden");
+}
+
+function closeConfirmModal() {
+    var modal = document.getElementById("confirm-modal");
+    if (modal) modal.classList.add("hidden");
+}
+
+async function finalSubmitExam() {
+    if (isSubmitting) return;
+    isSubmitting = true;
+    if (timerInterval) clearInterval(timerInterval);
+    closeConfirmModal();
+
+    var now = Date.now();
+    var payload = {
+        studentName: studentName || "Student",
+        testId: testConfig.testId,
+        answers: userAnswers,
+        submittedAt: now
+    };
+
+    try {
+        var res = await fetch(WORKER_URL + "/api/submit", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(payload)
+        });
+        var result = await res.json();
+        if (result.success) {
+            localStorage.setItem("submitted_" + testConfig.testId, "true");
+            localStorage.setItem("submitted_time_" + testConfig.testId, now.toString());
+            showLockedScreen("TEST SUBMITTED SUCCESSFULLY", "Thank you, " + studentName + ". Score: " + result.score + ". Result sent to Admin!", "🎉");
+        } else {
+            isSubmitting = false;
+            alert(result.error || "Submission failed.");
+        }
+    } catch (err) {
+        isSubmitting = false;
+        alert("Submission failed. Check network connection.");
+    }
+}
+
+function autoSubmitExam() {
+    if (isSubmitting) return;
+    alert("Time limit reached! Auto-submitting your exam.");
+    finalSubmitExam();
+}
+
+function showLockedScreen(title, msg, icon) {
+    if (!icon) icon = "🛡️";
+
+    var app = document.getElementById("exam-app");
+    if (app) app.classList.add("hidden");
+
+    var iconEl = document.getElementById("locked-icon");
+    if (iconEl) iconEl.innerText = icon;
+
+    var titleEl = document.getElementById("locked-title");
+    if (titleEl) titleEl.innerText = title;
+
+    var msgEl = document.getElementById("locked-message");
+    if (msgEl) msgEl.innerText = msg;
+
+    var locked = document.getElementById("locked-screen");
+    if (locked) locked.classList.remove("hidden");
+}
+
+window.prevQuestion = prevQuestion;
+window.nextQuestion = nextQuestion;
+window.clearAnswer = clearAnswer;
+window.confirmSubmission = confirmSubmission;
+window.closeConfirmModal = closeConfirmModal;
+window.finalSubmitExam = finalSubmitExam;
+window.jumpToQuestion = jumpToQuestion;
