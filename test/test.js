@@ -279,3 +279,102 @@ window.confirmSubmission = confirmSubmission;
 window.closeConfirmModal = closeConfirmModal;
 window.finalSubmitExam = finalSubmitExam;
 window.jumpToQuestion = jumpToQuestion;
+
+
+// ==========================================
+// MOBILE UI ADDON: BOTTOM BAR & MATRIX DRAWER
+// ==========================================
+(function () {
+    function isMobile() {
+        return window.innerWidth <= 768;
+    }
+
+    function toggleMatrix() {
+        var sidebar = document.querySelector(".sidebar-section");
+        if (sidebar) sidebar.classList.toggle("active");
+    }
+
+    function buildMobileUI() {
+        if (document.querySelector(".mobile-bottom-bar")) return; // Prevent duplicate
+
+        // 1. Matrix Drawer Floating Button (FAB)
+        var fab = document.createElement("button");
+        fab.className = "matrix-toggle-btn";
+        fab.type = "button";
+        fab.innerHTML = "⊞"; // Grid Icon
+        fab.addEventListener("click", toggleMatrix);
+        document.body.appendChild(fab);
+
+        // 2. Close Button inside Matrix Drawer
+        var sidebar = document.querySelector(".sidebar-section");
+        if (sidebar && !sidebar.querySelector(".matrix-close-btn")) {
+            var closeBtn = document.createElement("button");
+            closeBtn.className = "matrix-close-btn";
+            closeBtn.type = "button";
+            closeBtn.innerHTML = "✕ Close Matrix";
+            closeBtn.addEventListener("click", toggleMatrix);
+            sidebar.insertBefore(closeBtn, sidebar.firstChild);
+        }
+
+        // 3. Fixed Mobile Bottom Bar (Prev, Clear, Next, Submit)
+        var bar = document.createElement("div");
+        bar.className = "mobile-bottom-bar";
+
+        var navRow = document.createElement("div");
+        navRow.className = "nav-row";
+
+        var prev = document.createElement("button");
+        prev.className = "nav-btn prev";
+        prev.innerHTML = "← Prev";
+        prev.onclick = window.prevQuestion;
+
+        var clear = document.createElement("button");
+        clear.className = "nav-btn clear";
+        clear.innerHTML = "Clear";
+        clear.onclick = window.clearAnswer;
+
+        var next = document.createElement("button");
+        next.className = "nav-btn next";
+        next.innerHTML = "NEXT →";
+        next.onclick = window.nextQuestion;
+
+        navRow.appendChild(prev);
+        navRow.appendChild(clear);
+        navRow.appendChild(next);
+
+        var submit = document.createElement("button");
+        submit.className = "mobile-submit-btn";
+        submit.innerHTML = "SUBMIT TEST";
+        submit.onclick = window.confirmSubmission; // Triggers your original confirm submission
+
+        bar.appendChild(navRow);
+        bar.appendChild(submit);
+        document.body.appendChild(bar);
+
+        // Sync Disabled state of Mobile buttons with current question
+        setInterval(() => {
+            if (isMobile()) {
+                prev.disabled = (currentQuestionIndex === 0);
+                if (testConfig && testConfig.questions) {
+                    next.innerHTML = currentQuestionIndex === testConfig.questions.length - 1 ? "FINISH ►" : "NEXT →";
+                }
+            }
+        }, 300);
+    }
+
+    if (document.readyState === "loading") {
+        document.addEventListener("DOMContentLoaded", buildMobileUI);
+    } else {
+        buildMobileUI();
+    }
+
+    // Auto-close matrix when a question number is clicked
+    document.addEventListener("click", function (e) {
+        if (e.target && e.target.classList && e.target.classList.contains("palette-num")) {
+            var sidebar = document.querySelector(".sidebar-section");
+            if (sidebar && sidebar.classList.contains("active") && isMobile()) {
+                sidebar.classList.remove("active");
+            }
+        }
+    });
+})();
