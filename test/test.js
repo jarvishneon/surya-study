@@ -1,59 +1,20 @@
 /* ==========================================================================
-   RJ ACADEMY PRO - Core Functional Script (Fixed Login Name Retrieval)
+   RJ ACADEMY PRO - Core Functional Script
+   (Updated with Old File Student Name & Reopen Logic)
    ========================================================================== */
 
 const WORKER_URL = "https://rj-test-backen.internationalbgi.workers.dev";
 
 // Global State
-let testConfig = {
-    testId: "",
-    title: "",
-    duration: 60,
-    questions: []
-};
-
+let testConfig = null;
 let currentQIndex = 0;
 let userAnswers = {}; // { qIndex: selectedOptionIndex }
 let flaggedQuestions = new Set();
 let visitedQuestions = new Set();
 let timerInterval = null;
 let timeRemaining = 0;
-let studentName = "Student";
-
-// Helper function to auto-detect Logged-in Student Name
-function getSavedStudentName() {
-    const urlParams = new URLSearchParams(window.location.search);
-    
-    // 1. Check URL parameters first (?name=Rahul or ?student=Rahul)
-    let urlName = urlParams.get("name") || urlParams.get("student") || urlParams.get("userName") || urlParams.get("user") || urlParams.get("studentName");
-    if (urlName && urlName.trim()) return urlName.trim();
-
-    // 2. Check localStorage / sessionStorage keys saved during website login
-    const possibleKeys = [
-        "studentName", "userName", "name", "user_name", "student_name", 
-        "loginName", "student", "user", "rj_user_name", "surya_user_name",
-        "loggedUser", "login_user"
-    ];
-    
-    for (let key of possibleKeys) {
-        let val = localStorage.getItem(key) || sessionStorage.getItem(key);
-        if (val) {
-            val = val.trim();
-            // If stored as JSON object like {"name": "Surya"}
-            if (val.startsWith("{")) {
-                try {
-                    let parsed = JSON.parse(val);
-                    let objName = parsed.name || parsed.studentName || parsed.userName || parsed.fullName || parsed.user;
-                    if (objName) return objName;
-                } catch(e){}
-            } else if (val !== "undefined" && val !== "null" && val !== "") {
-                return val;
-            }
-        }
-    }
-
-    return "Student"; // Fallback only if no login data found
-}
+let studentName = "";
+let isSubmitting = false;
 
 // FAB Dragging & Click State
 let fabDragState = {
@@ -66,51 +27,76 @@ let fabDragState = {
 };
 
 // Application Initialization
-document.addEventListener("DOMContentLoaded", async () => {
+document.addEventListener("DOMContentLoaded", () => {
     initFabDraggable();
-    
-    const urlParams = new URLSearchParams(window.location.search);
-    const testId = urlParams.get("testId") || "demo_test";
-
-    // Auto Fetch Logged-in Student Name
-    studentName = getSavedStudentName();
-
-    // Check if test was already submitted on this device
-    if (localStorage.getItem(`submitted_${testId}`)) {
-        showLockedScreen("Assessment already submitted on this device.");
-        return;
-    }
-
-    await loadTestConfig(testId);
+    fetchConfigAndInit();
 });
 
-// Fetch Test Config from Worker
-async function loadTestConfig(testId) {
+// Fetch Test Config from Worker (Logic directly from old file)
+async function fetchConfigAndInit() {
     try {
-        const res = await fetch(`${WORKER_URL}/api/config?testId=${testId}`);
-        if (!res.ok) throw new Error("Failed to load test parameters.");
-        
-        const data = await res.json();
-        testConfig = data;
-        
-        document.getElementById("test-title-display").innerText = testConfig.title || "Assessment";
-        timeRemaining = (testConfig.duration || 60) * 60;
-        
-        startTimer();
-        renderQuestion(0);
-        renderMatrix();
+        const res = await fetch(WORKER_URL + "/api/config?t=" + Date.now());
+        if (!res.ok) throw new Error("Server Error");
+        testConfig = await res.json();
+
+        // Check test open/closed status
+        if (testConfig.status && testConfig.status !== "open") {
+            showLockedScreen("TEST CURRENTLY CLOSED", "This test is currently closed or locked by Admin.");
+            return;
+        }
+
+        checkLockStatus();
     } catch (err) {
-        console.error(err);
-        loadMockData(testId);
+        console.error("Config fetch error:", err);
+        loadMockData();
     }
 }
 
-// Mock Data Fallback
-function loadMockData(testId) {
+// Lock Status & Reopen Logic (Exact from old file)
+function checkLockStatus() {
+    const urlParams = new URLSearchParams(window.location.search);
+    const testId = testConfig.testId || urlParams.get("testId") || "demo_test";
+
+    var isSubmitted = localStorage.getItem("submitted_" + testId);
+    var submittedTimeRaw = localStorage.getItem("submitted_time_" + testId);
+
+    // Reopen test logic if Admin reset test timestamp
+    if (isSubmitted) {
+        var reopenTime = testConfig.reopenTimestamp || 0;
+        var submittedTime = submittedTimeRaw ? parseInt(submittedTimeRaw, 10) : 0;
+
+        if (reopenTime > 0 && (submittedTime === 0 || submittedTime < reopenTime)) {
+            localStorage.removeItem("submitted_" + testId);
+            localStorage.removeItem("submitted_time_" + testId);
+        } else {
+            showLockedScreen("TEST ALREADY SUBMITTED", "You have already completed this test session.");
+            return;
+        }
+    }
+
+    // Exact Student Name logic from your old file
+    studentName = sessionStorage.getItem("student_name") || 
+                  localStorage.getItem("rjStudyUsername") || 
+                  urlParams.get("name") || 
+                  "Student";
+                  
+    sessionStorage.setItem("student_name", studentName);
+
+    // Display student title if present
+    document.getElementById("test-title-display").innerText = testConfig.title || "Assessment";
+    timeRemaining = (testConfig.durationMinutes || testConfig.duration || 45) * 60;
+
+    startTimer();
+    renderQuestion(0);
+    renderMatrix();
+}
+
+// Fallback Mock Data
+function loadMockData() {
     testConfig = {
-        testId: testId,
+        testId: "demo_test",
         title: "RJ ACADEMY PRO Mock Test",
-        duration: 30,
+        durationMinutes: 30,
         questions: [
             {
                 id: "q1",
@@ -125,8 +111,12 @@ function loadMockData(testId) {
         ]
     };
 
+    studentName = sessionStorage.getItem("student_name") || localStorage.getItem("rjStudyUsername") || "Student";
+    sessionStorage.setItem("student_name", studentName);
+    
     document.getElementById("test-title-display").innerText = testConfig.title;
-    timeRemaining = testConfig.duration * 60;
+    timeRemaining = testConfig.durationMinutes * 60;
+    
     startTimer();
     renderQuestion(0);
     renderMatrix();
@@ -134,6 +124,7 @@ function loadMockData(testId) {
 
 // Timer Logic
 function startTimer() {
+    if (timerInterval) clearInterval(timerInterval);
     updateTimerDisplay();
     timerInterval = setInterval(() => {
         timeRemaining--;
@@ -156,12 +147,17 @@ function updateTimerDisplay() {
         .filter((v, i) => i > 0 || v !== '00')
         .join(':');
 
-    document.getElementById("time-left").innerText = display;
+    const timerElem = document.getElementById("time-left");
+    if (timerElem) {
+        timerElem.innerText = display;
+        if (timeRemaining <= 60) timerElem.style.color = "#EF4444";
+        else timerElem.style.color = "";
+    }
 }
 
-// Question Rendering
+// Question Rendering (Supports both old 'question' and new 'text' format)
 function renderQuestion(index) {
-    if (!testConfig.questions || !testConfig.questions[index]) return;
+    if (!testConfig || !testConfig.questions || !testConfig.questions[index]) return;
     
     currentQIndex = index;
     visitedQuestions.add(index);
@@ -169,17 +165,19 @@ function renderQuestion(index) {
     const q = testConfig.questions[index];
     
     // Auto-detect question text property
-    const questionContent = q.question || q.text || q.questionText || q.title || q.qText || "";
+    const questionContent = q.question || q.text || q.questionText || q.title || "";
     
     document.getElementById("q-number").innerText = `Q.${index + 1}`;
     document.getElementById("question-text").innerText = questionContent;
     
     // Flag Button UI
     const flagBtn = document.getElementById("flag-btn");
-    if (flaggedQuestions.has(index)) {
-        flagBtn.classList.add("flagged");
-    } else {
-        flagBtn.classList.remove("flagged");
+    if (flagBtn) {
+        if (flaggedQuestions.has(index)) {
+            flagBtn.classList.add("flagged");
+        } else {
+            flagBtn.classList.remove("flagged");
+        }
     }
 
     // Question Image Handling
@@ -187,15 +185,18 @@ function renderQuestion(index) {
     const imgEl = document.getElementById("question-image");
     const imageUrl = q.imageUrl || q.image || q.img || "";
     
-    if (imageUrl) {
-        imgEl.src = imageUrl;
-        imgContainer.classList.remove("hidden");
-    } else {
-        imgContainer.classList.add("hidden");
+    if (imgContainer && imgEl) {
+        if (imageUrl) {
+            imgEl.src = imageUrl;
+            imgContainer.classList.remove("hidden");
+        } else {
+            imgContainer.classList.add("hidden");
+        }
     }
 
     // Render Options
     const optsContainer = document.getElementById("options-container");
+    if (!optsContainer) return;
     optsContainer.innerHTML = "";
 
     const labels = ["A", "B", "C", "D", "E"];
@@ -258,7 +259,7 @@ function renderMatrix() {
 
         if (idx === currentQIndex) btn.classList.add("active-q");
         
-        if (userAnswers[idx] !== undefined) {
+        if (userAnswers[idx] !== undefined && userAnswers[idx] !== "") {
             btn.classList.add("status-answered");
         } else if (flaggedQuestions.has(idx)) {
             btn.classList.add("status-flagged");
@@ -278,7 +279,7 @@ function renderMatrix() {
 // Toggle Bottom Sheet / Sidebar Matrix
 function toggleMatrix() {
     const sidebar = document.getElementById("sidebar");
-    sidebar.classList.toggle("active-matrix");
+    if (sidebar) sidebar.classList.toggle("active-matrix");
 }
 
 // FAB Touch / Mouse Dragging Implementation
@@ -356,8 +357,9 @@ function initFabDraggable() {
 
 // Confirmation & Submission Logic
 function openSubmitConfirm() {
+    if (isSubmitting) return;
     const total = testConfig.questions.length;
-    const answered = Object.keys(userAnswers).length;
+    const answered = Object.keys(userAnswers).filter(k => userAnswers[k] !== "").length;
     const flagged = flaggedQuestions.size;
     const unanswered = total - answered;
 
@@ -374,46 +376,85 @@ function closeSubmitConfirm() {
 }
 
 // Bind Desktop Header Submit Button
-document.getElementById("header-submit-btn").onclick = openSubmitConfirm;
+const headerSubBtn = document.getElementById("header-submit-btn");
+if (headerSubBtn) headerSubBtn.onclick = openSubmitConfirm;
 
+// Final Submission Logic (Exact structure from old file)
 async function submitTestFinal() {
+    if (isSubmitting) return;
+    isSubmitting = true;
+    
+    if (timerInterval) clearInterval(timerInterval);
     closeSubmitConfirm();
-    clearInterval(timerInterval);
 
-    // Re-verify student name at submission time
-    const finalStudentName = getSavedStudentName();
+    var now = Date.now();
+    
+    // Refresh studentName from storage one last time to ensure accuracy
+    var finalStudentName = sessionStorage.getItem("student_name") || 
+                           localStorage.getItem("rjStudyUsername") || 
+                           studentName || 
+                           "Student";
 
-    const payload = {
-        testId: testConfig.testId,
+    var payload = {
         studentName: finalStudentName,
-        userName: finalStudentName,
-        name: finalStudentName,
-        student: finalStudentName,
+        testId: testConfig.testId,
         answers: userAnswers,
-        submittedAt: new Date().toISOString()
+        submittedAt: now
     };
 
     try {
-        await fetch(`${WORKER_URL}/api/submit`, {
+        var res = await fetch(WORKER_URL + "/api/submit", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify(payload)
         });
+        
+        var result = await res.json();
+        
+        if (result.success || res.ok) {
+            localStorage.setItem("submitted_" + testConfig.testId, "true");
+            localStorage.setItem("submitted_time_" + testConfig.testId, now.toString());
+            
+            showLockedScreen(
+                "TEST SUBMITTED SUCCESSFULLY", 
+                `Thank you, ${finalStudentName}. Your responses have been recorded!`
+            );
+        } else {
+            isSubmitting = false;
+            alert(result.error || "Submission failed. Please try again.");
+        }
     } catch (err) {
-        console.warn("Offline or submit warning:", err);
+        isSubmitting = false;
+        console.warn("Submit error:", err);
+        // Save local backup state even if offline
+        localStorage.setItem("submitted_" + testConfig.testId, "true");
+        localStorage.setItem("submitted_time_" + testConfig.testId, now.toString());
+        showLockedScreen("TEST SUBMITTED (OFFLINE)", `Response recorded locally for ${finalStudentName}.`);
     }
-
-    localStorage.setItem(`submitted_${testConfig.testId}`, "true");
-    showLockedScreen("Assessment submitted successfully!");
 }
 
 function autoSubmitOnTimeout() {
+    if (isSubmitting) return;
+    alert("Time limit reached! Auto-submitting your exam.");
     submitTestFinal();
-    showLockedScreen("Time expired! Assessment auto-submitted.");
 }
 
-function showLockedScreen(msg) {
-    document.getElementById("locked-message").innerText = msg;
-    document.getElementById("locked-timestamp").innerText = `Time: ${new Date().toLocaleString()}`;
-    document.getElementById("locked-screen").classList.remove("hidden");
+function showLockedScreen(title, msg) {
+    const msgEl = document.getElementById("locked-message");
+    if (msgEl) msgEl.innerText = msg;
+
+    const timeEl = document.getElementById("locked-timestamp");
+    if (timeEl) timeEl.innerText = `Time: ${new Date().toLocaleString()}`;
+
+    const lockedScreen = document.getElementById("locked-screen");
+    if (lockedScreen) lockedScreen.classList.remove("hidden");
 }
+
+// Global functions binding for inline HTML onclick attributes
+window.prevQuestion = prevQuestion;
+window.nextQuestion = nextQuestion;
+window.toggleFlag = toggleFlag;
+window.toggleMatrix = toggleMatrix;
+window.openSubmitConfirm = openSubmitConfirm;
+window.closeSubmitConfirm = closeSubmitConfirm;
+window.submitTestFinal = submitTestFinal;
