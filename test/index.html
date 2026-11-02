@@ -2,14 +2,11 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>RJ Academy | Premium Assessment</title>
-    <!-- Google Fonts for Pro Look -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <!-- Fail-safe hidden class -->
     <style>.hidden { display: none !important; }</style>
-    <!-- CSS with Versioning to FORCE load new design -->
-    <link rel="stylesheet" href="test.css?v=12.0">
+    <link rel="stylesheet" href="test.css?v=13.0">
 </head>
 <body>
 
@@ -20,12 +17,8 @@
             <h1 id="locked-title">SYSTEM LOCKED</h1>
             <p id="locked-message">Please contact the administrator.</p>
             <div class="locked-actions">
-                <button class="dashboard-btn" onclick="location.href='../index.html'">
-                    &#8592; RETURN TO DASHBOARD
-                </button>
-                <button class="retry-btn" onclick="location.reload()">
-                    REFRESH
-                </button>
+                <button class="dashboard-btn" onclick="location.href='../index.html'">← RETURN TO DASHBOARD</button>
+                <button class="retry-btn" onclick="location.reload()">REFRESH</button>
             </div>
         </div>
     </div>
@@ -33,7 +26,6 @@
     <!-- MAIN EXAM APPLICATION -->
     <div id="exam-app" class="hidden">
         
-        <!-- HEADER -->
         <header class="exam-header glass-panel">
             <div class="brand-logo">
                 <span class="logo-text">RJ_ACADEMY</span>
@@ -53,15 +45,19 @@
             </div>
         </header>
 
-        <!-- MAIN LAYOUT -->
         <main class="exam-layout">
             
-            <!-- CIRCULAR ICON TO OPEN MATRIX (Mobile Only) -->
-            <button class="matrix-fab" onclick="toggleMatrix()">
-                <svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M4 4h4v4H4zM16 4h4v4h-4zM4 16h4v4H4zM16 16h4v4h-4zM10 4h4v4h-4zM10 16h4v4h-4zM4 10h4v4H4zM16 10h4v4h-4zM10 10h4v4h-4z"></path></svg>
+            <!-- PROFESSIONAL FAB BUTTON -->
+            <button class="matrix-fab" onclick="toggleMatrix()" title="Question Matrix">
+                <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                    <rect x="3" y="3" width="7" height="7" rx="1.5"></rect>
+                    <rect x="14" y="3" width="7" height="7" rx="1.5"></rect>
+                    <rect x="3" y="14" width="7" height="7" rx="1.5"></rect>
+                    <rect x="14" y="14" width="7" height="7" rx="1.5"></rect>
+                </svg>
             </button>
 
-            <!-- LEFT COLUMN: QUESTION AREA -->
+            <!-- LEFT COLUMN -->
             <section class="question-section glass-panel">
                 <div class="question-header">
                     <span id="question-number" class="q-num">QUESTION -- OF --</span>
@@ -76,16 +72,20 @@
                     <!-- Options injected via JS -->
                 </div>
 
+                <!-- Spacer so last option never hides behind footer -->
+                <div class="bottom-scroll-spacer"></div>
+
                 <div class="action-footer">
-                    <button id="prev-btn" class="nav-btn prev" onclick="prevQuestion()" disabled>&#8592; Previous</button>
-                    <button class="nav-btn clear" onclick="clearAnswer()">Clear Selection</button>
-                    <button id="next-btn" class="nav-btn next" onclick="nextQuestion()">Next &#8594;</button>
+                    <button id="prev-btn" class="nav-btn prev" onclick="prevQuestion()" disabled>← Previous</button>
+                    <button class="nav-btn clear" onclick="clearAnswer()">Clear</button>
+                    <button id="next-btn" class="nav-btn next" onclick="nextQuestion()">Next →</button>
                 </div>
             </section>
 
-            <!-- RIGHT COLUMN: MATRIX & SUBMIT (Desktop Sidebar / Mobile Popup) -->
+            <!-- RIGHT COLUMN / MATRIX POPUP -->
             <aside class="sidebar-section">
                 <div class="matrix-card glass-panel">
+                    <div class="matrix-handle"></div>
                     <h3 class="matrix-title">QUESTION MATRIX</h3>
                     
                     <div class="matrix-legend">
@@ -94,24 +94,21 @@
                         <div class="legend-item"><span class="dot unanswered"></span> Unanswered</div>
                     </div>
 
-                    <div id="palette-grid" class="palette-grid">
-                        <!-- Buttons injected via JS -->
-                    </div>
+                    <div id="palette-grid" class="palette-grid"></div>
 
-                    <!-- SUBMIT BUTTON (Now inside Matrix, above Close button) -->
+                    <!-- SUBMIT BUTTON inside popup -->
                     <button class="submit-exam-btn" onclick="confirmSubmission()">
-                        <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M5 12l5 5L20 7"></path></svg>
+                        <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M5 12l5 5L20 7"></path></svg>
                         SUBMIT ASSESSMENT
                     </button>
 
-                    <!-- CLOSE MATRIX BUTTON (Mobile Only) -->
-                    <button class="close-matrix-btn" onclick="toggleMatrix()">✖ Close Matrix</button>
+                    <button class="close-matrix-btn" onclick="toggleMatrix()">✕ Close Matrix</button>
                 </div>
             </aside>
         </main>
     </div>
 
-    <!-- SUBMISSION CONFIRMATION MODAL -->
+    <!-- CONFIRM MODAL -->
     <div id="confirm-modal" class="modal-overlay hidden">
         <div class="modal-card glass-panel">
             <h2>Confirm Submission</h2>
@@ -123,7 +120,6 @@
         </div>
     </div>
 
-    <!-- JS with Versioning -->
-    <script src="test.js?v=12.0"></script>
+    <script src="test.js?v=13.0"></script>
 </body>
 </html>
