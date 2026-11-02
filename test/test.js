@@ -62,7 +62,6 @@ async function loadTestConfig(testId) {
         renderMatrix();
     } catch (err) {
         console.error(err);
-        // Fallback Mock Data if Worker API fails
         loadMockData(testId);
     }
 }
@@ -71,32 +70,17 @@ async function loadTestConfig(testId) {
 function loadMockData(testId) {
     testConfig = {
         testId: testId,
-        title: "RJ ACADEMY PRO Demo Mock Test",
+        title: "RJ ACADEMY PRO Mock Test",
         duration: 30,
         questions: [
             {
                 id: "q1",
-                text: "What is the primary function of the cell nucleus in eukaryotic organisms?",
+                question: "Choose the grammatically correct sentence:",
                 options: [
-                    "Energy production via ATP synthesis",
-                    "Storage and regulation of genetic material (DNA)",
-                    "Protein synthesis and ribosome assembly",
-                    "Cellular waste degradation and recycling"
-                ]
-            },
-            {
-                id: "q2",
-                text: "Which vector quantity represents the rate of change of momentum with respect to time?",
-                options: ["Work Done", "Impulse", "Net Force", "Kinetic Energy"]
-            },
-            {
-                id: "q3",
-                text: "In chemical kinetics, what does the activation energy of a reaction indicate?",
-                options: [
-                    "Total energy released during exothermic reaction",
-                    "Minimum energy required to form the transition state",
-                    "Enthalpy change of the equilibrium system",
-                    "Free energy of products minus reactants"
+                    "I goes to school every day.",
+                    "I go to school every day.",
+                    "I going to school every day.",
+                    "I went to school every day."
                 ]
             }
         ]
@@ -136,17 +120,20 @@ function updateTimerDisplay() {
     document.getElementById("time-left").innerText = display;
 }
 
-// Question Rendering
+// Question Rendering (FIXED: Supports all backend JSON property names)
 function renderQuestion(index) {
-    if (!testConfig.questions[index]) return;
+    if (!testConfig.questions || !testConfig.questions[index]) return;
     
     currentQIndex = index;
     visitedQuestions.add(index);
     
     const q = testConfig.questions[index];
     
+    // Auto-detect question text property from backend
+    const questionContent = q.question || q.text || q.questionText || q.title || q.qText || "";
+    
     document.getElementById("q-number").innerText = `Q.${index + 1}`;
-    document.getElementById("question-text").innerText = q.text;
+    document.getElementById("question-text").innerText = questionContent;
     
     // Flag Button UI
     const flagBtn = document.getElementById("flag-btn");
@@ -159,8 +146,10 @@ function renderQuestion(index) {
     // Question Image Handling
     const imgContainer = document.getElementById("question-image-container");
     const imgEl = document.getElementById("question-image");
-    if (q.imageUrl) {
-        imgEl.src = q.imageUrl;
+    const imageUrl = q.imageUrl || q.image || q.img || "";
+    
+    if (imageUrl) {
+        imgEl.src = imageUrl;
         imgContainer.classList.remove("hidden");
     } else {
         imgContainer.classList.add("hidden");
@@ -171,7 +160,9 @@ function renderQuestion(index) {
     optsContainer.innerHTML = "";
 
     const labels = ["A", "B", "C", "D", "E"];
-    q.options.forEach((optText, optIdx) => {
+    const optionsList = q.options || q.choices || [];
+
+    optionsList.forEach((optText, optIdx) => {
         const optCard = document.createElement("div");
         optCard.className = `option-card ${userAnswers[index] === optIdx ? "selected" : ""}`;
         optCard.onclick = () => selectOption(optIdx);
@@ -218,6 +209,7 @@ function prevQuestion() {
 // Render Palette Matrix
 function renderMatrix() {
     const grid = document.getElementById("palette-grid");
+    if (!grid) return;
     grid.innerHTML = "";
 
     testConfig.questions.forEach((_, idx) => {
