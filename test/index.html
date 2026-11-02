@@ -3,129 +3,154 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>RJ Academy | Premium Assessment</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <style>.hidden { display: none !important; }</style>
-    <link rel="stylesheet" href="test.css?v=16.0">
+    <title>RJ ACADEMY PRO - Assessment Portal</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="test.css?v=17.0">
 </head>
 <body>
 
-    <!-- LOCKED SCREEN -->
-    <div id="locked-screen" class="locked-container hidden">
-        <div class="locked-card glass-panel">
-            <div class="locked-icon" id="locked-icon">🛡️</div>
-            <h1 id="locked-title">SYSTEM LOCKED</h1>
-            <p id="locked-message">Please contact the administrator.</p>
-            <div class="locked-actions">
-                <button class="dashboard-btn" onclick="location.href='../index.html'">← DASHBOARD</button>
-                <button class="retry-btn" onclick="location.reload()">REFRESH</button>
-            </div>
-        </div>
-    </div>
+    <!-- Main Application Wrapper -->
+    <div id="exam-app" class="app-container">
 
-    <!-- MAIN EXAM APP -->
-    <div id="exam-app" class="hidden">
-        
-        <header class="exam-header glass-panel">
-            <div class="brand-logo">
-                <span class="logo-text">RJ_ACADEMY</span>
-                <span class="pro-badge">PRO</span>
-            </div>
-            
-            <div class="timer-box glow-effect">
-                <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"></circle><path d="M12 6v6l4 2"></path></svg>
-                <span id="exam-timer">00:00:00</span>
+        <!-- Top Header Navigation -->
+        <header class="top-bar">
+            <div class="brand-section">
+                <span class="brand-badge">PRO</span>
+                <h1 class="portal-title">RJ ACADEMY</h1>
             </div>
 
-            <div class="candidate-badge">
-                <div class="avatar">
-                    <svg width="16" height="16" fill="#fff" viewBox="0 0 24 24"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>
+            <div class="test-info-center">
+                <span id="test-title-display" class="test-name">Loading Assessment...</span>
+            </div>
+
+            <div class="header-right">
+                <div class="timer-box" id="timer-box">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                        <circle cx="12" cy="12" r="10"></circle>
+                        <polyline points="12 6 12 12 16 14"></polyline>
+                    </svg>
+                    <span id="time-left">00:00:00</span>
                 </div>
-                <span id="student-display-name">CANDIDATE</span>
+                <button class="desktop-submit-btn" id="header-submit-btn">Submit</button>
             </div>
         </header>
 
-        <main class="exam-layout">
-            
-            <!-- MOVEABLE 3D FLOATING ICON (Draggable on Touch) -->
-            <div id="draggable-fab" class="matrix-fab">
-                <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-                    <rect x="3" y="3" width="7" height="7" rx="2" fill="rgba(0,0,0,0.15)"></rect>
-                    <rect x="14" y="3" width="7" height="7" rx="2" fill="rgba(0,0,0,0.15)"></rect>
-                    <rect x="3" y="14" width="7" height="7" rx="2" fill="rgba(0,0,0,0.15)"></rect>
-                    <rect x="14" y="14" width="7" height="7" rx="2" fill="rgba(0,0,0,0.15)"></rect>
-                </svg>
-            </div>
+        <!-- Question Body & Sidebar Split -->
+        <div class="workspace">
 
-            <!-- QUESTION AREA -->
-            <section class="question-section glass-panel">
-                <div class="question-header">
-                    <span id="question-number" class="q-num">QUESTION -- OF --</span>
-                    <span id="question-type-badge" class="q-type">MCQ</span>
-                </div>
-                
-                <div class="question-content">
-                    <h2 id="question-text">Initializing parameters...</h2>
+            <!-- Main Question Area -->
+            <main class="question-container" id="question-container">
+
+                <div class="question-header-row">
+                    <span class="q-number-tag" id="q-number">Q.1</span>
+                    <button class="flag-btn" id="flag-btn" onclick="toggleFlag()">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"></path>
+                            <line x1="4" y1="22" x2="4" y2="15"></line>
+                        </svg>
+                        <span>Mark for Review</span>
+                    </button>
                 </div>
 
-                <div id="options-container" class="options-grid">
-                    <!-- Options injected via JS -->
+                <!-- Question Text -->
+                <div class="question-text-box" id="question-text">
+                    Loading question...
                 </div>
 
-                <!-- DESKTOP FOOTER -->
-                <div class="action-footer desktop-footer">
-                    <button id="prev-btn" class="nav-btn prev" onclick="prevQuestion()" disabled>← Previous</button>
-                    <button class="nav-btn clear" onclick="clearAnswer()">Clear Selection</button>
-                    <button id="next-btn" class="nav-btn next" onclick="nextQuestion()">Next →</button>
+                <!-- Image Attachment (Optional) -->
+                <div id="question-image-container" class="q-image-box hidden">
+                    <img id="question-image" src="" alt="Question Attachment">
                 </div>
-            </section>
 
-            <!-- MATRIX & SUBMIT SIDEBAR / POPUP -->
-            <aside class="sidebar-section">
-                <div class="matrix-card glass-panel">
-                    <div class="matrix-handle"></div>
-                    <h3 class="matrix-title">QUESTION MATRIX</h3>
-                    
-                    <div class="matrix-legend">
-                        <div class="legend-item"><span class="dot answered"></span> Answered</div>
-                        <div class="legend-item"><span class="dot current"></span> Current</div>
-                        <div class="legend-item"><span class="dot unanswered"></span> Unanswered</div>
+                <!-- MCQ Options List -->
+                <div class="options-group" id="options-container">
+                    <!-- Dynamic Options Injected via JS -->
+                </div>
+
+                <div class="mobile-spacer"></div>
+            </main>
+
+            <!-- Question Matrix Sidebar / Bottom Sheet Overlay -->
+            <aside class="sidebar-section" id="sidebar">
+                <div class="matrix-card">
+                    <div class="matrix-header">
+                        <h3>Question Palette</h3>
+                        <button class="close-matrix-btn" id="close-matrix" onclick="toggleMatrix()">✕</button>
                     </div>
 
-                    <div id="palette-grid" class="palette-grid"></div>
+                    <!-- Status Legend -->
+                    <div class="legend-grid">
+                        <div class="legend-item"><span class="badge badge-answered"></span> Answered</div>
+                        <div class="legend-item"><span class="badge badge-flagged"></span> Review</div>
+                        <div class="legend-item"><span class="badge badge-visited"></span> Visited</div>
+                        <div class="legend-item"><span class="badge badge-unvisited"></span> Not Visited</div>
+                    </div>
 
-                    <!-- SUBMIT BUTTON -->
-                    <button class="submit-exam-btn" onclick="confirmSubmission()">
-                        <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M5 12l5 5L20 7"></path></svg>
-                        SUBMIT ASSESSMENT
-                    </button>
+                    <!-- Question Grid -->
+                    <div class="matrix-grid" id="palette-grid">
+                        <!-- Dynamic Buttons Injected via JS -->
+                    </div>
 
-                    <!-- CLOSE MATRIX -->
-                    <button class="close-matrix-btn" onclick="toggleMatrix()">✕ Close Matrix</button>
+                    <!-- Submit Button inside Matrix Sheet -->
+                    <div class="sheet-submit-container">
+                        <button class="primary-submit-btn" onclick="openSubmitConfirm()">Submit Assessment</button>
+                    </div>
                 </div>
             </aside>
-        </main>
-        
-        <!-- MOBILE STICKY FOOTER -->
-        <div class="mobile-sticky-footer">
-            <button id="mob-prev-btn" class="nav-btn prev" onclick="prevQuestion()" disabled>← Prev</button>
-            <button class="nav-btn clear" onclick="clearAnswer()">Clear</button>
-            <button id="mob-next-btn" class="nav-btn next" onclick="nextQuestion()">Next →</button>
         </div>
+
+        <!-- Sticky Footer for Mobile Controls -->
+        <footer class="mobile-sticky-footer">
+            <button class="nav-btn sec-btn" id="mob-prev-btn" onclick="prevQuestion()">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"></polyline></svg>
+                Previous
+            </button>
+            <button class="nav-btn main-btn" id="mob-next-btn" onclick="nextQuestion()">
+                Next
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"></polyline></svg>
+            </button>
+        </footer>
+
+        <!-- Draggable Floating Action Button (Pulse-Wave SVG Icon) -->
+        <div id="draggable-fab" class="matrix-fab">
+            <svg viewBox="0 0 80 80" width="30" height="30" fill="none" stroke="currentColor" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M8 42H22L31 20L43 61L53 35L59 42H72"/>
+                <circle cx="40" cy="40" r="34" opacity="0.3"/>
+            </svg>
+        </div>
+
     </div>
 
-    <!-- SUBMIT MODAL -->
-    <div id="confirm-modal" class="modal-overlay hidden">
-        <div class="modal-card glass-panel">
-            <h2>Confirm Submission</h2>
-            <p id="submission-summary">You are about to submit the test.</p>
+    <!-- Confirmation Modal -->
+    <div class="modal-backdrop hidden" id="confirm-modal">
+        <div class="modal-box">
+            <h2>Submit Assessment?</h2>
+            <p>Are you sure you want to complete and submit your test?</p>
+            <div class="summary-box">
+                <div class="sum-item"><span id="sum-total">0</span><span>Total</span></div>
+                <div class="sum-item success"><span id="sum-answered">0</span><span>Answered</span></div>
+                <div class="sum-item warning"><span id="sum-flagged">0</span><span>Review</span></div>
+                <div class="sum-item danger"><span id="sum-unanswered">0</span><span>Left</span></div>
+            </div>
             <div class="modal-actions">
-                <button class="cancel-btn" onclick="closeConfirmModal()">Cancel</button>
-                <button class="confirm-btn" onclick="finalSubmitExam()">Yes, Submit</button>
+                <button class="modal-btn cancel" onclick="closeSubmitConfirm()">Resume</button>
+                <button class="modal-btn confirm" onclick="submitTestFinal()">Confirm Submit</button>
             </div>
         </div>
     </div>
 
-    <script src="test.js?v=16.0"></script>
+    <!-- Test Locked / Submitted Screen Overlay -->
+    <div class="locked-screen hidden" id="locked-screen">
+        <div class="locked-card">
+            <div class="success-icon">✓</div>
+            <h2>Assessment Completed</h2>
+            <p id="locked-message">Your response has been successfully recorded.</p>
+            <div class="locked-time" id="locked-timestamp"></div>
+        </div>
+    </div>
+
+    <script src="test.js?v=17.0"></script>
 </body>
 </html>
