@@ -9,7 +9,7 @@
     <!-- Fail-safe hidden class -->
     <style>.hidden { display: none !important; }</style>
     <!-- CSS with Versioning to FORCE load new design -->
-    <link rel="stylesheet" href="test.css?v=10.0">
+    <link rel="stylesheet" href="test.css?v=12.0">
 </head>
 <body>
 
@@ -76,14 +76,6 @@
                     <!-- Options injected via JS -->
                 </div>
 
-                <!-- NEW SUBMIT BUTTON FOR MOBILE (Below Options) -->
-                <div class="mobile-submit-container">
-                    <button class="submit-exam-btn" onclick="confirmSubmission()" style="width: 100%; margin-top: 24px;">
-                        <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M5 12l5 5L20 7"></path></svg>
-                        SUBMIT ASSESSMENT
-                    </button>
-                </div>
-
                 <div class="action-footer">
                     <button id="prev-btn" class="nav-btn prev" onclick="prevQuestion()" disabled>&#8592; Previous</button>
                     <button class="nav-btn clear" onclick="clearAnswer()">Clear Selection</button>
@@ -91,7 +83,7 @@
                 </div>
             </section>
 
-            <!-- RIGHT COLUMN: MATRIX & SUBMIT -->
+            <!-- RIGHT COLUMN: MATRIX & SUBMIT (Desktop Sidebar / Mobile Popup) -->
             <aside class="sidebar-section">
                 <div class="matrix-card glass-panel">
                     <h3 class="matrix-title">QUESTION MATRIX</h3>
@@ -106,15 +98,15 @@
                         <!-- Buttons injected via JS -->
                     </div>
 
+                    <!-- SUBMIT BUTTON (Now inside Matrix, above Close button) -->
+                    <button class="submit-exam-btn" onclick="confirmSubmission()">
+                        <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M5 12l5 5L20 7"></path></svg>
+                        SUBMIT ASSESSMENT
+                    </button>
+
                     <!-- CLOSE MATRIX BUTTON (Mobile Only) -->
                     <button class="close-matrix-btn" onclick="toggleMatrix()">✖ Close Matrix</button>
                 </div>
-
-                <!-- DESKTOP SUBMIT BUTTON -->
-                <button class="submit-exam-btn desktop-submit-btn" onclick="confirmSubmission()">
-                    <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M5 12l5 5L20 7"></path></svg>
-                    SUBMIT ASSESSMENT
-                </button>
             </aside>
         </main>
     </div>
@@ -132,6 +124,6 @@
     </div>
 
     <!-- JS with Versioning -->
-    <script src="test.js?v=10.0"></script>
+    <script src="test.js?v=12.0"></script>
 </body>
 </html>
