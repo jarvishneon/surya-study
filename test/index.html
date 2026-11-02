@@ -6,24 +6,24 @@
     <title>RJ Academy | Premium Assessment</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>.hidden { display: none !important; }</style>
-    <link rel="stylesheet" href="test.css?v=13.0">
+    <link rel="stylesheet" href="test.css?v=15.0">
 </head>
 <body>
 
-    <!-- LOCKED / SUBMITTED SCREEN -->
+    <!-- LOCKED SCREEN -->
     <div id="locked-screen" class="locked-container hidden">
         <div class="locked-card glass-panel">
             <div class="locked-icon" id="locked-icon">🛡️</div>
             <h1 id="locked-title">SYSTEM LOCKED</h1>
             <p id="locked-message">Please contact the administrator.</p>
             <div class="locked-actions">
-                <button class="dashboard-btn" onclick="location.href='../index.html'">← RETURN TO DASHBOARD</button>
+                <button class="dashboard-btn" onclick="location.href='../index.html'">← DASHBOARD</button>
                 <button class="retry-btn" onclick="location.reload()">REFRESH</button>
             </div>
         </div>
     </div>
 
-    <!-- MAIN EXAM APPLICATION -->
+    <!-- MAIN EXAM APP -->
     <div id="exam-app" class="hidden">
         
         <header class="exam-header glass-panel">
@@ -47,17 +47,17 @@
 
         <main class="exam-layout">
             
-            <!-- PROFESSIONAL FAB BUTTON -->
-            <button class="matrix-fab" onclick="toggleMatrix()" title="Question Matrix">
-                <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-                    <rect x="3" y="3" width="7" height="7" rx="1.5"></rect>
-                    <rect x="14" y="3" width="7" height="7" rx="1.5"></rect>
-                    <rect x="3" y="14" width="7" height="7" rx="1.5"></rect>
-                    <rect x="14" y="14" width="7" height="7" rx="1.5"></rect>
+            <!-- 3D FLOATING ICON (Mobile) -->
+            <button class="matrix-fab" onclick="toggleMatrix()">
+                <svg width="28" height="28" viewBox="0 0 24 24" fill="currentColor">
+                    <rect x="3" y="3" width="8" height="8" rx="2"></rect>
+                    <rect x="13" y="3" width="8" height="8" rx="2"></rect>
+                    <rect x="3" y="13" width="8" height="8" rx="2"></rect>
+                    <rect x="13" y="13" width="8" height="8" rx="2"></rect>
                 </svg>
             </button>
 
-            <!-- LEFT COLUMN -->
+            <!-- QUESTION AREA -->
             <section class="question-section glass-panel">
                 <div class="question-header">
                     <span id="question-number" class="q-num">QUESTION -- OF --</span>
@@ -72,17 +72,15 @@
                     <!-- Options injected via JS -->
                 </div>
 
-                <!-- Spacer so last option never hides behind footer -->
-                <div class="bottom-scroll-spacer"></div>
-
-                <div class="action-footer">
+                <!-- DESKTOP FOOTER -->
+                <div class="action-footer desktop-footer">
                     <button id="prev-btn" class="nav-btn prev" onclick="prevQuestion()" disabled>← Previous</button>
-                    <button class="nav-btn clear" onclick="clearAnswer()">Clear</button>
+                    <button class="nav-btn clear" onclick="clearAnswer()">Clear Selection</button>
                     <button id="next-btn" class="nav-btn next" onclick="nextQuestion()">Next →</button>
                 </div>
             </section>
 
-            <!-- RIGHT COLUMN / MATRIX POPUP -->
+            <!-- MATRIX & SUBMIT AREA -->
             <aside class="sidebar-section">
                 <div class="matrix-card glass-panel">
                     <div class="matrix-handle"></div>
@@ -96,19 +94,27 @@
 
                     <div id="palette-grid" class="palette-grid"></div>
 
-                    <!-- SUBMIT BUTTON inside popup -->
+                    <!-- SUBMIT BUTTON -->
                     <button class="submit-exam-btn" onclick="confirmSubmission()">
                         <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M5 12l5 5L20 7"></path></svg>
                         SUBMIT ASSESSMENT
                     </button>
 
+                    <!-- CLOSE MATRIX (Mobile) -->
                     <button class="close-matrix-btn" onclick="toggleMatrix()">✕ Close Matrix</button>
                 </div>
             </aside>
         </main>
+        
+        <!-- MOBILE STICKY FOOTER -->
+        <div class="mobile-sticky-footer">
+            <button id="mob-prev-btn" class="nav-btn prev" onclick="prevQuestion()" disabled>← Prev</button>
+            <button class="nav-btn clear" onclick="clearAnswer()">Clear</button>
+            <button id="mob-next-btn" class="nav-btn next" onclick="nextQuestion()">Next →</button>
+        </div>
     </div>
 
-    <!-- CONFIRM MODAL -->
+    <!-- SUBMIT MODAL -->
     <div id="confirm-modal" class="modal-overlay hidden">
         <div class="modal-card glass-panel">
             <h2>Confirm Submission</h2>
@@ -120,6 +126,6 @@
         </div>
     </div>
 
-    <script src="test.js?v=13.0"></script>
+    <script src="test.js?v=15.0"></script>
 </body>
 </html>
