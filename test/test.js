@@ -163,7 +163,7 @@ function prevQuestion() {
 }
 
 // ==========================================
-// NEW FEATURE: MATRIX POPUP & JUMP LOGIC
+// MATRIX POPUP & JUMP LOGIC
 // ==========================================
 function toggleMatrix() {
     var sidebar = document.querySelector('.sidebar-section');
