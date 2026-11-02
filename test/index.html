@@ -9,7 +9,7 @@
     <!-- Fail-safe hidden class -->
     <style>.hidden { display: none !important; }</style>
     <!-- CSS with Versioning to FORCE load new design -->
-    <link rel="stylesheet" href="test.css?v=9.9">
+    <link rel="stylesheet" href="test.css?v=10.0">
 </head>
 <body>
 
@@ -56,6 +56,11 @@
         <!-- MAIN LAYOUT -->
         <main class="exam-layout">
             
+            <!-- CIRCULAR ICON TO OPEN MATRIX (Mobile Only) -->
+            <button class="matrix-fab" onclick="toggleMatrix()">
+                <svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M4 4h4v4H4zM16 4h4v4h-4zM4 16h4v4H4zM16 16h4v4h-4zM10 4h4v4h-4zM10 16h4v4h-4zM4 10h4v4H4zM16 10h4v4h-4zM10 10h4v4h-4z"></path></svg>
+            </button>
+
             <!-- LEFT COLUMN: QUESTION AREA -->
             <section class="question-section glass-panel">
                 <div class="question-header">
@@ -69,6 +74,14 @@
 
                 <div id="options-container" class="options-grid">
                     <!-- Options injected via JS -->
+                </div>
+
+                <!-- NEW SUBMIT BUTTON FOR MOBILE (Below Options) -->
+                <div class="mobile-submit-container">
+                    <button class="submit-exam-btn" onclick="confirmSubmission()" style="width: 100%; margin-top: 24px;">
+                        <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M5 12l5 5L20 7"></path></svg>
+                        SUBMIT ASSESSMENT
+                    </button>
                 </div>
 
                 <div class="action-footer">
@@ -92,9 +105,13 @@
                     <div id="palette-grid" class="palette-grid">
                         <!-- Buttons injected via JS -->
                     </div>
+
+                    <!-- CLOSE MATRIX BUTTON (Mobile Only) -->
+                    <button class="close-matrix-btn" onclick="toggleMatrix()">✖ Close Matrix</button>
                 </div>
 
-                <button class="submit-exam-btn" onclick="confirmSubmission()">
+                <!-- DESKTOP SUBMIT BUTTON -->
+                <button class="submit-exam-btn desktop-submit-btn" onclick="confirmSubmission()">
                     <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M5 12l5 5L20 7"></path></svg>
                     SUBMIT ASSESSMENT
                 </button>
@@ -115,6 +132,6 @@
     </div>
 
     <!-- JS with Versioning -->
-    <script src="test.js?v=9.9"></script>
+    <script src="test.js?v=10.0"></script>
 </body>
 </html>
