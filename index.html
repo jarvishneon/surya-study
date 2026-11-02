@@ -1,295 +1,522 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>RJ Study Academy | Secure Portal</title>
-    <!-- Google Fonts -->
-    <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;600&family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
-    <!-- FontAwesome for Icons -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    
-    <!-- LINKING EXTERNAL CSS FILE -->
-    <link rel="stylesheet" href="style.css">
-</head>
-<body>
+/* ==========================================
+   RJ STUDY PRO - PREMIUM ASSESSMENT STYLES
+   ========================================== */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
 
-    <!-- Dynamic Background Elements -->
-    <div class="cyber-grid"></div>
-    <div class="laser-beam"></div>
-    <div id="terminal-bg"></div>
+:root {
+    --bg-main: #060913;
+    --bg-panel: rgba(17, 24, 39, 0.7);
+    --text-primary: #F9FAFB;
+    --text-secondary: #9CA3AF;
+    --accent-color: #00E5FF;
+    --accent-hover: #00B2CC;
+    --danger-color: #EF4444;
+    --success-color: #10B981;
+    --border-color: rgba(255, 255, 255, 0.1);
+    --font-main: 'Inter', sans-serif;
+}
 
-    <!-- ================= VIEW 1: FRONT LOGIN PAGE ================= -->
-    <div id="login-view" class="page-view active">
-        <header>
-            <div class="logo">
-                <i class="fa-solid fa-shield-halved" style="color: var(--primary);"></i> RJ <span>Study Academy</span>
-            </div>
-        </header>
+html, body {
+    margin: 0;
+    padding: 0;
+    width: 100%;
+    max-width: 100%;
+    overflow-x: hidden !important;
+    box-sizing: border-box;
+}
 
-        <div class="hero-login-container">
-            <div class="hero-left">
-                <div class="hero-badge">
-                    <i class="fa-solid fa-terminal"></i> SECURE_GATEWAY // v5.1
-                </div>
-                <h1>Elite Cyber & Coding <span>Education Portal</span></h1>
-                <p>Apna naam daalkar secure login karein aur apne student dashboard tak pahunchein.</p>
-                <div class="features-tags">
-                    <div class="tag"><i class="fa-solid fa-check"></i> Competitive Exams</div>
-                    <div class="tag"><i class="fa-solid fa-check"></i> Board Exams</div>
-                    <div class="tag"><i class="fa-solid fa-check"></i> Live Updates</div>
-                </div>
-            </div>
+*, *:before, *:after {
+    box-sizing: border-box;
+}
 
-            <div class="login-card">
-                <h2><i class="fa-solid fa-lock"></i> Student Portal</h2>
-                <p class="subtitle">Enter your name & password to access profile.</p>
-                
-                <form id="loginForm">
-                    <div class="input-group">
-                        <label>Your Name</label>
-                        <div class="input-with-icon">
-                            <i class="fa-solid fa-user"></i>
-                            <input type="text" id="usernameInput" placeholder="Enter your name" required>
-                        </div>
-                    </div>
+body {
+    background-color: var(--bg-main);
+    background-image:
+        radial-gradient(circle at top right, rgba(0, 229, 255, 0.1), transparent 40%),
+        radial-gradient(circle at bottom left, rgba(239, 68, 68, 0.05), transparent 40%);
+    color: var(--text-primary);
+    font-family: var(--font-main);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
 
-                    <div class="input-group">
-                        <label>Password</label>
-                        <div class="input-with-icon">
-                            <i class="fa-solid fa-key"></i>
-                            <input type="password" id="passwordInput" placeholder="Enter password" required>
-                        </div>
-                    </div>
+.hidden { display: none !important; }
 
-                    <div id="errorMsg" class="error-msg" role="alert" aria-live="polite">Incorrect password. Please try again.</div>
+.glass-panel {
+    background: var(--bg-panel);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: 1px solid var(--border-color);
+    box-shadow: 0 4px 30px rgba(0, 0, 0, 0.5);
+}
 
-                    <button type="submit" class="login-btn">Authenticate & Login</button>
-                </form>
-            </div>
-        </div>
-    </div>
+/* Header */
+.exam-header {
+    padding: 16px 32px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    border-bottom: 1px solid var(--border-color);
+    background: rgba(6, 9, 19, 0.95);
+    width: 100%;
+}
 
-    <!-- ================= VIEW 2: MAIN DASHBOARD ================= -->
-    <div id="dashboard-view" class="page-view">
-        <div class="dashboard-topbar">
-            <div class="logo" onclick="goHome()">
-                <i class="fa-solid fa-shield-halved" style="color: var(--primary);"></i> RJ <span>Study Academy</span>
-            </div>
-            
-            <div class="profile-menu-container">
-                <div class="profile-circle" id="profileInitial" onclick="toggleProfileMenu(event)" title="Open Profile">A</div>
-                
-                <div class="profile-dropdown" id="profileDropdown">
-                    <div class="dropdown-username" id="displayUsername">Student Name</div>
-                    <div class="dropdown-role"><i class="fa-solid fa-circle" style="color: var(--primary); font-size: 7px;"></i> Active Student</div>
-                    <button class="dropdown-logout-btn" onclick="logout()"><i class="fa-solid fa-right-from-bracket"></i> Logout</button>
-                </div>
-            </div>
-        </div>
+.brand-logo {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-weight: 700;
+    font-size: 1.2rem;
+}
 
-        <div class="dashboard-container">
-            <div class="dashboard-grid">
-                
-                <!-- Card 1 -->
-                <div class="dash-card" onclick="switchSubView('competitive-view')">
-                    <div class="dash-icon"><i class="fa-solid fa-trophy"></i></div>
-                    <h3>Competitive Exams</h3>
-                    <p>Access high-level practice tests, PYQs, mock tests, and strategies for JEE, NEET, UPSC & Tech certifications.</p>
-                    <span class="dash-action-btn">Explore Section <i class="fa-solid fa-arrow-right"></i></span>
-                </div>
+.pro-badge {
+    background: linear-gradient(135deg, var(--accent-color), #0077FF);
+    color: #000;
+    font-size: 0.7rem;
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-weight: 800;
+}
 
-                <!-- Card 2 -->
-                <div class="dash-card" onclick="switchSubView('boards-view')">
-                    <div class="dash-icon"><i class="fa-solid fa-book-open"></i></div>
-                    <h3>Board Exams</h3>
-                    <p>Get chapter-wise notes, sample papers, important questions, and revision modules for class 9th & 10th boards.</p>
-                    <span class="dash-action-btn">Explore Section <i class="fa-solid fa-arrow-right"></i></span>
-                </div>
+.timer-box {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: var(--accent-color);
+    padding: 8px 16px;
+    border-radius: 8px;
+    background: rgba(0, 229, 255, 0.05);
+    border: 1px solid rgba(0, 229, 255, 0.3);
+}
 
-                <!-- Card 3 -->
-                <div class="dash-card" onclick="switchSubView('notifications-view')">
-                    <div class="dash-icon"><i class="fa-solid fa-bell"></i></div>
-                    <h3>Notifications And Updates</h3>
-                    <p>Stay updated with latest exam dates, scholarship announcements, live batch alerts, and academy notices.</p>
-                    <span class="dash-action-btn">View Updates <i class="fa-solid fa-arrow-right"></i></span>
-                </div>
+.glow-effect { box-shadow: 0 0 15px rgba(0, 229, 255, 0.2); }
 
-                <!-- Card 4: ONLINE TEST CARD -->
-                <div class="dash-card" onclick="sessionStorage.setItem('student_name', localStorage.getItem('rjStudyUsername')); window.location.href='test/index.html'">
-                    <div class="dash-icon"><i class="fa-solid fa-user-shield"></i></div>
-                    <h3>Secure Online Test</h3>
-                    <p>Attempt live timed MCQs and subjective tests. Secured environment with instant auto-submission and admin monitoring.</p>
-                    <span class="dash-action-btn">Start Test <i class="fa-solid fa-arrow-right"></i></span>
-                </div>
+.candidate-badge {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    background: rgba(255,255,255,0.05);
+    padding: 6px 16px 6px 6px;
+    border-radius: 50px;
+    font-weight: 500;
+}
 
-                <!-- Card 5: NEW DISCUSS DOUBTS CARD -->
-                <div class="dash-card" onclick="openDoubtChat()">
-                    <div class="dash-icon"><i class="fa-solid fa-comments"></i></div>
-                    <h3>Discuss Doubts</h3>
-                    <p>Live chat with the Administrator. Ask your questions and get real-time explanations instantly.</p>
-                    <span class="dash-action-btn">Open Chat <i class="fa-solid fa-arrow-right"></i></span>
-                </div>
+.avatar {
+    width: 30px;
+    height: 30px;
+    background: var(--accent-color);
+    border-radius: 50%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    color: #000;
+    font-weight: bold;
+}
 
-            </div>
-        </div>
-    </div>
+/* Main Layout (Desktop) */
+.exam-layout {
+    display: grid;
+    grid-template-columns: 1fr 340px;
+    gap: 24px;
+    max-width: 1400px;
+    width: 100%;
+    margin: 0 auto;
+    padding: 32px;
+    flex-grow: 1;
+}
 
-    <!-- ================= VIEW 3: COMPETITIVE EXAMS SUB-SECTION ================= -->
-    <div id="competitive-view" class="page-view">
-        <div class="dashboard-topbar">
-            <div class="logo" onclick="goHome()">
-                <i class="fa-solid fa-shield-halved" style="color: var(--primary);"></i> RJ <span>Study Academy</span>
-            </div>
-            <div class="profile-menu-container">
-                <div class="profile-circle" id="profileInitial2" onclick="toggleProfileMenu(event)">A</div>
-                <div class="profile-dropdown">
-                    <div class="dropdown-username displayUsernameCopy">Student Name</div>
-                    <div class="dropdown-role"><i class="fa-solid fa-circle" style="color: var(--primary); font-size: 7px;"></i> Active Student</div>
-                    <button class="dropdown-logout-btn" onclick="logout()"><i class="fa-solid fa-right-from-bracket"></i> Logout</button>
-                </div>
-            </div>
-        </div>
-        <div class="dashboard-container">
-            <button class="back-btn" onclick="goHome()"><i class="fa-solid fa-arrow-left"></i> Back to Dashboard</button>
-            <div style="margin-bottom: 25px;">
-                <h2>Competitive Exams Batches</h2>
-                <p style="color: #94a3b8; font-size: 0.95rem;">Select your preferred coaching platform batch below.</p>
-            </div>
-            <div class="sub-grid">
-                <a href="https://www.learnxpw.site/study/batches" target="_self" class="sub-card">
-                    <h4>PW Batches</h4>
-                    <p>Click here to access Physics Wallah live classes & study modules.</p>
-                </a>
-                <a href="https://studybeepro.site/rwax/" target="_self" class="sub-card">
-                    <h4>RWA Batches</h4>
-                    <p>Click here to access Rojgar with Ankit batches & practice sets.</p>
-                </a>
-                <a href="https://studybeepro.site/vidyagram/content.html?id=41" target="_self" class="sub-card">
-                    <h4>Vidyagram Batches</h4>
-                    <p>Click here to access Vidyagram elite exam prep materials.</p>
-                </a>
-                <a href="https://gb.ayushindmods1.workers.dev/KGSNEW/" target="_self" class="sub-card">
-                    <h4>KGS Batches</h4>
-                    <p>Click here to access Khan Global Studies batches & video lectures.</p>
-                </a>
-            </div>
-        </div>
-    </div>
+/* Left Column */
+.question-section {
+    border-radius: 16px;
+    padding: 32px;
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+}
 
-    <!-- ================= VIEW 4: BOARD EXAMS SUB-SECTION ================= -->
-    <div id="boards-view" class="page-view">
-        <div class="dashboard-topbar">
-            <div class="logo" onclick="goHome()">
-                <i class="fa-solid fa-shield-halved" style="color: var(--primary);"></i> RJ <span>Study Academy</span>
-            </div>
-            <div class="profile-menu-container">
-                <div class="profile-circle" id="profileInitial3" onclick="toggleProfileMenu(event)">A</div>
-                <div class="profile-dropdown">
-                    <div class="dropdown-username displayUsernameCopy">Student Name</div>
-                    <div class="dropdown-role"><i class="fa-solid fa-circle" style="color: var(--primary); font-size: 7px;"></i> Active Student</div>
-                    <button class="dropdown-logout-btn" onclick="logout()"><i class="fa-solid fa-right-from-bracket"></i> Logout</button>
-                </div>
-            </div>
-        </div>
-        <div class="dashboard-container">
-            <button class="back-btn" onclick="goHome()"><i class="fa-solid fa-arrow-left"></i> Back to Dashboard</button>
-            <div style="margin-bottom: 25px;">
-                <h2>Board Exams Batches & Servers</h2>
-                <p style="color: #94a3b8; font-size: 0.95rem;">Select your target class, practice exercises, or servers below.</p>
-            </div>
-            <div class="sub-grid">
-                <a href="https://www.learnxpw.site/study/batches/69734ce1b0c696dcee5c35a9" target="_self" class="sub-card">
-                    <h4>Class 9th</h4>
-                    <p>Access Class 9th lecture videos, notes, important questions & sample papers.</p>
-                </a>
-                <a href="https://www.learnxpw.site/study/batches/69737cfccbe58ca6dbccb146" target="_self" class="sub-card">
-                    <h4>Class 10th</h4>
-                    <p>Access Class 10th board prep materials, previous year papers & solutions.</p>
-                </a>
-                <a href="#" onclick="alert('Practice module is currently under maintenance. Check back later!'); return false;" class="sub-card">
-                    <h4>Practice Exercise</h4>
-                    <p>Access chapter-wise tests and interactive problem sets for practice.</p>
-                </a>
-                <a href="#" onclick="alert('Servers are currently being upgraded. Check notifications.'); return false;" class="sub-card" style="border-color: rgba(0, 191, 255, 0.4);">
-                    <h4 style="color: #00bfff;">Servers</h4>
-                    <p>Access dedicated streaming servers:<br>• Class 9th Rj1 & Rj2<br>• Class 10th Rj1 & Rj2</p>
-                </a>
-            </div>
+.question-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid var(--border-color);
+    padding-bottom: 16px;
+    margin-bottom: 24px;
+}
 
-            <div style="margin-top: 40px; margin-bottom: 20px;">
-                <h3>Dedicated Class Servers</h3>
-                <p style="color: #94a3b8; font-size: 0.9rem;">Direct links for individual class servers (Rj1 & Rj2)</p>
-            </div>
-            <div class="sub-grid">
-                <a href="https://vidcloud.eu.org/#BatchDetails/batch/69734ce1b0c696dcee5c35a9" target="_self" class="sub-card">
-                    <h4>Class 9th Rj1</h4>
-                    <p>Primary server link for Class 9th video modules.</p>
-                </a>
-                <a href="#" onclick="alert('Server Rj2 is currently offline. Please use Rj1.'); return false;" class="sub-card">
-                    <h4>Class 9th Rj2</h4>
-                    <p>Secondary high-speed server link for Class 9th.</p>
-                </a>
-                <a href="https://vidcloud.eu.org/#BatchDetails/batch/69737cfccbe58ca6dbccb146" target="_self" class="sub-card">
-                    <h4>Class 10th Rj1</h4>
-                    <p>Primary server link for Class 10th video modules.</p>
-                </a>
-                <a href="#" onclick="alert('Server Rj2 is currently offline. Please use Rj1.'); return false;" class="sub-card">
-                    <h4>Class 10th Rj2</h4>
-                    <p>Secondary high-speed server link for Class 10th.</p>
-                </a>
-            </div>
-        </div>
-    </div>
+.q-num {
+    font-weight: 600;
+    color: var(--accent-color);
+    letter-spacing: 1px;
+    font-size: 0.95rem;
+}
 
-    <!-- ================= VIEW 5: NOTIFICATIONS SUB-SECTION ================= -->
-    <div id="notifications-view" class="page-view">
-        <div class="dashboard-topbar">
-            <div class="logo" onclick="goHome()">
-                <i class="fa-solid fa-shield-halved" style="color: var(--primary);"></i> RJ <span>Study Academy</span>
-            </div>
-            <div class="profile-menu-container">
-                <div class="profile-circle" id="profileInitial4" onclick="toggleProfileMenu(event)">A</div>
-                <div class="profile-dropdown">
-                    <div class="dropdown-username displayUsernameCopy">Student Name</div>
-                    <div class="dropdown-role"><i class="fa-solid fa-circle" style="color: var(--primary); font-size: 7px;"></i> Active Student</div>
-                    <button class="dropdown-logout-btn" onclick="logout()"><i class="fa-solid fa-right-from-bracket"></i> Logout</button>
-                </div>
-            </div>
-        </div>
-        <div class="dashboard-container">
-            <button class="back-btn" onclick="goHome()"><i class="fa-solid fa-arrow-left"></i> Back to Dashboard</button>
-            <div style="margin-bottom: 25px;">
-                <h2>Notifications And Updates</h2>
-                <p style="color: #94a3b8; font-size: 0.95rem;">Latest announcements and schedule updates.</p>
-            </div>
-            <div class="sub-card" style="text-align: left; cursor: default;">
-                <h4 style="margin-bottom: 5px;"><i class="fa-solid fa-circle-info"></i> New Batch & Server Links Released</h4>
-                <p style="color: #cbd5e1; margin-bottom: 5px;">All competitive and board servers (Rj1, Rj2) are fully configured and updated.</p>
-                <span style="font-size: 0.75rem; color: #64748b;">Updated: Today</span>
-            </div>
-        </div>
-    </div>
+.q-type {
+    background: rgba(255, 255, 255, 0.1);
+    padding: 4px 10px;
+    border-radius: 6px;
+    font-size: 0.8rem;
+}
 
-    <!-- ================= DOUBT CHAT MODAL (HIDDEN BY DEFAULT) ================= -->
-    <div id="chatModalOverlay" class="chat-overlay" style="display: none;">
-        <div class="chat-modal">
-            <div class="chat-header">
-                <h3>💬 Realtime Support</h3>
-                <button class="chat-close-btn" onclick="closeDoubtChat()">✖</button>
-            </div>
-            <div class="chat-body" id="chatHistory">
-                <!-- Dynamic Messages Yahan Aayenge -->
-            </div>
-            <div class="chat-footer">
-                <input type="text" id="doubtInput" placeholder="Type your doubt..." onkeypress="handleChatEnter(event)">
-                <button onclick="sendDoubtMsg()">Send</button>
-            </div>
-        </div>
-    </div>
+#question-text {
+    font-size: 1.4rem;
+    line-height: 1.6;
+    font-weight: 500;
+    margin-bottom: 32px;
+    word-break: break-word;
+}
 
-    <!-- LINKING EXTERNAL JAVASCRIPT FILE -->
-    <script src="script.js"></script>
+/* Options */
+.options-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    margin-bottom: auto;
+    width: 100%;
+}
 
-</body>
-</html>  
+.option-card {
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid var(--border-color);
+    padding: 18px 24px;
+    border-radius: 12px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    font-size: 1.05rem;
+    transition: all 0.2s ease;
+    width: 100%;
+    word-break: break-word;
+}
+
+.option-card:hover {
+    background: rgba(255, 255, 255, 0.08);
+}
+
+.option-card.selected {
+    background: rgba(0, 229, 255, 0.1);
+    border-color: var(--accent-color);
+    box-shadow: 0 0 15px rgba(0, 229, 255, 0.15);
+}
+
+.option-card input[type="radio"] {
+    appearance: none;
+    -webkit-appearance: none;
+    width: 22px;
+    height: 22px;
+    border: 2px solid var(--text-secondary);
+    border-radius: 50%;
+    outline: none;
+    cursor: pointer;
+    position: relative;
+    transition: 0.2s;
+    flex-shrink: 0;
+}
+
+.option-card.selected input[type="radio"] {
+    border-color: var(--accent-color);
+}
+
+.option-card.selected input[type="radio"]::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 12px;
+    height: 12px;
+    background: var(--accent-color);
+    border-radius: 50%;
+}
+
+/* Footer Nav (Desktop) */
+.action-footer {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 40px;
+    padding-top: 24px;
+    border-top: 1px solid var(--border-color);
+    gap: 12px;
+}
+
+.nav-btn {
+    padding: 12px 24px;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: 0.2s;
+    font-family: inherit;
+}
+
+.nav-btn.prev,
+.nav-btn.clear {
+    background: transparent;
+    border: 1px solid var(--text-secondary);
+    color: var(--text-primary);
+}
+
+.nav-btn.next {
+    background: var(--accent-color);
+    color: #000;
+    border: none;
+}
+
+/* Right Column (Matrix) */
+.sidebar-section {
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+}
+
+.matrix-card {
+    border-radius: 16px;
+    padding: 24px;
+}
+
+.matrix-title {
+    font-size: 1rem;
+    color: var(--text-secondary);
+    margin-bottom: 20px;
+    text-align: center;
+}
+
+.matrix-legend {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 24px;
+    font-size: 0.8rem;
+    color: var(--text-secondary);
+}
+
+.legend-item { display: flex; align-items: center; gap: 6px; }
+.dot { width: 10px; height: 10px; border-radius: 50%; }
+.dot.answered { background: var(--success-color); }
+.dot.current { border: 2px solid var(--accent-color); }
+.dot.unanswered { border: 1px solid var(--text-secondary); }
+
+.palette-grid {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 10px;
+}
+
+.palette-num {
+    background: rgba(255,255,255,0.05);
+    border: 1px solid var(--border-color);
+    color: var(--text-primary);
+    height: 44px;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.palette-num.answered {
+    background: rgba(16, 185, 129, 0.15);
+    color: var(--success-color);
+    border-color: rgba(16, 185, 129, 0.4);
+}
+
+.palette-num.active {
+    border: 2px solid var(--accent-color);
+    color: var(--accent-color);
+}
+
+.submit-exam-btn {
+    background: linear-gradient(135deg, var(--danger-color), #BE123C);
+    color: #fff;
+    border: none;
+    padding: 16px;
+    border-radius: 12px;
+    font-weight: 700;
+    font-size: 1.05rem;
+    cursor: pointer;
+    width: 100%;
+}
+
+/* Modals */
+.modal-overlay, .locked-container {
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: rgba(0, 0, 0, 0.9);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 9999;
+}
+
+.modal-card, .locked-card {
+    border-radius: 16px;
+    padding: 30px;
+    max-width: 450px;
+    width: 90%;
+    text-align: center;
+}
+
+.matrix-toggle-btn, .matrix-close-btn { display: none; }
+
+/* ==============================================================
+   MOBILE RESPONSIVE OVERRIDES (STRICT 1-COLUMN)
+   ============================================================== */
+@media screen and (max-width: 900px) {
+    .exam-layout {
+        display: flex !important;
+        flex-direction: column !important;
+        padding: 12px !important;
+        padding-bottom: 160px !important;
+        width: 100% !important;
+        max-width: 100% !important;
+    }
+
+    .exam-header {
+        padding: 10px 14px;
+        flex-wrap: wrap;
+    }
+
+    .candidate-badge { display: none !important; }
+
+    .timer-box {
+        width: 100%;
+        justify-content: center;
+        font-size: 1.1rem;
+        padding: 6px;
+        margin-top: 6px;
+    }
+
+    .question-section {
+        padding: 14px !important;
+        width: 100% !important;
+    }
+
+    #question-text {
+        font-size: 1.1rem !important;
+        margin-bottom: 16px !important;
+    }
+
+    .options-grid { gap: 10px !important; }
+
+    .option-card {
+        padding: 12px 14px !important;
+        font-size: 0.95rem !important;
+        width: 100% !important;
+    }
+
+    /* Hide desktop question footer on mobile */
+    .question-section .action-footer {
+        display: none !important;
+    }
+
+    /* Mobile Fixed Bottom Bar */
+    .mobile-bottom-bar {
+        position: fixed !important;
+        bottom: 0 !important;
+        left: 0 !important;
+        right: 0 !important;
+        width: 100% !important;
+        z-index: 2000 !important;
+        background: #060913 !important;
+        border-top: 1px solid var(--border-color) !important;
+        padding: 8px 12px !important;
+        padding-bottom: calc(8px + env(safe-area-inset-bottom, 0px)) !important;
+        display: flex !important;
+        flex-direction: column !important;
+        gap: 8px !important;
+    }
+
+    .mobile-bottom-bar .nav-row {
+        display: flex !important;
+        gap: 8px !important;
+        width: 100% !important;
+    }
+
+    .mobile-bottom-bar .nav-btn {
+        flex: 1 !important;
+        padding: 11px 4px !important;
+        font-size: 0.85rem !important;
+        min-height: 44px !important;
+        border-radius: 8px !important;
+    }
+
+    .mobile-bottom-bar .nav-btn.prev,
+    .mobile-bottom-bar .nav-btn.clear {
+        background: transparent !important;
+        border: 1px solid var(--text-secondary) !important;
+        color: var(--text-primary) !important;
+    }
+
+    .mobile-bottom-bar .nav-btn.next {
+        background: var(--accent-color) !important;
+        color: #000 !important;
+        border: none !important;
+    }
+
+    .mobile-bottom-bar .mobile-submit-btn {
+        width: 100% !important;
+        background: linear-gradient(135deg, var(--danger-color), #BE123C) !important;
+        color: #fff !important;
+        border: none !important;
+        padding: 12px !important;
+        border-radius: 8px !important;
+        font-weight: 700 !important;
+        font-size: 0.95rem !important;
+    }
+
+    /* Floating Matrix Drawer Icon */
+    .matrix-toggle-btn {
+        display: flex !important;
+        position: fixed !important;
+        bottom: 145px !important;
+        right: 14px !important;
+        width: 50px !important;
+        height: 50px !important;
+        border-radius: 50% !important;
+        background: var(--accent-color) !important;
+        color: #000 !important;
+        border: none !important;
+        box-shadow: 0 4px 18px rgba(0, 229, 255, 0.5) !important;
+        font-size: 1.4rem !important;
+        font-weight: 900 !important;
+        z-index: 2100 !important;
+        align-items: center !important;
+        justify-content: center !important;
+    }
+
+    /* Matrix Fullscreen Off-Canvas Drawer */
+    .sidebar-section {
+        position: fixed !important;
+        top: 0 !important;
+        left: 0 !important;
+        width: 100% !important;
+        height: 100% !important;
+        background: #060913 !important;
+        z-index: 3000 !important;
+        padding: 20px 16px !important;
+        overflow-y: auto !important;
+        transform: translateX(100%) !important;
+        transition: transform 0.3s ease !important;
+        display: flex !important;
+        flex-direction: column !important;
+        gap: 16px !important;
+    }
+
+    .sidebar-section.active {
+        transform: translateX(0) !important;
+    }
+
+    .matrix-close-btn {
+        display: block !important;
+        width: 100% !important;
+        background: rgba(239, 68, 68, 0.15) !important;
+        border: 1px solid var(--danger-color) !important;
+        color: var(--danger-color) !important;
+        padding: 12px !important;
+        border-radius: 8px !important;
+        font-size: 1rem !important;
+        font-weight: 700 !important;
+    }
+}
