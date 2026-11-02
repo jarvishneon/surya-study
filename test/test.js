@@ -1,3 +1,7 @@
+// ==========================================
+// RJ STUDY ACADEMY - DIRECT TEST ENGINE (PRO) v16.1
+// ==========================================
+
 const WORKER_URL = "https://rj-test-backen.internationalbgi.workers.dev";
 
 let testConfig = null;
@@ -10,7 +14,7 @@ let isSubmitting = false;
 
 document.addEventListener("DOMContentLoaded", () => {
     fetchConfigAndInit();
-    initDraggableFAB(); // Initialize Moveable Floating Icon
+    initDraggableFAB();
 });
 
 async function fetchConfigAndInit() {
@@ -172,77 +176,77 @@ function jumpToQuestion(idx) {
 }
 
 // ==========================================
-// MOVEABLE / DRAGGABLE FAB LOGIC (TOUCH & MOUSE)
+// FIXED DRAGGABLE & CLICKABLE FAB LOGIC
 // ==========================================
 function initDraggableFAB() {
     const fab = document.getElementById('draggable-fab');
     if (!fab) return;
 
     let isDragging = false;
-    let hasMoved = false;
-    let startX, startY, initialLeft, initialTop;
+    let isDragged = false;
+    let startX = 0, startY = 0;
+    let initialLeft = 0, initialTop = 0;
 
     function onStart(e) {
         isDragging = true;
-        hasMoved = false;
-        const clientX = e.touches ? e.touches[0].clientX : e.clientX;
-        const clientY = e.touches ? e.touches[0].clientY : e.clientY;
-
-        startX = clientX;
-        startY = clientY;
+        isDragged = false;
+        const touch = e.touches ? e.touches[0] : e;
+        startX = touch.clientX;
+        startY = touch.clientY;
 
         const rect = fab.getBoundingClientRect();
         initialLeft = rect.left;
         initialTop = rect.top;
-
         fab.style.transition = 'none';
     }
 
     function onMove(e) {
         if (!isDragging) return;
-        const clientX = e.touches ? e.touches[0].clientX : e.clientX;
-        const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+        const touch = e.touches ? e.touches[0] : e;
+        const deltaX = touch.clientX - startX;
+        const deltaY = touch.clientY - startY;
 
-        const deltaX = clientX - startX;
-        const deltaY = clientY - startY;
+        // Increased threshold to 12px to avoid mistaking taps for drags
+        if (Math.abs(deltaX) > 12 || Math.abs(deltaY) > 12) {
+            isDragged = true;
+            let newLeft = initialLeft + deltaX;
+            let newTop = initialTop + deltaY;
 
-        if (Math.abs(deltaX) > 5 || Math.abs(deltaY) > 5) {
-            hasMoved = true;
+            const maxLeft = window.innerWidth - fab.offsetWidth - 10;
+            const maxTop = window.innerHeight - fab.offsetHeight - 10;
+
+            newLeft = Math.max(10, Math.min(newLeft, maxLeft));
+            newTop = Math.max(10, Math.min(newTop, maxTop));
+
+            fab.style.left = newLeft + 'px';
+            fab.style.top = newTop + 'px';
+            fab.style.right = 'auto';
+            fab.style.bottom = 'auto';
         }
-
-        let newLeft = initialLeft + deltaX;
-        let newTop = initialTop + deltaY;
-
-        // Keep inside screen bounds
-        const maxLeft = window.innerWidth - fab.offsetWidth - 10;
-        const maxTop = window.innerHeight - fab.offsetHeight - 10;
-
-        newLeft = Math.max(10, Math.min(newLeft, maxLeft));
-        newTop = Math.max(10, Math.min(newTop, maxTop));
-
-        fab.style.left = newLeft + 'px';
-        fab.style.top = newTop + 'px';
-        fab.style.right = 'auto';
-        fab.style.bottom = 'auto';
     }
 
     function onEnd() {
         if (!isDragging) return;
         isDragging = false;
         fab.style.transition = 'transform 0.15s, box-shadow 0.15s';
-        
-        if (!hasMoved) {
-            toggleMatrix(); // Single tap opens matrix
-        }
     }
 
+    // Touch events
     fab.addEventListener('touchstart', onStart, { passive: true });
     fab.addEventListener('touchmove', onMove, { passive: true });
     fab.addEventListener('touchend', onEnd);
 
+    // Mouse events (Desktop testing)
     fab.addEventListener('mousedown', onStart);
     window.addEventListener('mousemove', onMove);
     window.addEventListener('mouseup', onEnd);
+
+    // Click handler: If NOT dragged, open matrix!
+    fab.addEventListener('click', function(e) {
+        if (!isDragged) {
+            toggleMatrix();
+        }
+    });
 }
 
 function startTimer() {
