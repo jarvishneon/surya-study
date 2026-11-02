@@ -10,6 +10,7 @@ let isSubmitting = false;
 
 document.addEventListener("DOMContentLoaded", () => {
     fetchConfigAndInit();
+    initDraggableFAB(); // Initialize Moveable Floating Icon
 });
 
 async function fetchConfigAndInit() {
@@ -117,13 +118,11 @@ function loadQuestion(index) {
         });
     }
 
-    // Update Desktop Buttons
     var prevBtn = document.getElementById("prev-btn");
     if (prevBtn) prevBtn.disabled = index === 0;
     var nextBtn = document.getElementById("next-btn");
     if (nextBtn) nextBtn.innerText = index === testConfig.questions.length - 1 ? "FINISH →" : "Next →";
 
-    // Update Mobile Buttons
     var mobPrevBtn = document.getElementById("mob-prev-btn");
     if (mobPrevBtn) mobPrevBtn.disabled = index === 0;
     var mobNextBtn = document.getElementById("mob-next-btn");
@@ -170,6 +169,80 @@ function jumpToQuestion(idx) {
         sidebar.classList.remove('active-matrix');
         document.body.style.overflow = '';
     }
+}
+
+// ==========================================
+// MOVEABLE / DRAGGABLE FAB LOGIC (TOUCH & MOUSE)
+// ==========================================
+function initDraggableFAB() {
+    const fab = document.getElementById('draggable-fab');
+    if (!fab) return;
+
+    let isDragging = false;
+    let hasMoved = false;
+    let startX, startY, initialLeft, initialTop;
+
+    function onStart(e) {
+        isDragging = true;
+        hasMoved = false;
+        const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+        const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+
+        startX = clientX;
+        startY = clientY;
+
+        const rect = fab.getBoundingClientRect();
+        initialLeft = rect.left;
+        initialTop = rect.top;
+
+        fab.style.transition = 'none';
+    }
+
+    function onMove(e) {
+        if (!isDragging) return;
+        const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+        const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+
+        const deltaX = clientX - startX;
+        const deltaY = clientY - startY;
+
+        if (Math.abs(deltaX) > 5 || Math.abs(deltaY) > 5) {
+            hasMoved = true;
+        }
+
+        let newLeft = initialLeft + deltaX;
+        let newTop = initialTop + deltaY;
+
+        // Keep inside screen bounds
+        const maxLeft = window.innerWidth - fab.offsetWidth - 10;
+        const maxTop = window.innerHeight - fab.offsetHeight - 10;
+
+        newLeft = Math.max(10, Math.min(newLeft, maxLeft));
+        newTop = Math.max(10, Math.min(newTop, maxTop));
+
+        fab.style.left = newLeft + 'px';
+        fab.style.top = newTop + 'px';
+        fab.style.right = 'auto';
+        fab.style.bottom = 'auto';
+    }
+
+    function onEnd() {
+        if (!isDragging) return;
+        isDragging = false;
+        fab.style.transition = 'transform 0.15s, box-shadow 0.15s';
+        
+        if (!hasMoved) {
+            toggleMatrix(); // Single tap opens matrix
+        }
+    }
+
+    fab.addEventListener('touchstart', onStart, { passive: true });
+    fab.addEventListener('touchmove', onMove, { passive: true });
+    fab.addEventListener('touchend', onEnd);
+
+    fab.addEventListener('mousedown', onStart);
+    window.addEventListener('mousemove', onMove);
+    window.addEventListener('mouseup', onEnd);
 }
 
 function startTimer() {
