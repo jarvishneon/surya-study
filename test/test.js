@@ -1,365 +1,381 @@
-// ==========================================
-// RJ STUDY ACADEMY - DIRECT TEST ENGINE (PRO) v16.1
-// ==========================================
+/* ==========================================================================
+   RJ ACADEMY PRO - Core Functional Script
+   ========================================================================== */
 
 const WORKER_URL = "https://rj-test-backen.internationalbgi.workers.dev";
 
-let testConfig = null;
-let currentQuestionIndex = 0;
-let userAnswers = {};
-let timerInterval = null;
-let remainingSeconds = 0;
-let studentName = "";
-let isSubmitting = false;
+// Global State
+let testConfig = {
+    testId: "",
+    title: "",
+    duration: 60, // in minutes
+    questions: []
+};
 
-document.addEventListener("DOMContentLoaded", () => {
-    fetchConfigAndInit();
-    initDraggableFAB();
+let currentQIndex = 0;
+let userAnswers = {}; // { qIndex: selectedOptionIndex }
+let flaggedQuestions = new Set();
+let visitedQuestions = new Set();
+let timerInterval = null;
+let timeRemaining = 0;
+
+// FAB Dragging & Click State
+let fabDragState = {
+    isDragging: false,
+    startX: 0,
+    startY: 0,
+    initialLeft: 0,
+    initialTop: 0,
+    dragDistance: 0
+};
+
+// Application Initialization
+document.addEventListener("DOMContentLoaded", async () => {
+    initFabDraggable();
+    
+    const urlParams = new URLSearchParams(window.location.search);
+    const testId = urlParams.get("testId") || "demo_test";
+
+    // Check if already submitted
+    if (localStorage.getItem(`submitted_${testId}`)) {
+        showLockedScreen("Assessment already submitted on this device.");
+        return;
+    }
+
+    await loadTestConfig(testId);
 });
 
-async function fetchConfigAndInit() {
+// Fetch Test Config from Worker
+async function loadTestConfig(testId) {
     try {
-        const res = await fetch(WORKER_URL + "/api/config?t=" + Date.now());
-        if (!res.ok) throw new Error("Server Error");
-        testConfig = await res.json();
-
-        if (testConfig.status !== "open") {
-            showLockedScreen("TEST CURRENTLY CLOSED", "This test is currently closed or locked by Admin.", "🔴");
-            return;
-        }
-        checkLockStatus();
+        const res = await fetch(`${WORKER_URL}/api/config?testId=${testId}`);
+        if (!res.ok) throw new Error("Failed to load test parameters.");
+        
+        const data = await res.json();
+        testConfig = data;
+        
+        document.getElementById("test-title-display").innerText = testConfig.title || "Assessment";
+        timeRemaining = (testConfig.duration || 60) * 60;
+        
+        startTimer();
+        renderQuestion(0);
+        renderMatrix();
     } catch (err) {
         console.error(err);
-        setTimeout(fetchConfigAndInit, 3000);
+        // Fallback Mock Data if Worker API fails
+        loadMockData(testId);
     }
 }
 
-function checkLockStatus() {
-    var isSubmitted = localStorage.getItem("submitted_" + testConfig.testId);
-    var submittedTimeRaw = localStorage.getItem("submitted_time_" + testConfig.testId);
+// Mock Data Fallback
+function loadMockData(testId) {
+    testConfig = {
+        testId: testId,
+        title: "RJ ACADEMY PRO Demo Mock Test",
+        duration: 30,
+        questions: [
+            {
+                id: "q1",
+                text: "What is the primary function of the cell nucleus in eukaryotic organisms?",
+                options: [
+                    "Energy production via ATP synthesis",
+                    "Storage and regulation of genetic material (DNA)",
+                    "Protein synthesis and ribosome assembly",
+                    "Cellular waste degradation and recycling"
+                ]
+            },
+            {
+                id: "q2",
+                text: "Which vector quantity represents the rate of change of momentum with respect to time?",
+                options: ["Work Done", "Impulse", "Net Force", "Kinetic Energy"]
+            },
+            {
+                id: "q3",
+                text: "In chemical kinetics, what does the activation energy of a reaction indicate?",
+                options: [
+                    "Total energy released during exothermic reaction",
+                    "Minimum energy required to form the transition state",
+                    "Enthalpy change of the equilibrium system",
+                    "Free energy of products minus reactants"
+                ]
+            }
+        ]
+    };
 
-    if (isSubmitted) {
-        var reopenTime = testConfig.reopenTimestamp || 0;
-        var submittedTime = submittedTimeRaw ? parseInt(submittedTimeRaw, 10) : 0;
-
-        if (reopenTime > 0 && (submittedTime === 0 || submittedTime < reopenTime)) {
-            localStorage.removeItem("submitted_" + testConfig.testId);
-            localStorage.removeItem("submitted_time_" + testConfig.testId);
-        } else {
-            showLockedScreen("TEST ALREADY SUBMITTED", "You have already completed this test session.", "🔒");
-            return;
-        }
-    }
-
-    studentName = sessionStorage.getItem("student_name") || localStorage.getItem("rjStudyUsername") || "Student";
-    sessionStorage.setItem("student_name", studentName);
-    initExam();
-}
-
-function initExam() {
-    var nameEl = document.getElementById("student-display-name");
-    if (nameEl) nameEl.innerText = studentName;
-
-    var app = document.getElementById("exam-app");
-    if (app) app.classList.remove("hidden");
-
-    remainingSeconds = (testConfig.durationMinutes || 45) * 60;
-    renderPalette();
-    loadQuestion(0);
+    document.getElementById("test-title-display").innerText = testConfig.title;
+    timeRemaining = testConfig.duration * 60;
     startTimer();
+    renderQuestion(0);
+    renderMatrix();
 }
 
-function renderPalette() {
-    var grid = document.getElementById("palette-grid");
-    if (!grid) return;
-    grid.innerHTML = "";
-    testConfig.questions.forEach(function (_, idx) {
-        var btn = document.createElement("button");
-        btn.className = "palette-num";
-        btn.innerText = idx + 1;
-        btn.id = "palette-item-" + idx;
-        btn.onclick = function () { jumpToQuestion(idx); };
-        grid.appendChild(btn);
-    });
-    updatePaletteUI();
-}
-
-function updatePaletteUI() {
-    testConfig.questions.forEach(function (_, idx) {
-        var btn = document.getElementById("palette-item-" + idx);
-        if (!btn) return;
-        btn.className = "palette-num";
-        if (idx === currentQuestionIndex) btn.classList.add("active");
-        if (userAnswers[idx] !== undefined && userAnswers[idx] !== "") btn.classList.add("answered");
-    });
-}
-
-function loadQuestion(index) {
-    currentQuestionIndex = index;
-    var q = testConfig.questions[index];
-
-    var qNum = document.getElementById("question-number");
-    if (qNum) qNum.innerText = "QUESTION " + (index + 1) + " OF " + testConfig.questions.length;
-
-    var qBadge = document.getElementById("question-type-badge");
-    if (qBadge) qBadge.innerText = (q.type || "mcq").toUpperCase();
-
-    var qText = document.getElementById("question-text");
-    if (qText) qText.innerText = q.question;
-
-    var container = document.getElementById("options-container");
-    if (!container) return;
-    container.innerHTML = "";
-
-    if (q.type === "mcq") {
-        q.options.forEach(function (optText, optIdx) {
-            var card = document.createElement("div");
-            card.className = "option-card";
-            if (userAnswers[index] === optIdx) card.classList.add("selected");
-            card.onclick = function () { selectMCQOption(optIdx); };
-            card.innerHTML = '<input type="radio" name="option" ' + (userAnswers[index] === optIdx ? "checked" : "") + '><span>' + optText + '</span>';
-            container.appendChild(card);
-        });
-    }
-
-    var prevBtn = document.getElementById("prev-btn");
-    if (prevBtn) prevBtn.disabled = index === 0;
-    var nextBtn = document.getElementById("next-btn");
-    if (nextBtn) nextBtn.innerText = index === testConfig.questions.length - 1 ? "FINISH →" : "Next →";
-
-    var mobPrevBtn = document.getElementById("mob-prev-btn");
-    if (mobPrevBtn) mobPrevBtn.disabled = index === 0;
-    var mobNextBtn = document.getElementById("mob-next-btn");
-    if (mobNextBtn) mobNextBtn.innerText = index === testConfig.questions.length - 1 ? "FINISH →" : "Next →";
-
-    updatePaletteUI();
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-}
-
-function selectMCQOption(optIdx) {
-    userAnswers[currentQuestionIndex] = optIdx;
-    loadQuestion(currentQuestionIndex);
-}
-
-function clearAnswer() {
-    delete userAnswers[currentQuestionIndex];
-    loadQuestion(currentQuestionIndex);
-}
-
-function nextQuestion() {
-    if (currentQuestionIndex < testConfig.questions.length - 1) {
-        loadQuestion(currentQuestionIndex + 1);
-    } else {
-        confirmSubmission();
-    }
-}
-
-function prevQuestion() {
-    if (currentQuestionIndex > 0) loadQuestion(currentQuestionIndex - 1);
-}
-
-function toggleMatrix() {
-    var sidebar = document.querySelector('.sidebar-section');
-    if (sidebar) {
-        sidebar.classList.toggle('active-matrix');
-        document.body.style.overflow = sidebar.classList.contains('active-matrix') ? 'hidden' : '';
-    }
-}
-
-function jumpToQuestion(idx) {
-    loadQuestion(idx);
-    var sidebar = document.querySelector('.sidebar-section');
-    if (window.innerWidth <= 992 && sidebar && sidebar.classList.contains('active-matrix')) {
-        sidebar.classList.remove('active-matrix');
-        document.body.style.overflow = '';
-    }
-}
-
-// ==========================================
-// FIXED DRAGGABLE & CLICKABLE FAB LOGIC
-// ==========================================
-function initDraggableFAB() {
-    const fab = document.getElementById('draggable-fab');
-    if (!fab) return;
-
-    let isDragging = false;
-    let isDragged = false;
-    let startX = 0, startY = 0;
-    let initialLeft = 0, initialTop = 0;
-
-    function onStart(e) {
-        isDragging = true;
-        isDragged = false;
-        const touch = e.touches ? e.touches[0] : e;
-        startX = touch.clientX;
-        startY = touch.clientY;
-
-        const rect = fab.getBoundingClientRect();
-        initialLeft = rect.left;
-        initialTop = rect.top;
-        fab.style.transition = 'none';
-    }
-
-    function onMove(e) {
-        if (!isDragging) return;
-        const touch = e.touches ? e.touches[0] : e;
-        const deltaX = touch.clientX - startX;
-        const deltaY = touch.clientY - startY;
-
-        // Increased threshold to 12px to avoid mistaking taps for drags
-        if (Math.abs(deltaX) > 12 || Math.abs(deltaY) > 12) {
-            isDragged = true;
-            let newLeft = initialLeft + deltaX;
-            let newTop = initialTop + deltaY;
-
-            const maxLeft = window.innerWidth - fab.offsetWidth - 10;
-            const maxTop = window.innerHeight - fab.offsetHeight - 10;
-
-            newLeft = Math.max(10, Math.min(newLeft, maxLeft));
-            newTop = Math.max(10, Math.min(newTop, maxTop));
-
-            fab.style.left = newLeft + 'px';
-            fab.style.top = newTop + 'px';
-            fab.style.right = 'auto';
-            fab.style.bottom = 'auto';
-        }
-    }
-
-    function onEnd() {
-        if (!isDragging) return;
-        isDragging = false;
-        fab.style.transition = 'transform 0.15s, box-shadow 0.15s';
-    }
-
-    // Touch events
-    fab.addEventListener('touchstart', onStart, { passive: true });
-    fab.addEventListener('touchmove', onMove, { passive: true });
-    fab.addEventListener('touchend', onEnd);
-
-    // Mouse events (Desktop testing)
-    fab.addEventListener('mousedown', onStart);
-    window.addEventListener('mousemove', onMove);
-    window.addEventListener('mouseup', onEnd);
-
-    // Click handler: If NOT dragged, open matrix!
-    fab.addEventListener('click', function(e) {
-        if (!isDragged) {
-            toggleMatrix();
-        }
-    });
-}
-
+// Timer Logic
 function startTimer() {
-    if (timerInterval) clearInterval(timerInterval);
     updateTimerDisplay();
-    timerInterval = setInterval(function () {
-        remainingSeconds--;
+    timerInterval = setInterval(() => {
+        timeRemaining--;
         updateTimerDisplay();
-        if (remainingSeconds <= 0) {
+        
+        if (timeRemaining <= 0) {
             clearInterval(timerInterval);
-            autoSubmitExam();
+            autoSubmitOnTimeout();
         }
     }, 1000);
 }
 
 function updateTimerDisplay() {
-    var hours = Math.floor(remainingSeconds / 3600);
-    var mins = Math.floor((remainingSeconds % 3600) / 60);
-    var secs = remainingSeconds % 60;
-    var timerElem = document.getElementById("exam-timer");
-    if (timerElem) {
-        timerElem.innerText =
-            String(hours).padStart(2, "0") + ":" +
-            String(mins).padStart(2, "0") + ":" +
-            String(secs).padStart(2, "0");
-        if (remainingSeconds <= 60) timerElem.style.color = "#EF4444";
-        else timerElem.style.color = "";
+    const hours = Math.floor(timeRemaining / 3600);
+    const mins = Math.floor((timeRemaining % 3600) / 60);
+    const secs = timeRemaining % 60;
+
+    const display = [hours, mins, secs]
+        .map(v => String(v).padStart(2, '0'))
+        .filter((v, i) => i > 0 || v !== '00')
+        .join(':');
+
+    document.getElementById("time-left").innerText = display;
+}
+
+// Question Rendering
+function renderQuestion(index) {
+    if (!testConfig.questions[index]) return;
+    
+    currentQIndex = index;
+    visitedQuestions.add(index);
+    
+    const q = testConfig.questions[index];
+    
+    document.getElementById("q-number").innerText = `Q.${index + 1}`;
+    document.getElementById("question-text").innerText = q.text;
+    
+    // Flag Button UI
+    const flagBtn = document.getElementById("flag-btn");
+    if (flaggedQuestions.has(index)) {
+        flagBtn.classList.add("flagged");
+    } else {
+        flagBtn.classList.remove("flagged");
+    }
+
+    // Question Image Handling
+    const imgContainer = document.getElementById("question-image-container");
+    const imgEl = document.getElementById("question-image");
+    if (q.imageUrl) {
+        imgEl.src = q.imageUrl;
+        imgContainer.classList.remove("hidden");
+    } else {
+        imgContainer.classList.add("hidden");
+    }
+
+    // Render Options
+    const optsContainer = document.getElementById("options-container");
+    optsContainer.innerHTML = "";
+
+    const labels = ["A", "B", "C", "D", "E"];
+    q.options.forEach((optText, optIdx) => {
+        const optCard = document.createElement("div");
+        optCard.className = `option-card ${userAnswers[index] === optIdx ? "selected" : ""}`;
+        optCard.onclick = () => selectOption(optIdx);
+
+        optCard.innerHTML = `
+            <div class="opt-index">${labels[optIdx] || optIdx + 1}</div>
+            <div class="opt-label">${optText}</div>
+        `;
+        optsContainer.appendChild(optCard);
+    });
+
+    renderMatrix();
+}
+
+// Select MCQ Option
+function selectOption(optIndex) {
+    userAnswers[currentQIndex] = optIndex;
+    renderQuestion(currentQIndex);
+}
+
+// Toggle Flag Status
+function toggleFlag() {
+    if (flaggedQuestions.has(currentQIndex)) {
+        flaggedQuestions.delete(currentQIndex);
+    } else {
+        flaggedQuestions.add(currentQIndex);
+    }
+    renderQuestion(currentQIndex);
+}
+
+// Navigation Controls
+function nextQuestion() {
+    if (currentQIndex < testConfig.questions.length - 1) {
+        renderQuestion(currentQIndex + 1);
     }
 }
 
-function confirmSubmission() {
-    if (isSubmitting) return;
-    var answered = Object.keys(userAnswers).filter(function (k) {
-        return userAnswers[k] !== "";
-    }).length;
-    var summary = document.getElementById("submission-summary");
-    if (summary) {
-        summary.innerText = "You have answered " + answered + " out of " + testConfig.questions.length + " questions. Submit test now?";
+function prevQuestion() {
+    if (currentQIndex > 0) {
+        renderQuestion(currentQIndex - 1);
     }
-    var sidebar = document.querySelector('.sidebar-section');
-    if (sidebar) {
-        sidebar.classList.remove('active-matrix');
-        document.body.style.overflow = '';
-    }
-    var modal = document.getElementById("confirm-modal");
-    if (modal) modal.classList.remove("hidden");
 }
 
-function closeConfirmModal() {
-    var modal = document.getElementById("confirm-modal");
-    if (modal) modal.classList.add("hidden");
+// Render Palette Matrix
+function renderMatrix() {
+    const grid = document.getElementById("palette-grid");
+    grid.innerHTML = "";
+
+    testConfig.questions.forEach((_, idx) => {
+        const btn = document.createElement("button");
+        btn.className = "p-item";
+        btn.innerText = idx + 1;
+
+        if (idx === currentQIndex) btn.classList.add("active-q");
+        
+        if (userAnswers[idx] !== undefined) {
+            btn.classList.add("status-answered");
+        } else if (flaggedQuestions.has(idx)) {
+            btn.classList.add("status-flagged");
+        } else if (visitedQuestions.has(idx)) {
+            btn.classList.add("status-visited");
+        }
+
+        btn.onclick = () => {
+            renderQuestion(idx);
+            if (window.innerWidth <= 992) toggleMatrix();
+        };
+
+        grid.appendChild(btn);
+    });
 }
 
-async function finalSubmitExam() {
-    if (isSubmitting) return;
-    isSubmitting = true;
-    if (timerInterval) clearInterval(timerInterval);
-    closeConfirmModal();
+// Toggle Bottom Sheet / Sidebar Matrix
+function toggleMatrix() {
+    const sidebar = document.getElementById("sidebar");
+    sidebar.classList.toggle("active-matrix");
+}
 
-    var now = Date.now();
-    var payload = {
-        studentName: studentName || "Student",
+// FAB Touch / Mouse Dragging Implementation
+function initFabDraggable() {
+    const fab = document.getElementById("draggable-fab");
+    if (!fab) return;
+
+    const startDrag = (e) => {
+        fabDragState.isDragging = true;
+        fabDragState.dragDistance = 0;
+        
+        const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+        const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+        
+        fabDragState.startX = clientX;
+        fabDragState.startY = clientY;
+
+        const rect = fab.getBoundingClientRect();
+        fabDragState.initialLeft = rect.left;
+        fabDragState.initialTop = rect.top;
+
+        fab.style.transition = 'none';
+        fab.style.bottom = 'auto';
+        fab.style.right = 'auto';
+        fab.style.left = `${rect.left}px`;
+        fab.style.top = `${rect.top}px`;
+    };
+
+    const doDrag = (e) => {
+        if (!fabDragState.isDragging) return;
+
+        const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+        const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+
+        const deltaX = clientX - fabDragState.startX;
+        const deltaY = clientY - fabDragState.startY;
+
+        fabDragState.dragDistance = Math.hypot(deltaX, deltaY);
+
+        let newLeft = fabDragState.initialLeft + deltaX;
+        let newTop = fabDragState.initialTop + deltaY;
+
+        // Boundary Clamp
+        const maxLeft = window.innerWidth - fab.offsetWidth - 10;
+        const maxTop = window.innerHeight - fab.offsetHeight - 10;
+
+        newLeft = Math.max(10, Math.min(newLeft, maxLeft));
+        newTop = Math.max(10, Math.min(newTop, maxTop));
+
+        fab.style.left = `${newLeft}px`;
+        fab.style.top = `${newTop}px`;
+    };
+
+    const stopDrag = () => {
+        if (!fabDragState.isDragging) return;
+        fabDragState.isDragging = false;
+        fab.style.transition = 'transform 0.1s ease';
+        
+        // Clean Tap Detection (If moved less than 12px, count as CLICK)
+        if (fabDragState.dragDistance < 12) {
+            toggleMatrix();
+        }
+    };
+
+    // Touch Event Listeners
+    fab.addEventListener('touchstart', startDrag, { passive: true });
+    window.addEventListener('touchmove', doDrag, { passive: true });
+    window.addEventListener('touchend', stopDrag);
+
+    // Mouse Event Listeners
+    fab.addEventListener('mousedown', startDrag);
+    window.addEventListener('mousemove', doDrag);
+    window.addEventListener('mouseup', stopDrag);
+}
+
+// Confirmation & Submission Logic
+function openSubmitConfirm() {
+    const total = testConfig.questions.length;
+    const answered = Object.keys(userAnswers).length;
+    const flagged = flaggedQuestions.size;
+    const unanswered = total - answered;
+
+    document.getElementById("sum-total").innerText = total;
+    document.getElementById("sum-answered").innerText = answered;
+    document.getElementById("sum-flagged").innerText = flagged;
+    document.getElementById("sum-unanswered").innerText = unanswered;
+
+    document.getElementById("confirm-modal").classList.remove("hidden");
+}
+
+function closeSubmitConfirm() {
+    document.getElementById("confirm-modal").classList.add("hidden");
+}
+
+// Bind Desktop Header Submit Button
+document.getElementById("header-submit-btn").onclick = openSubmitConfirm;
+
+async function submitTestFinal() {
+    closeSubmitConfirm();
+    clearInterval(timerInterval);
+
+    const payload = {
         testId: testConfig.testId,
         answers: userAnswers,
-        submittedAt: now
+        submittedAt: new Date().toISOString()
     };
 
     try {
-        var res = await fetch(WORKER_URL + "/api/submit", {
+        await fetch(`${WORKER_URL}/api/submit`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify(payload)
         });
-        var result = await res.json();
-        if (result.success) {
-            localStorage.setItem("submitted_" + testConfig.testId, "true");
-            localStorage.setItem("submitted_time_" + testConfig.testId, now.toString());
-            showLockedScreen("TEST SUBMITTED", "Score: " + result.score + ". Result sent!", "🎉");
-        } else {
-            isSubmitting = false;
-            alert(result.error || "Submission failed.");
-        }
     } catch (err) {
-        isSubmitting = false;
-        alert("Submission failed. Check network.");
+        console.warn("Offline or submit warning:", err);
     }
+
+    localStorage.setItem(`submitted_${testConfig.testId}`, "true");
+    showLockedScreen("Assessment submitted successfully!");
 }
 
-function autoSubmitExam() {
-    if (isSubmitting) return;
-    alert("Time limit reached! Auto-submitting your exam.");
-    finalSubmitExam();
+function autoSubmitOnTimeout() {
+    submitTestFinal();
+    showLockedScreen("Time expired! Assessment auto-submitted.");
 }
 
-function showLockedScreen(title, msg, icon) {
-    if (!icon) icon = "🛡️";
-    var app = document.getElementById("exam-app");
-    if (app) app.classList.add("hidden");
-    var iconEl = document.getElementById("locked-icon");
-    if (iconEl) iconEl.innerText = icon;
-    var titleEl = document.getElementById("locked-title");
-    if (titleEl) titleEl.innerText = title;
-    var msgEl = document.getElementById("locked-message");
-    if (msgEl) msgEl.innerText = msg;
-    var locked = document.getElementById("locked-screen");
-    if (locked) locked.classList.remove("hidden");
+function showLockedScreen(msg) {
+    document.getElementById("locked-message").innerText = msg;
+    document.getElementById("locked-timestamp").innerText = `Time: ${new Date().toLocaleString()}`;
+    document.getElementById("locked-screen").classList.remove("hidden");
 }
-
-window.prevQuestion = prevQuestion;
-window.nextQuestion = nextQuestion;
-window.clearAnswer = clearAnswer;
-window.confirmSubmission = confirmSubmission;
-window.closeConfirmModal = closeConfirmModal;
-window.finalSubmitExam = finalSubmitExam;
-window.jumpToQuestion = jumpToQuestion;
-window.toggleMatrix = toggleMatrix;
