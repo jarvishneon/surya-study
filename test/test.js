@@ -3,6 +3,7 @@
    ========================================================================== */
 
 const WORKER_URL = "https://rj-test-backen.internationalbgi.workers.dev";
+const DASHBOARD_URL = "https://surya-study.pages.dev";
 
 // Global State
 let testConfig = null;
@@ -28,6 +29,7 @@ let fabDragState = {
 // Application Initialization
 document.addEventListener("DOMContentLoaded", () => {
     initFabDraggable();
+    initDashboardBtn();
     fetchConfigAndInit();
 });
 
@@ -73,7 +75,7 @@ function checkLockStatus() {
         }
     }
 
-    // Exact Student Name logic
+    // Student Name logic
     studentName = sessionStorage.getItem("student_name") || 
                   localStorage.getItem("rjStudyUsername") || 
                   urlParams.get("name") || 
@@ -427,7 +429,6 @@ function autoSubmitOnTimeout() {
     submitTestFinal();
 }
 
-// UPDATED: Now dynamically sets the title as well
 function showLockedScreen(title, msg) {
     const titleEl = document.getElementById("locked-title");
     if (titleEl && title) titleEl.innerText = title;
@@ -442,10 +443,21 @@ function showLockedScreen(title, msg) {
     if (lockedScreen) lockedScreen.classList.remove("hidden");
 }
 
-// NEW: Back to Dashboard function
+// Redirect to Dashboard (Guaranteed Absolute URL)
 function goToDashboard() {
-    // Ye index.html ya jo bhi apke dashboard ka URL ho waha le jayega
-    window.location.href = "index.html";
+    window.location.href = DASHBOARD_URL;
+}
+
+// Direct event listener binding for Dashboard Button
+function initDashboardBtn() {
+    const btn = document.getElementById("dash-btn");
+    if (btn) {
+        btn.addEventListener("click", goToDashboard);
+        btn.addEventListener("touchend", (e) => {
+            e.preventDefault();
+            goToDashboard();
+        });
+    }
 }
 
 // Global functions binding
