@@ -1,6 +1,5 @@
 /* ==========================================================================
    RJ ACADEMY PRO - Core Functional Script
-   (Updated with Old File Student Name & Reopen Logic)
    ========================================================================== */
 
 const WORKER_URL = "https://rj-test-backen.internationalbgi.workers.dev";
@@ -32,7 +31,7 @@ document.addEventListener("DOMContentLoaded", () => {
     fetchConfigAndInit();
 });
 
-// Fetch Test Config from Worker (Logic directly from old file)
+// Fetch Test Config from Worker
 async function fetchConfigAndInit() {
     try {
         const res = await fetch(WORKER_URL + "/api/config?t=" + Date.now());
@@ -52,7 +51,7 @@ async function fetchConfigAndInit() {
     }
 }
 
-// Lock Status & Reopen Logic (Exact from old file)
+// Lock Status & Reopen Logic
 function checkLockStatus() {
     const urlParams = new URLSearchParams(window.location.search);
     const testId = testConfig.testId || urlParams.get("testId") || "demo_test";
@@ -74,7 +73,7 @@ function checkLockStatus() {
         }
     }
 
-    // Exact Student Name logic from your old file
+    // Exact Student Name logic
     studentName = sessionStorage.getItem("student_name") || 
                   localStorage.getItem("rjStudyUsername") || 
                   urlParams.get("name") || 
@@ -82,7 +81,7 @@ function checkLockStatus() {
                   
     sessionStorage.setItem("student_name", studentName);
 
-    // Display student title if present
+    // Display test title
     document.getElementById("test-title-display").innerText = testConfig.title || "Assessment";
     timeRemaining = (testConfig.durationMinutes || testConfig.duration || 45) * 60;
 
@@ -155,7 +154,7 @@ function updateTimerDisplay() {
     }
 }
 
-// Question Rendering (Supports both old 'question' and new 'text' format)
+// Question Rendering
 function renderQuestion(index) {
     if (!testConfig || !testConfig.questions || !testConfig.questions[index]) return;
     
@@ -164,13 +163,11 @@ function renderQuestion(index) {
     
     const q = testConfig.questions[index];
     
-    // Auto-detect question text property
     const questionContent = q.question || q.text || q.questionText || q.title || "";
     
     document.getElementById("q-number").innerText = `Q.${index + 1}`;
     document.getElementById("question-text").innerText = questionContent;
     
-    // Flag Button UI
     const flagBtn = document.getElementById("flag-btn");
     if (flagBtn) {
         if (flaggedQuestions.has(index)) {
@@ -180,7 +177,6 @@ function renderQuestion(index) {
         }
     }
 
-    // Question Image Handling
     const imgContainer = document.getElementById("question-image-container");
     const imgEl = document.getElementById("question-image");
     const imageUrl = q.imageUrl || q.image || q.img || "";
@@ -194,7 +190,6 @@ function renderQuestion(index) {
         }
     }
 
-    // Render Options
     const optsContainer = document.getElementById("options-container");
     if (!optsContainer) return;
     optsContainer.innerHTML = "";
@@ -322,7 +317,6 @@ function initFabDraggable() {
         let newLeft = fabDragState.initialLeft + deltaX;
         let newTop = fabDragState.initialTop + deltaY;
 
-        // Boundary Clamp
         const maxLeft = window.innerWidth - fab.offsetWidth - 10;
         const maxTop = window.innerHeight - fab.offsetHeight - 10;
 
@@ -338,18 +332,15 @@ function initFabDraggable() {
         fabDragState.isDragging = false;
         fab.style.transition = 'transform 0.1s ease';
         
-        // Clean Tap Detection (If moved less than 12px, count as CLICK)
         if (fabDragState.dragDistance < 12) {
             toggleMatrix();
         }
     };
 
-    // Touch Event Listeners
     fab.addEventListener('touchstart', startDrag, { passive: true });
     window.addEventListener('touchmove', doDrag, { passive: true });
     window.addEventListener('touchend', stopDrag);
 
-    // Mouse Event Listeners
     fab.addEventListener('mousedown', startDrag);
     window.addEventListener('mousemove', doDrag);
     window.addEventListener('mouseup', stopDrag);
@@ -375,11 +366,10 @@ function closeSubmitConfirm() {
     document.getElementById("confirm-modal").classList.add("hidden");
 }
 
-// Bind Desktop Header Submit Button
 const headerSubBtn = document.getElementById("header-submit-btn");
 if (headerSubBtn) headerSubBtn.onclick = openSubmitConfirm;
 
-// Final Submission Logic (Exact structure from old file)
+// Final Submission Logic
 async function submitTestFinal() {
     if (isSubmitting) return;
     isSubmitting = true;
@@ -389,7 +379,6 @@ async function submitTestFinal() {
 
     var now = Date.now();
     
-    // Refresh studentName from storage one last time to ensure accuracy
     var finalStudentName = sessionStorage.getItem("student_name") || 
                            localStorage.getItem("rjStudyUsername") || 
                            studentName || 
@@ -426,7 +415,6 @@ async function submitTestFinal() {
     } catch (err) {
         isSubmitting = false;
         console.warn("Submit error:", err);
-        // Save local backup state even if offline
         localStorage.setItem("submitted_" + testConfig.testId, "true");
         localStorage.setItem("submitted_time_" + testConfig.testId, now.toString());
         showLockedScreen("TEST SUBMITTED (OFFLINE)", `Response recorded locally for ${finalStudentName}.`);
@@ -439,7 +427,11 @@ function autoSubmitOnTimeout() {
     submitTestFinal();
 }
 
+// UPDATED: Now dynamically sets the title as well
 function showLockedScreen(title, msg) {
+    const titleEl = document.getElementById("locked-title");
+    if (titleEl && title) titleEl.innerText = title;
+
     const msgEl = document.getElementById("locked-message");
     if (msgEl) msgEl.innerText = msg;
 
@@ -450,7 +442,13 @@ function showLockedScreen(title, msg) {
     if (lockedScreen) lockedScreen.classList.remove("hidden");
 }
 
-// Global functions binding for inline HTML onclick attributes
+// NEW: Back to Dashboard function
+function goToDashboard() {
+    // Ye index.html ya jo bhi apke dashboard ka URL ho waha le jayega
+    window.location.href = "index.html";
+}
+
+// Global functions binding
 window.prevQuestion = prevQuestion;
 window.nextQuestion = nextQuestion;
 window.toggleFlag = toggleFlag;
@@ -458,3 +456,4 @@ window.toggleMatrix = toggleMatrix;
 window.openSubmitConfirm = openSubmitConfirm;
 window.closeSubmitConfirm = closeSubmitConfirm;
 window.submitTestFinal = submitTestFinal;
+window.goToDashboard = goToDashboard;
