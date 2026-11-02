@@ -1,5 +1,5 @@
 /* ==========================================================================
-   RJ ACADEMY PRO - Core Functional Script (Fixed Student Name Issue)
+   RJ ACADEMY PRO - Core Functional Script (Fixed Login Name Retrieval)
    ========================================================================== */
 
 const WORKER_URL = "https://rj-test-backen.internationalbgi.workers.dev";
@@ -18,7 +18,42 @@ let flaggedQuestions = new Set();
 let visitedQuestions = new Set();
 let timerInterval = null;
 let timeRemaining = 0;
-let studentName = "Student"; // Default fallback
+let studentName = "Student";
+
+// Helper function to auto-detect Logged-in Student Name
+function getSavedStudentName() {
+    const urlParams = new URLSearchParams(window.location.search);
+    
+    // 1. Check URL parameters first (?name=Rahul or ?student=Rahul)
+    let urlName = urlParams.get("name") || urlParams.get("student") || urlParams.get("userName") || urlParams.get("user") || urlParams.get("studentName");
+    if (urlName && urlName.trim()) return urlName.trim();
+
+    // 2. Check localStorage / sessionStorage keys saved during website login
+    const possibleKeys = [
+        "studentName", "userName", "name", "user_name", "student_name", 
+        "loginName", "student", "user", "rj_user_name", "surya_user_name",
+        "loggedUser", "login_user"
+    ];
+    
+    for (let key of possibleKeys) {
+        let val = localStorage.getItem(key) || sessionStorage.getItem(key);
+        if (val) {
+            val = val.trim();
+            // If stored as JSON object like {"name": "Surya"}
+            if (val.startsWith("{")) {
+                try {
+                    let parsed = JSON.parse(val);
+                    let objName = parsed.name || parsed.studentName || parsed.userName || parsed.fullName || parsed.user;
+                    if (objName) return objName;
+                } catch(e){}
+            } else if (val !== "undefined" && val !== "null" && val !== "") {
+                return val;
+            }
+        }
+    }
+
+    return "Student"; // Fallback only if no login data found
+}
 
 // FAB Dragging & Click State
 let fabDragState = {
@@ -37,8 +72,8 @@ document.addEventListener("DOMContentLoaded", async () => {
     const urlParams = new URLSearchParams(window.location.search);
     const testId = urlParams.get("testId") || "demo_test";
 
-    // Extract Student Name from URL (?name=Rahul or ?student=Rahul or ?userName=Rahul)
-    studentName = urlParams.get("name") || urlParams.get("student") || urlParams.get("userName") || urlParams.get("user") || "Student";
+    // Auto Fetch Logged-in Student Name
+    studentName = getSavedStudentName();
 
     // Check if test was already submitted on this device
     if (localStorage.getItem(`submitted_${testId}`)) {
@@ -124,7 +159,7 @@ function updateTimerDisplay() {
     document.getElementById("time-left").innerText = display;
 }
 
-// Question Rendering (Supports all backend JSON property names)
+// Question Rendering
 function renderQuestion(index) {
     if (!testConfig.questions || !testConfig.questions[index]) return;
     
@@ -133,7 +168,7 @@ function renderQuestion(index) {
     
     const q = testConfig.questions[index];
     
-    // Auto-detect question text property from backend
+    // Auto-detect question text property
     const questionContent = q.question || q.text || q.questionText || q.title || q.qText || "";
     
     document.getElementById("q-number").innerText = `Q.${index + 1}`;
@@ -345,12 +380,15 @@ async function submitTestFinal() {
     closeSubmitConfirm();
     clearInterval(timerInterval);
 
-    // FIX: Send Student Name using all possible key names to ensure Backend receives it
+    // Re-verify student name at submission time
+    const finalStudentName = getSavedStudentName();
+
     const payload = {
         testId: testConfig.testId,
-        studentName: studentName,
-        userName: studentName,
-        name: studentName,
+        studentName: finalStudentName,
+        userName: finalStudentName,
+        name: finalStudentName,
+        student: finalStudentName,
         answers: userAnswers,
         submittedAt: new Date().toISOString()
     };
