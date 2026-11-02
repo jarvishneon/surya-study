@@ -162,9 +162,26 @@ function prevQuestion() {
     if (currentQuestionIndex > 0) loadQuestion(currentQuestionIndex - 1);
 }
 
+// ==========================================
+// NEW FEATURE: MATRIX POPUP & JUMP LOGIC
+// ==========================================
+function toggleMatrix() {
+    var sidebar = document.querySelector('.sidebar-section');
+    if (sidebar) {
+        sidebar.classList.toggle('active-matrix');
+    }
+}
+
 function jumpToQuestion(idx) {
     loadQuestion(idx);
+    var sidebar = document.querySelector('.sidebar-section');
+    // Mobile par matrix khula hai to band kardo click karne pe
+    if (window.innerWidth <= 992 && sidebar && sidebar.classList.contains('active-matrix')) {
+        sidebar.classList.remove('active-matrix');
+    }
 }
+
+// ==========================================
 
 function startTimer() {
     if (timerInterval) clearInterval(timerInterval);
@@ -279,3 +296,4 @@ window.confirmSubmission = confirmSubmission;
 window.closeConfirmModal = closeConfirmModal;
 window.finalSubmitExam = finalSubmitExam;
 window.jumpToQuestion = jumpToQuestion;
+window.toggleMatrix = toggleMatrix;
