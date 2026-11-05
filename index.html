@@ -1,13 +1,13 @@
-<!DOCTYPE html>
-<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>RJ Study Academy | Secure Portal</title>
+    <title>Surya Study Academy | Secure Portal</title>
     <!-- Google Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;600&family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <!-- FontAwesome for Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- LINKING EXTERNAL CSS FILE -->
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -21,7 +21,7 @@
     <div id="login-view" class="page-view active">
         <header>
             <div class="logo">
-                <i class="fa-solid fa-shield-halved" style="color: var(--primary);"></i> RJ <span>Study Academy</span>
+                <i class="fa-solid fa-shield-halved" style="color: var(--primary);"></i> Surya <span>Study Academy</span>
             </div>
         </header>
 
@@ -31,7 +31,7 @@
                     <i class="fa-solid fa-terminal"></i> SECURE_GATEWAY // v5.1
                 </div>
                 <h1>Elite Cyber & Coding <span>Education Portal</span></h1>
-                <p>Apna naam daalkar secure login karein aur apne student dashboard tak pahunchein.</p>
+                <p>𓆗Shiv Sakti🙏</p>
                 <div class="features-tags">
                     <div class="tag"><i class="fa-solid fa-check"></i> Competitive Exams</div>
                     <div class="tag"><i class="fa-solid fa-check"></i> Board Exams</div>
@@ -60,7 +60,7 @@
                         </div>
                     </div>
 
-                    <div id="errorMsg" class="error-msg">Incorrect password!</div>
+                    <div id="errorMsg" class="error-msg" role="alert" aria-live="polite">Incorrect password. Please try again.</div>
 
                     <button type="submit" class="login-btn">Authenticate & Login</button>
                 </form>
@@ -88,7 +88,8 @@
 
         <div class="dashboard-container">
             <div class="dashboard-grid">
-                <!-- Option 1 -->
+                
+                <!-- Card 1 -->
                 <div class="dash-card" onclick="switchSubView('competitive-view')">
                     <div class="dash-icon"><i class="fa-solid fa-trophy"></i></div>
                     <h3>Competitive Exams</h3>
@@ -96,7 +97,7 @@
                     <span class="dash-action-btn">Explore Section <i class="fa-solid fa-arrow-right"></i></span>
                 </div>
 
-                <!-- Option 2 -->
+                <!-- Card 2 -->
                 <div class="dash-card" onclick="switchSubView('boards-view')">
                     <div class="dash-icon"><i class="fa-solid fa-book-open"></i></div>
                     <h3>Board Exams</h3>
@@ -104,7 +105,7 @@
                     <span class="dash-action-btn">Explore Section <i class="fa-solid fa-arrow-right"></i></span>
                 </div>
 
-                <!-- Option 3 -->
+                <!-- Card 3 -->
                 <div class="dash-card" onclick="switchSubView('notifications-view')">
                     <div class="dash-icon"><i class="fa-solid fa-bell"></i></div>
                     <h3>Notifications And Updates</h3>
@@ -112,63 +113,22 @@
                     <span class="dash-action-btn">View Updates <i class="fa-solid fa-arrow-right"></i></span>
                 </div>
 
-                <!-- Option 4 (Online Test) -->
-                <div class="dash-card" onclick="switchSubView('test-subjects-view')">
-                    <div class="dash-icon"><i class="fa-solid fa-laptop-code"></i></div>
+                <!-- Card 4: ONLINE TEST CARD -->
+                <div class="dash-card" onclick="sessionStorage.setItem('student_name', localStorage.getItem('rjStudyUsername')); window.location.href='test/index.html'">
+                    <div class="dash-icon"><i class="fa-solid fa-user-shield"></i></div>
                     <h3>Secure Online Test</h3>
-                    <p>Participate in scheduled live tests, view real-time results, and track your performance.</p>
-                    <span class="dash-action-btn">Select Subject <i class="fa-solid fa-arrow-right"></i></span>
+                    <p>Attempt live timed MCQs and subjective tests. Secured environment with instant auto-submission and admin monitoring.</p>
+                    <span class="dash-action-btn">Start Test <i class="fa-solid fa-arrow-right"></i></span>
                 </div>
 
-                <!-- Option 5 (Discuss Doubts) -->
-                <div class="dash-card" onclick="switchSubView('chat-view')">
+                <!-- Card 5: NEW DISCUSS DOUBTS CARD -->
+                <div class="dash-card" onclick="openDoubtChat()">
                     <div class="dash-icon"><i class="fa-solid fa-comments"></i></div>
                     <h3>Discuss Doubts</h3>
-                    <p>Connect with teachers and peers in our secure live chat room to clear your academic doubts.</p>
+                    <p>Live chat with the Administrator. Ask your questions and get real-time explanations instantly.</p>
                     <span class="dash-action-btn">Open Chat <i class="fa-solid fa-arrow-right"></i></span>
                 </div>
-            </div>
-        </div>
-    </div>
 
-    <!-- ================= NEW VIEW: TEST SUBJECTS SUB-SECTION ================= -->
-    <div id="test-subjects-view" class="page-view">
-        <div class="dashboard-topbar">
-            <div class="logo" onclick="goHome()">
-                <i class="fa-solid fa-shield-halved" style="color: var(--primary);"></i> RJ <span>Study Academy</span>
-            </div>
-            <div class="profile-menu-container">
-                <div class="profile-circle" id="profileInitial6" onclick="toggleProfileMenu(event)">A</div>
-                <div class="profile-dropdown">
-                    <div class="dropdown-username displayUsernameCopy">Student Name</div>
-                    <div class="dropdown-role"><i class="fa-solid fa-circle" style="color: var(--primary); font-size: 7px;"></i> Active Student</div>
-                    <button class="dropdown-logout-btn" onclick="logout()"><i class="fa-solid fa-right-from-bracket"></i> Logout</button>
-                </div>
-            </div>
-        </div>
-        <div class="dashboard-container">
-            <button class="back-btn" onclick="goHome()"><i class="fa-solid fa-arrow-left"></i> Back to Dashboard</button>
-            <div style="margin-bottom: 25px;">
-                <h2>Select Test Subject</h2>
-                <p style="color: #94a3b8; font-size: 0.95rem;">Choose a subject to start your secure online assessment.</p>
-            </div>
-            <div class="sub-grid">
-                <a href="javascript:void(0)" onclick="startSubjectTest('hindi')" class="sub-card">
-                    <h4>Hindi</h4>
-                    <p>Start assessment for Hindi Vyakaran & Literature.</p>
-                </a>
-                <a href="javascript:void(0)" onclick="startSubjectTest('english')" class="sub-card">
-                    <h4>English</h4>
-                    <p>Start assessment for English Grammar & Comprehension.</p>
-                </a>
-                <a href="javascript:void(0)" onclick="startSubjectTest('math')" class="sub-card">
-                    <h4>Mathematics</h4>
-                    <p>Start assessment for Mathematics & Aptitude.</p>
-                </a>
-                <a href="javascript:void(0)" onclick="startSubjectTest('science')" class="sub-card">
-                    <h4>Science</h4>
-                    <p>Start assessment for Physics, Chemistry & Biology.</p>
-                </a>
             </div>
         </div>
     </div>
@@ -195,19 +155,19 @@
                 <p style="color: #94a3b8; font-size: 0.95rem;">Select your preferred coaching platform batch below.</p>
             </div>
             <div class="sub-grid">
-                <a href="https://www.learnxpw.site/study/batches" target="_blank" class="sub-card">
+                <a href="https://www.learnxpw.site/study/batches" target="_self" class="sub-card">
                     <h4>PW Batches</h4>
                     <p>Click here to access Physics Wallah live classes & study modules.</p>
                 </a>
-                <a href="https://studybeepro.site/rwax/" target="_blank" class="sub-card">
+                <a href="https://studybeepro.site/rwax/" target="_self" class="sub-card">
                     <h4>RWA Batches</h4>
                     <p>Click here to access Rojgar with Ankit batches & practice sets.</p>
                 </a>
-                <a href="https://studybeepro.site/vidyagram/content.html?id=41" target="_blank" class="sub-card">
+                <a href="https://studybeepro.site/vidyagram/content.html?id=41" target="_self" class="sub-card">
                     <h4>Vidyagram Batches</h4>
                     <p>Click here to access Vidyagram elite exam prep materials.</p>
                 </a>
-                <a href="https://gb.ayushindmods1.workers.dev/KGSNEW/" target="_blank" class="sub-card">
+                <a href="https://gb.ayushindmods1.workers.dev/KGSNEW/" target="_self" class="sub-card">
                     <h4>KGS Batches</h4>
                     <p>Click here to access Khan Global Studies batches & video lectures.</p>
                 </a>
@@ -237,19 +197,19 @@
                 <p style="color: #94a3b8; font-size: 0.95rem;">Select your target class, practice exercises, or servers below.</p>
             </div>
             <div class="sub-grid">
-                <a href="https://www.learnxpw.site/study/batches/69734ce1b0c696dcee5c35a9" target="_blank" class="sub-card">
+                <a href="https://www.learnxpw.site/study/batches/69734ce1b0c696dcee5c35a9" target="_self" class="sub-card">
                     <h4>Class 9th</h4>
                     <p>Access Class 9th lecture videos, notes, important questions & sample papers.</p>
                 </a>
-                <a href="https://www.learnxpw.site/study/batches/69737cfccbe58ca6dbccb146" target="_blank" class="sub-card">
+                <a href="https://www.learnxpw.site/study/batches/69737cfccbe58ca6dbccb146" target="_self" class="sub-card">
                     <h4>Class 10th</h4>
                     <p>Access Class 10th board prep materials, previous year papers & solutions.</p>
                 </a>
-                <a href="YAHAN_APNA_URL_DAALEIN" target="_blank" class="sub-card">
+                <a href="#" onclick="alert('Practice module is currently under maintenance. Check back later!'); return false;" class="sub-card">
                     <h4>Practice Exercise</h4>
                     <p>Access chapter-wise tests and interactive problem sets for practice.</p>
                 </a>
-                <a href="YAHAN_APNA_URL_DAALEIN" target="_blank" class="sub-card" style="border-color: rgba(0, 191, 255, 0.4);">
+                <a href="#" onclick="alert('Servers are currently being upgraded. Check notifications.'); return false;" class="sub-card" style="border-color: rgba(0, 191, 255, 0.4);">
                     <h4 style="color: #00bfff;">Servers</h4>
                     <p>Access dedicated streaming servers:<br>• Class 9th Rj1 & Rj2<br>• Class 10th Rj1 & Rj2</p>
                 </a>
@@ -260,19 +220,19 @@
                 <p style="color: #94a3b8; font-size: 0.9rem;">Direct links for individual class servers (Rj1 & Rj2)</p>
             </div>
             <div class="sub-grid">
-                <a href="https://vidcloud.eu.org/#BatchDetails/batch/69734ce1b0c696dcee5c35a9" target="_blank" class="sub-card">
+                <a href="https://vidcloud.eu.org/#BatchDetails/batch/69734ce1b0c696dcee5c35a9" target="_self" class="sub-card">
                     <h4>Class 9th Rj1</h4>
                     <p>Primary server link for Class 9th video modules.</p>
                 </a>
-                <a href="YAHAN_APNA_URL_DAALEIN" target="_blank" class="sub-card">
+                <a href="#" onclick="alert('Server Rj2 is currently offline. Please use Rj1.'); return false;" class="sub-card">
                     <h4>Class 9th Rj2</h4>
                     <p>Secondary high-speed server link for Class 9th.</p>
                 </a>
-                <a href="https://vidcloud.eu.org/#BatchDetails/batch/69737cfccbe58ca6dbccb146" target="_blank" class="sub-card">
+                <a href="https://vidcloud.eu.org/#BatchDetails/batch/69737cfccbe58ca6dbccb146" target="_self" class="sub-card">
                     <h4>Class 10th Rj1</h4>
                     <p>Primary server link for Class 10th video modules.</p>
                 </a>
-                <a href="YAHAN_APNA_URL_DAALEIN" target="_blank" class="sub-card">
+                <a href="#" onclick="alert('Server Rj2 is currently offline. Please use Rj1.'); return false;" class="sub-card">
                     <h4>Class 10th Rj2</h4>
                     <p>Secondary high-speed server link for Class 10th.</p>
                 </a>
@@ -309,40 +269,25 @@
         </div>
     </div>
 
-    <!-- ================= VIEW 6: DISCUSS DOUBTS (CHAT) ================= -->
-    <div id="chat-view" class="page-view">
-        <div class="dashboard-topbar">
-            <div class="logo" onclick="goHome()">
-                <i class="fa-solid fa-shield-halved" style="color: var(--primary);"></i> RJ <span>Study Academy</span>
+    <!-- ================= DOUBT CHAT MODAL (HIDDEN BY DEFAULT) ================= -->
+    <div id="chatModalOverlay" class="chat-overlay" style="display: none;">
+        <div class="chat-modal">
+            <div class="chat-header">
+                <h3>💬 Realtime Support</h3>
+                <button class="chat-close-btn" onclick="closeDoubtChat()">✖</button>
             </div>
-            <div class="profile-menu-container">
-                <div class="profile-circle" id="profileInitial5" onclick="toggleProfileMenu(event)">A</div>
-                <div class="profile-dropdown">
-                    <div class="dropdown-username displayUsernameCopy">Student Name</div>
-                    <div class="dropdown-role"><i class="fa-solid fa-circle" style="color: var(--primary); font-size: 7px;"></i> Active Student</div>
-                    <button class="dropdown-logout-btn" onclick="logout()"><i class="fa-solid fa-right-from-bracket"></i> Logout</button>
-                </div>
+            <div class="chat-body" id="chatHistory">
+                <!-- Dynamic Messages Yahan Aayenge -->
             </div>
-        </div>
-        <div class="dashboard-container">
-            <button class="back-btn" onclick="goHome()"><i class="fa-solid fa-arrow-left"></i> Back to Dashboard</button>
-            <div style="margin-bottom: 25px;">
-                <h2>Discuss Doubts (Live Chat)</h2>
-                <p style="color: #94a3b8; font-size: 0.95rem;">Connect with teachers and peers in our secure chat room.</p>
-            </div>
-            
-            <div class="chat-container">
-                <div class="chat-messages" id="chatBox">
-                    <!-- Messages dynamically loaded here -->
-                </div>
-                <div class="chat-input-area">
-                    <input type="text" id="chatInput" placeholder="Type your message here... Use **bold** or *italic*" onkeypress="handleChatKeyPress(event)">
-                    <button onclick="sendChatMessage()" class="send-btn" id="sendBtn"><i class="fa-solid fa-paper-plane"></i></button>
-                </div>
+            <div class="chat-footer">
+                <input type="text" id="doubtInput" placeholder="Type your doubt..." onkeypress="handleChatEnter(event)">
+                <button onclick="sendDoubtMsg()">Send</button>
             </div>
         </div>
     </div>
 
+    <!-- LINKING EXTERNAL JAVASCRIPT FILE -->
     <script src="script.js"></script>
+
 </body>
-</html>
+</html>  
