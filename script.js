@@ -8,23 +8,18 @@ const dashboardView = document.getElementById('dashboard-view');
 const competitiveView = document.getElementById('competitive-view');
 const boardsView = document.getElementById('boards-view');
 const notificationsView = document.getElementById('notifications-view');
-const chatView = document.getElementById('chat-view');
-const testSubjectsView = document.getElementById('test-subjects-view'); // Naya View
 
 const displayUsername = document.getElementById('displayUsername');
 const profileInitial = document.getElementById('profileInitial');
 const profileInitial2 = document.getElementById('profileInitial2');
 const profileInitial3 = document.getElementById('profileInitial3');
 const profileInitial4 = document.getElementById('profileInitial4');
-const profileInitial5 = document.getElementById('profileInitial5');
-const profileInitial6 = document.getElementById('profileInitial6'); // Naya Initial
-const profileDropdown = document.getElementById('profileDropdown');
 
-// Base64 Encoded Passwords
-const validPasswords = [
-    atob("NDE4MTcyMw=="), // 4181723
-    atob("MDQ3ODM="),     // 04783
-    atob("UGFkaGxv")      // Padhlo
+// 🔒 ALLOWED 3 PASSWORDS LIST (Base64 Encoded)
+const allowedPasswords = [
+    "NDE4MTcyMw==", // Pass 1: 4181723
+    "MDQ3ODM=",     // Pass 2: 04783
+    "UGFkaGxv"      // Pass 3: Padhlo
 ];
 
 function hideAllViews() {
@@ -33,8 +28,6 @@ function hideAllViews() {
     competitiveView.classList.remove('active');
     boardsView.classList.remove('active');
     notificationsView.classList.remove('active');
-    chatView.classList.remove('active');
-    testSubjectsView.classList.remove('active'); // Hide new view
 }
 
 // Handle Login Submission
@@ -42,33 +35,55 @@ loginForm.addEventListener('submit', function(e) {
     e.preventDefault();
     const enteredName = usernameInput.value.trim();
     const enteredPass = passwordInput.value.trim();
+    const loginBtn = document.querySelector('.login-btn');
 
-    if (validPasswords.includes(enteredPass)) {
-        errorMsg.style.display = "none";
-        
-        // Store Name for Chat and Test compatibility
-        sessionStorage.setItem("student_name", enteredName);
-        localStorage.setItem("rjStudyUsername", enteredName);
-        
-        // Set Name & Circular Initial Letters across views
-        displayUsername.innerText = enteredName;
-        document.querySelectorAll('.displayUsernameCopy').forEach(el => el.innerText = enteredName);
-        
-        const initial = enteredName.charAt(0).toUpperCase();
-        profileInitial.innerText = initial;
-        profileInitial2.innerText = initial;
-        profileInitial3.innerText = initial;
-        profileInitial4.innerText = initial;
-        profileInitial5.innerText = initial;
-        if(profileInitial6) profileInitial6.innerText = initial;
+    loginBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Authenticating...';
+    loginBtn.style.opacity = '0.7';
+    loginBtn.style.pointerEvents = 'none';
 
-        hideAllViews();
-        dashboardView.classList.add('active');
-    } else {
-        errorMsg.style.display = "block";
-        passwordInput.value = "";
-    }
+    setTimeout(() => {
+        const encodedPass = btoa(enteredPass);
+
+        if (allowedPasswords.includes(encodedPass)) {
+            errorMsg.style.display = "none";
+            
+            displayUsername.innerText = enteredName;
+            document.querySelectorAll('.displayUsernameCopy').forEach(el => el.innerText = enteredName);
+            
+            const initial = enteredName.charAt(0).toUpperCase();
+            profileInitial.innerText = initial;
+            profileInitial2.innerText = initial;
+            profileInitial3.innerText = initial;
+            profileInitial4.innerText = initial;
+
+            localStorage.setItem('rjStudyLoggedIn', 'true');
+            localStorage.setItem('rjStudyUsername', enteredName);
+            sessionStorage.setItem('student_name', enteredName);
+            
+            hideAllViews();
+            dashboardView.classList.add('active');
+        } else {
+            errorMsg.style.display = "block";
+            passwordInput.value = "";
+        }
+        
+        loginBtn.innerHTML = 'Authenticate & Login';
+        loginBtn.style.opacity = '1';
+        loginBtn.style.pointerEvents = 'auto';
+    }, 1200);
 });
+
+function goHome() {
+    closeAllDropdowns();
+    hideAllViews();
+    dashboardView.classList.add('active');
+}
+
+function switchSubView(viewId) {
+    closeAllDropdowns();
+    hideAllViews();
+    document.getElementById(viewId).classList.add('active');
+}
 
 // Toggle Profile Dropdown Menu
 function toggleProfileMenu(event) {
@@ -92,158 +107,42 @@ window.addEventListener('click', function(e) {
     }
 });
 
+// Handle Logout
 function logout() {
+    localStorage.removeItem('rjStudyLoggedIn');
+    localStorage.removeItem('rjStudyUsername');
+    sessionStorage.removeItem('student_name');
     usernameInput.value = "";
     passwordInput.value = "";
-    sessionStorage.removeItem("student_name");
     closeAllDropdowns();
+    closeDoubtChat();
     hideAllViews();
-    stopChatPolling();
+    errorMsg.style.display = "none";
     loginView.classList.add('active');
 }
 
-// ==================== TEST SUBJECT ROUTING ====================
-function startSubjectTest(subject) {
-    const studentName = sessionStorage.getItem("student_name");
-    if (!studentName) {
-        alert("Session expired. Please login again.");
-        logout();
-        return;
-    }
-    // Open test folder with subject parameter in URL
-    window.open('test/index.html?subject=' + subject, '_blank');
-}
+// Restore Login
+function restoreLogin() {
+    if (localStorage.getItem('rjStudyLoggedIn') !== 'true') return;
 
-// ==================== CHAT SYSTEM LOGIC ====================
-const WORKER_URL = "https://rj-test-backen.internationalbgi.workers.dev";
-const chatBox = document.getElementById('chatBox');
-const chatInput = document.getElementById('chatInput');
-const sendBtn = document.getElementById('sendBtn');
-let chatInterval = null;
+    const savedName = localStorage.getItem('rjStudyUsername') || '';
+    displayUsername.innerText = savedName;
+    document.querySelectorAll('.displayUsernameCopy').forEach(el => el.innerText = savedName);
+    const initial = savedName.charAt(0).toUpperCase() || 'A';
+    profileInitial.innerText = initial;
+    profileInitial2.innerText = initial;
+    profileInitial3.innerText = initial;
+    profileInitial4.innerText = initial;
 
-function switchSubView(viewId) {
-    closeAllDropdowns();
-    hideAllViews();
-    document.getElementById(viewId).classList.add('active');
-    
-    // Chat Polling Management
-    if (viewId === 'chat-view') {
-        loadMessages();
-        chatInterval = setInterval(loadMessages, 3000);
-    } else {
-        stopChatPolling();
-    }
-}
+    sessionStorage.setItem('student_name', savedName);
 
-function goHome() {
-    closeAllDropdowns();
     hideAllViews();
     dashboardView.classList.add('active');
-    stopChatPolling();
 }
 
-function stopChatPolling() {
-    if (chatInterval) {
-        clearInterval(chatInterval);
-        chatInterval = null;
-    }
-}
+restoreLogin();
 
-function formatText(text) {
-    if (!text) return '';
-    let formatted = text
-        .replace(/&/g, '&amp;')
-        .replace(/</g, '&lt;')
-        .replace(/>/g, '&gt;');
-    formatted = formatted.replace(/\*\*(.*?)\*\*/g, '<b>$1</b>'); // Bold
-    formatted = formatted.replace(/\*(.*?)\*/g, '<i>$1</i>');     // Italic
-    return formatted;
-}
-
-function formatTime(timestamp) {
-    if (!timestamp) return '';
-    const date = new Date(timestamp);
-    return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-}
-
-async function loadMessages() {
-    try {
-        const response = await fetch(`${WORKER_URL}/api/chat`);
-        const data = await response.json();
-        
-        if (data.error) {
-            if (data.error === "Chat is currently closed.") {
-                chatInput.disabled = true;
-                chatInput.placeholder = "Chat is closed by Admin.";
-                sendBtn.disabled = true;
-            }
-            return;
-        }
-
-        chatInput.disabled = false;
-        chatInput.placeholder = "Type your message here... Use **bold** or *italic*";
-        sendBtn.disabled = false;
-
-        chatBox.innerHTML = '';
-        const currentUser = sessionStorage.getItem("student_name") || "Student";
-
-        data.forEach(msg => {
-            const isOwnMessage = (msg.sender === currentUser);
-            const msgDiv = document.createElement('div');
-            msgDiv.className = `chat-message ${isOwnMessage ? 'sent' : 'received'}`;
-            
-            msgDiv.innerHTML = `
-                <div class="chat-sender">${msg.sender === "ADMIN" ? '<i class="fa-solid fa-shield-halved"></i> ADMIN' : msg.sender}</div>
-                <div class="chat-text">${formatText(msg.text)}</div>
-                <span class="chat-time">${formatTime(msg.timestamp)}</span>
-            `;
-            chatBox.appendChild(msgDiv);
-        });
-
-        // Auto-scroll to bottom
-        chatBox.scrollTop = chatBox.scrollHeight;
-    } catch (error) {
-        console.error("Error loading messages:", error);
-    }
-}
-
-async function sendChatMessage() {
-    const text = chatInput.value.trim();
-    const sender = sessionStorage.getItem("student_name");
-    
-    if (!text || !sender) return;
-
-    const tempDiv = document.createElement('div');
-    tempDiv.className = 'chat-message sent';
-    tempDiv.innerHTML = `
-        <div class="chat-text">${formatText(text)}</div>
-        <span class="chat-time">Sending...</span>
-    `;
-    chatBox.appendChild(tempDiv);
-    chatBox.scrollTop = chatBox.scrollHeight;
-    
-    chatInput.value = '';
-
-    try {
-        await fetch(`${WORKER_URL}/api/chat`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ sender, text })
-        });
-        loadMessages();
-    } catch (error) {
-        console.error("Error sending message:", error);
-        tempDiv.innerHTML += '<br><small style="color:red;">Failed to send.</small>';
-    }
-}
-
-function handleChatKeyPress(event) {
-    if (event.key === 'Enter') {
-        sendChatMessage();
-    }
-}
-
-// ==================== TERMINAL ANIMATION ====================
+// Background Terminal Animation Script
 const terminal = document.getElementById('terminal-bg');
 const hackerLogs = [
     "Initializing secure hypervisor environment...",
@@ -286,3 +185,122 @@ function typeTerminal() {
 }
 
 typeTerminal();
+
+
+// ======================================================
+// ZERO-LATENCY REALTIME DISCUSS DOUBTS CHAT ENGINE
+// ======================================================
+
+const WORKER_URL = "https://rj-test-backen.internationalbgi.workers.dev";
+let chatPollInterval = null;
+
+function getChatStudentName() {
+    return sessionStorage.getItem('student_name') || localStorage.getItem('rjStudyUsername') || "Guest";
+}
+
+function openDoubtChat() {
+    const overlay = document.getElementById('chatModalOverlay');
+    if (!overlay) return;
+
+    overlay.style.display = 'flex';
+    fetchChatHistory();
+
+    if (chatPollInterval) clearInterval(chatPollInterval);
+    chatPollInterval = setInterval(fetchChatHistory, 800); // Super Fast 0.8s Check
+}
+
+function closeDoubtChat() {
+    const overlay = document.getElementById('chatModalOverlay');
+    if (overlay) overlay.style.display = 'none';
+
+    if (chatPollInterval) {
+        clearInterval(chatPollInterval);
+        chatPollInterval = null;
+    }
+}
+
+// POST Polling bypasses Cloudflare CDN cache completely
+async function fetchChatHistory() {
+    const sName = getChatStudentName();
+    try {
+        const response = await fetch(`${WORKER_URL}/api/chat`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ action: "get", studentName: sName })
+        });
+        const data = await response.json();
+        if (data && data.success) {
+            renderChat(data.chat || []);
+        }
+    } catch (e) {
+        console.error("Chat fetch error:", e);
+    }
+}
+
+function renderChat(chatArray) {
+    const box = document.getElementById('chatHistory');
+    if (!box) return;
+
+    const currentJSON = box.getAttribute('data-last-json');
+    const newJSON = JSON.stringify(chatArray);
+    if (currentJSON === newJSON) return; // Prevent lag
+
+    box.setAttribute('data-last-json', newJSON);
+    box.innerHTML = '';
+
+    if (!chatArray || chatArray.length === 0) {
+        box.innerHTML = '<p style="text-align:center; color:#64748b; font-size:0.85rem; margin-top:30px;">Ask any doubt! Administrator will reply live here.</p>';
+        return;
+    }
+
+    chatArray.forEach(msg => {
+        const div = document.createElement('div');
+        div.className = `chat-msg ${msg.type === 'admin' ? 'msg-admin' : 'msg-student'}`;
+
+        const sender = document.createElement('span');
+        sender.className = 'sender-name';
+        sender.innerText = msg.type === 'admin' ? '👑 Administrator' : (msg.sender || 'Student');
+
+        const text = document.createElement('span');
+        text.innerText = msg.text || '';
+
+        div.appendChild(sender);
+        div.appendChild(text);
+        box.appendChild(div);
+    });
+
+    box.scrollTop = box.scrollHeight;
+}
+
+function handleChatEnter(e) {
+    if (e.key === 'Enter') sendDoubtMsg();
+}
+
+async function sendDoubtMsg() {
+    const inputField = document.getElementById('doubtInput');
+    if (!inputField) return;
+
+    const text = inputField.value.trim();
+    if (!text) return;
+
+    inputField.value = '';
+    const sName = getChatStudentName();
+
+    try {
+        const response = await fetch(`${WORKER_URL}/api/chat`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ studentName: sName, message: text })
+        });
+
+        const data = await response.json();
+        if (data && data.success) {
+            renderChat(data.chat || []);
+        } else {
+            alert('Message send nahi hua. Thodi der baad try karein.');
+        }
+    } catch (e) {
+        console.error(e);
+        alert('Failed to send message. Please check internet connection.');
+    }
+} 
