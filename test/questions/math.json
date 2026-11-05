@@ -1,1 +1,28 @@
-
+[
+  {
+    "id": "m1",
+    "type": "mcq",
+    "question": "What is the value of 15 + 27?",
+    "options": ["32", "42", "52", "40"],
+    "answer": 1
+  },
+  {
+    "id": "m2",
+    "type": "mcq",
+    "question": "Solve for x: 2x = 10",
+    "options": ["2", "4", "5", "10"],
+    "answer": 2
+  },
+  {
+    "id": "m3",
+    "type": "text",
+    "question": "What is the square of 12? (Type the number only)",
+    "answer": "144"
+  },
+  {
+    "id": "m4",
+    "type": "text",
+    "question": "Calculate: 100 / 4 (Type the number only)",
+    "answer": "25"
+  }
+]
