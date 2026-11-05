@@ -1,496 +1,699 @@
 /* ==========================================================================
-   RJ ACADEMY PRO - Core Functional Script (with Subjective Auto-Detect)
+   RJ ACADEMY PRO - Modern Dark Test Panel Styling
    ========================================================================== */
 
-const WORKER_URL = "https://rj-test-backen.internationalbgi.workers.dev";
-const DASHBOARD_URL = "https://surya-study.pages.dev";
-
-// Global State
-let testConfig = null;
-let currentQIndex = 0;
-let userAnswers = {}; // { qIndex: value } -> Integer for MCQ, String for Typing
-let flaggedQuestions = new Set();
-let visitedQuestions = new Set();
-let timerInterval = null;
-let timeRemaining = 0;
-let studentName = "";
-let isSubmitting = false;
-
-// FAB Dragging State
-let fabDragState = {
-    isDragging: false,
-    startX: 0,
-    startY: 0,
-    initialLeft: 0,
-    initialTop: 0,
-    dragDistance: 0
-};
-
-// Initialization
-document.addEventListener("DOMContentLoaded", () => {
-    initFabDraggable();
-    initDashboardBtn();
-    fetchConfigAndInit();
-});
-
-async function fetchConfigAndInit() {
-    try {
-        const res = await fetch(WORKER_URL + "/api/config?t=" + Date.now());
-        if (!res.ok) throw new Error("Server Error");
-        testConfig = await res.json();
-
-        if (testConfig.status && testConfig.status !== "open") {
-            showLockedScreen("TEST CURRENTLY CLOSED", "This test is currently closed or locked by Admin.");
-            return;
-        }
-
-        checkLockStatus();
-    } catch (err) {
-        console.error("Config fetch error:", err);
-        loadMockData();
-    }
-}
-
-function checkLockStatus() {
-    const urlParams = new URLSearchParams(window.location.search);
-    const testId = testConfig.testId || urlParams.get("testId") || "demo_test";
-
-    var isSubmitted = localStorage.getItem("submitted_" + testId);
-    var submittedTimeRaw = localStorage.getItem("submitted_time_" + testId);
-
-    if (isSubmitted) {
-        var reopenTime = testConfig.reopenTimestamp || 0;
-        var submittedTime = submittedTimeRaw ? parseInt(submittedTimeRaw, 10) : 0;
-
-        if (reopenTime > 0 && (submittedTime === 0 || submittedTime < reopenTime)) {
-            localStorage.removeItem("submitted_" + testId);
-            localStorage.removeItem("submitted_time_" + testId);
-        } else {
-            showLockedScreen("TEST ALREADY SUBMITTED", "You have already completed this test session.");
-            return;
-        }
-    }
-
-    studentName = sessionStorage.getItem("student_name") || 
-                  localStorage.getItem("rjStudyUsername") || 
-                  urlParams.get("name") || 
-                  "Student";
-                  
-    sessionStorage.setItem("student_name", studentName);
-
-    document.getElementById("test-title-display").innerText = testConfig.title || "Assessment";
-    timeRemaining = (testConfig.durationMinutes || testConfig.duration || 45) * 60;
-
-    startTimer();
-    renderQuestion(0);
-    renderMatrix();
-}
-
-function loadMockData() {
-    testConfig = {
-        testId: "demo_test",
-        title: "RJ ACADEMY PRO Mock Test",
-        durationMinutes: 30,
-        questions: [
-            {
-                id: "q1",
-                question: "Choose the grammatically correct sentence:",
-                options: ["I goes to school.", "I go to school."]
-            },
-            {
-                id: "q2",
-                type: "text", // Auto-detects subjective
-                question: "Translate into English: राम स्कूल जाता है।"
-            }
-        ]
-    };
-
-    studentName = sessionStorage.getItem("student_name") || localStorage.getItem("rjStudyUsername") || "Student";
-    sessionStorage.setItem("student_name", studentName);
+:root {
+    --bg-main: #0b0f19;
+    --bg-card: #151c2c;
+    --bg-card-hover: #1e293b;
+    --border-color: #2a364f;
+    --accent-teal: #0891b2;
+    --accent-teal-dark: #0e7490;
+    --accent-cyan: #06b6d4;
+    --text-primary: #f8fafc;
+    --text-secondary: #94a3b8;
+    --text-muted: #64748b;
     
-    document.getElementById("test-title-display").innerText = testConfig.title;
-    timeRemaining = testConfig.durationMinutes * 60;
+    /* Palette Status Colors */
+    --status-answered: #10b981;
+    --status-flagged: #f59e0b;
+    --status-visited: #3b82f6;
+    --status-unvisited: #334155;
     
-    startTimer();
-    renderQuestion(0);
-    renderMatrix();
+    --radius-sm: 8px;
+    --radius-md: 12px;
+    --radius-lg: 16px;
+    --radius-full: 9999px;
+    
+    --font-main: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
 }
 
-function startTimer() {
-    if (timerInterval) clearInterval(timerInterval);
-    updateTimerDisplay();
-    timerInterval = setInterval(() => {
-        timeRemaining--;
-        updateTimerDisplay();
-        
-        if (timeRemaining <= 0) {
-            clearInterval(timerInterval);
-            autoSubmitOnTimeout();
-        }
-    }, 1000);
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+    -webkit-tap-highlight-color: transparent;
 }
 
-function updateTimerDisplay() {
-    const hours = Math.floor(timeRemaining / 3600);
-    const mins = Math.floor((timeRemaining % 3600) / 60);
-    const secs = timeRemaining % 60;
+body, html {
+    width: 100%;
+    height: 100%;
+    background-color: var(--bg-main);
+    color: var(--text-primary);
+    font-family: var(--font-main);
+    overflow: hidden;
+}
 
-    const display = [hours, mins, secs]
-        .map(v => String(v).padStart(2, '0'))
-        .filter((v, i) => i > 0 || v !== '00')
-        .join(':');
+.app-container {
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+    width: 100vw;
+    position: relative;
+    overflow: hidden;
+}
 
-    const timerElem = document.getElementById("time-left");
-    if (timerElem) {
-        timerElem.innerText = display;
-        if (timeRemaining <= 60) timerElem.style.color = "#EF4444";
-        else timerElem.style.color = "";
+/* ---------------- TOP HEADER ---------------- */
+.top-bar {
+    height: 60px;
+    background: #111827;
+    border-bottom: 1px solid var(--border-color);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 16px;
+    z-index: 100;
+}
+
+.brand-section {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.brand-badge {
+    background: linear-gradient(135deg, #06b6d4, #3b82f6);
+    color: #ffffff;
+    font-size: 11px;
+    font-weight: 800;
+    padding: 3px 7px;
+    border-radius: 4px;
+    letter-spacing: 0.5px;
+}
+
+.portal-title {
+    font-size: 16px;
+    font-weight: 700;
+    color: #ffffff;
+    letter-spacing: -0.3px;
+}
+
+.test-info-center {
+    flex: 1;
+    text-align: center;
+    padding: 0 12px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.test-name {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text-secondary);
+}
+
+.header-right {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.timer-box {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    background: rgba(8, 145, 178, 0.15);
+    border: 1px solid rgba(6, 182, 212, 0.3);
+    padding: 6px 12px;
+    border-radius: var(--radius-full);
+    color: var(--accent-cyan);
+    font-weight: 700;
+    font-size: 14px;
+    font-mono: monospace;
+}
+
+.desktop-submit-btn {
+    display: none;
+    background: linear-gradient(135deg, #10b981, #059669);
+    color: white;
+    border: none;
+    padding: 8px 18px;
+    border-radius: var(--radius-md);
+    font-weight: 600;
+    cursor: pointer;
+}
+
+/* ---------------- WORKSPACE SPLIT ---------------- */
+.workspace {
+    display: flex;
+    flex: 1;
+    height: calc(100vh - 60px);
+    position: relative;
+    overflow: hidden;
+}
+
+/* Main Question Content Box */
+.question-container {
+    flex: 1;
+    padding: 20px;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    display: flex;
+    flex-direction: column;
+}
+
+.question-header-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 16px;
+}
+
+.q-number-tag {
+    background: rgba(255, 255, 255, 0.08);
+    color: var(--accent-cyan);
+    font-weight: 700;
+    font-size: 14px;
+    padding: 4px 12px;
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--border-color);
+}
+
+.flag-btn {
+    background: transparent;
+    border: 1px solid var(--border-color);
+    color: var(--text-secondary);
+    padding: 6px 12px;
+    border-radius: var(--radius-sm);
+    font-size: 13px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.flag-btn.flagged {
+    background: rgba(245, 158, 11, 0.15);
+    border-color: var(--status-flagged);
+    color: var(--status-flagged);
+}
+
+.question-text-box {
+    font-size: 16px;
+    line-height: 1.6;
+    font-weight: 500;
+    color: var(--text-primary);
+    margin-bottom: 20px;
+}
+
+.q-image-box {
+    margin-bottom: 20px;
+    max-width: 100%;
+    border-radius: var(--radius-md);
+    overflow: hidden;
+}
+
+.q-image-box img {
+    max-width: 100%;
+    max-height: 260px;
+    object-fit: contain;
+    border-radius: var(--radius-md);
+    border: 1px solid var(--border-color);
+}
+
+/* Options Stack */
+.options-group {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    margin-bottom: 20px;
+}
+
+.option-card {
+    background: var(--bg-card);
+    border: 1.5px solid var(--border-color);
+    border-radius: var(--radius-md);
+    padding: 14px 16px;
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.option-card:active {
+    transform: scale(0.99);
+}
+
+.option-card.selected {
+    border-color: var(--accent-cyan);
+    background: rgba(8, 145, 178, 0.12);
+}
+
+.opt-index {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.06);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 13px;
+    color: var(--text-secondary);
+    flex-shrink: 0;
+}
+
+.option-card.selected .opt-index {
+    background: var(--accent-cyan);
+    color: #ffffff;
+}
+
+.opt-label {
+    font-size: 15px;
+    line-height: 1.4;
+    color: var(--text-primary);
+    padding-top: 3px;
+}
+
+/* ---------------- SUBJECTIVE TYPING BOX (NEW) ---------------- */
+.subjective-textarea {
+    width: 100%;
+    height: 160px;
+    background: rgba(255, 255, 255, 0.03);
+    border: 1.5px solid var(--border-color);
+    border-radius: var(--radius-md);
+    color: var(--text-primary);
+    font-size: 16px;
+    padding: 16px;
+    resize: vertical;
+    font-family: var(--font-main);
+    outline: none;
+    transition: all 0.3s ease;
+}
+
+.subjective-textarea:focus {
+    border-color: var(--accent-cyan);
+    background: rgba(8, 145, 178, 0.08);
+    box-shadow: 0 0 0 4px rgba(6, 182, 212, 0.15);
+}
+
+.subjective-textarea::placeholder {
+    color: var(--text-muted);
+}
+
+.mobile-spacer {
+    height: 120px;
+    flex-shrink: 0;
+}
+
+/* ---------------- STICKY MOBILE FOOTER ---------------- */
+.mobile-sticky-footer {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 70px;
+    background: rgba(15, 23, 42, 0.95);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border-top: 1px solid var(--border-color);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 16px;
+    z-index: 800;
+}
+
+.nav-btn {
+    height: 48px;
+    padding: 0 20px;
+    border-radius: var(--radius-md);
+    font-weight: 600;
+    font-size: 14px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    border: none;
+    cursor: pointer;
+}
+
+.sec-btn {
+    background: rgba(255, 255, 255, 0.08);
+    color: var(--text-primary);
+    border: 1px solid var(--border-color);
+}
+
+.main-btn {
+    background: linear-gradient(135deg, var(--accent-teal), var(--accent-teal-dark));
+    color: white;
+}
+
+/* ---------------- PRO DRAGGABLE FAB BUTTON ---------------- */
+.matrix-fab {
+    position: fixed;
+    bottom: 85px;
+    right: 20px;
+    width: 58px;
+    height: 58px;
+    border-radius: 50%;
+    background: linear-gradient(145deg, #0f4c5c, #0891b2);
+    color: #e0f7fa;
+    border: 1px solid rgba(255, 255, 255, 0.25);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 4px 0 #093b47, 0 8px 20px rgba(8, 145, 178, 0.35);
+    cursor: grab;
+    touch-action: none;
+    user-select: none;
+    z-index: 990;
+    animation: softPulse3D 3.8s infinite ease-in-out;
+    transition: transform 0.1s ease;
+}
+
+.matrix-fab:active {
+    cursor: grabbing;
+    transform: scale(0.94);
+}
+
+@keyframes softPulse3D {
+    0%, 100% {
+        transform: translateY(0) scale(1);
+        box-shadow: 0 4px 0 #093b47, 0 8px 18px rgba(8, 145, 178, 0.3);
+    }
+    50% {
+        transform: translateY(-3px) scale(1.03);
+        box-shadow: 0 4px 0 #093b47, 0 14px 28px rgba(8, 145, 178, 0.45);
     }
 }
 
-// ---------------- QUESTION RENDER (MCQ & TYPING BOX SUPPORT) ----------------
-function renderQuestion(index) {
-    if (!testConfig || !testConfig.questions || !testConfig.questions[index]) return;
-    
-    currentQIndex = index;
-    visitedQuestions.add(index);
-    
-    const q = testConfig.questions[index];
-    
-    const questionContent = q.question || q.text || q.questionText || q.title || "";
-    document.getElementById("q-number").innerText = `Q.${index + 1}`;
-    document.getElementById("question-text").innerText = questionContent;
-    
-    const flagBtn = document.getElementById("flag-btn");
-    if (flagBtn) {
-        if (flaggedQuestions.has(index)) {
-            flagBtn.classList.add("flagged");
-        } else {
-            flagBtn.classList.remove("flagged");
-        }
+/* ---------------- MATRIX POPUP / BOTTOM SHEET ---------------- */
+.sidebar-section {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.65);
+    backdrop-filter: blur(4px);
+    z-index: 1000;
+    display: flex;
+    justify-content: flex-end;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s ease;
+}
+
+.sidebar-section.active-matrix {
+    opacity: 1;
+    pointer-events: auto;
+}
+
+.matrix-card {
+    width: 100%;
+    max-width: 380px;
+    background: var(--bg-card);
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    padding: 20px;
+    box-shadow: -5px 0 25px rgba(0, 0, 0, 0.5);
+    transform: translateX(100%);
+    transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.sidebar-section.active-matrix .matrix-card {
+    transform: translateX(0);
+}
+
+.matrix-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-bottom: 16px;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.close-matrix-btn {
+    background: rgba(255, 255, 255, 0.1);
+    border: none;
+    color: white;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    cursor: pointer;
+    font-size: 16px;
+}
+
+.legend-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    margin: 16px 0;
+}
+
+.legend-item {
+    font-size: 12px;
+    color: var(--text-secondary);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.badge {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+}
+.badge-answered { background: var(--status-answered); }
+.badge-flagged { background: var(--status-flagged); }
+.badge-visited { background: var(--status-visited); }
+.badge-unvisited { background: var(--status-unvisited); }
+
+.matrix-grid {
+    flex: 1;
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 10px;
+    align-content: start;
+    overflow-y: auto;
+    padding-right: 4px;
+    margin-bottom: 16px;
+}
+
+.p-item {
+    aspect-ratio: 1;
+    border-radius: var(--radius-sm);
+    border: none;
+    font-weight: 700;
+    font-size: 14px;
+    color: white;
+    background: var(--status-unvisited);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.p-item.status-answered { background: var(--status-answered); }
+.p-item.status-flagged { background: var(--status-flagged); }
+.p-item.status-visited { background: var(--status-visited); }
+.p-item.active-q { outline: 2px solid white; outline-offset: 2px; }
+
+.sheet-submit-container {
+    padding-top: 12px;
+    border-top: 1px solid var(--border-color);
+}
+
+.primary-submit-btn {
+    width: 100%;
+    height: 48px;
+    background: linear-gradient(135deg, #10b981, #059669);
+    color: white;
+    font-weight: 700;
+    font-size: 15px;
+    border: none;
+    border-radius: var(--radius-md);
+    cursor: pointer;
+}
+
+/* ---------------- MODALS & OVERLAYS ---------------- */
+.modal-backdrop {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.75);
+    backdrop-filter: blur(5px);
+    z-index: 2000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+}
+
+.modal-box {
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-lg);
+    width: 100%;
+    max-width: 420px;
+    padding: 24px;
+    text-align: center;
+}
+
+.modal-box h2 {
+    font-size: 20px;
+    margin-bottom: 8px;
+}
+
+.modal-box p {
+    color: var(--text-secondary);
+    font-size: 14px;
+    margin-bottom: 20px;
+}
+
+.summary-box {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 8px;
+    margin-bottom: 24px;
+}
+
+.sum-item {
+    background: rgba(255, 255, 255, 0.05);
+    padding: 10px 4px;
+    border-radius: var(--radius-sm);
+    display: flex;
+    flex-direction: column;
+}
+
+.sum-item span:first-child {
+    font-size: 18px;
+    font-weight: 700;
+}
+
+.sum-item span:last-child {
+    font-size: 11px;
+    color: var(--text-muted);
+}
+
+.sum-item.success span:first-child { color: var(--status-answered); }
+.sum-item.warning span:first-child { color: var(--status-flagged); }
+.sum-item.danger span:first-child { color: #ef4444; }
+
+.modal-actions {
+    display: flex;
+    gap: 12px;
+}
+
+.modal-btn {
+    flex: 1;
+    height: 44px;
+    border-radius: var(--radius-md);
+    font-weight: 600;
+    border: none;
+    cursor: pointer;
+}
+
+.modal-btn.cancel {
+    background: rgba(255, 255, 255, 0.1);
+    color: white;
+}
+
+.modal-btn.confirm {
+    background: #10b981;
+    color: white;
+}
+
+.locked-screen {
+    position: fixed;
+    inset: 0;
+    background: var(--bg-main);
+    z-index: 3000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    pointer-events: auto;
+}
+
+.locked-card {
+    text-align: center;
+    max-width: 360px;
+    position: relative;
+    z-index: 3001;
+}
+
+.success-icon {
+    width: 64px;
+    height: 64px;
+    background: var(--status-answered);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 32px;
+    margin: 0 auto 20px;
+    color: white;
+}
+
+.locked-time {
+    margin-top: 16px;
+    font-size: 12px;
+    color: var(--text-muted);
+}
+
+/* Back to Dashboard Button */
+.back-dashboard-btn {
+    margin-top: 26px;
+    background: linear-gradient(135deg, #0891b2, #0e7490);
+    color: #ffffff;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    padding: 14px 28px;
+    border-radius: var(--radius-md);
+    font-size: 15px;
+    font-weight: 700;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    cursor: pointer;
+    box-shadow: 0 6px 20px rgba(8, 145, 178, 0.4);
+    touch-action: manipulation;
+    user-select: none;
+    position: relative;
+    z-index: 3005;
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.back-dashboard-btn:active {
+    transform: scale(0.95);
+    box-shadow: 0 2px 10px rgba(8, 145, 178, 0.2);
+}
+
+.hidden { display: none !important; }
+
+/* ---------------- DESKTOP RESPONSIVE (min-width: 993px) ---------------- */
+@media (min-width: 993px) {
+    .desktop-submit-btn { display: block; }
+    .mobile-sticky-footer { display: none; }
+    .matrix-fab { display: none; }
+    .mobile-spacer { display: none; }
+
+    .sidebar-section {
+        position: relative;
+        inset: auto;
+        opacity: 1;
+        pointer-events: auto;
+        width: 340px;
+        background: transparent;
+        backdrop-filter: none;
+        border-left: 1px solid var(--border-color);
     }
 
-    const imgContainer = document.getElementById("question-image-container");
-    const imgEl = document.getElementById("question-image");
-    const imageUrl = q.imageUrl || q.image || q.img || "";
-    
-    if (imgContainer && imgEl) {
-        if (imageUrl) {
-            imgEl.src = imageUrl;
-            imgContainer.classList.remove("hidden");
-        } else {
-            imgContainer.classList.add("hidden");
-        }
+    .matrix-card {
+        transform: none !important;
+        max-width: none;
+        box-shadow: none;
     }
 
-    const optsContainer = document.getElementById("options-container");
-    if (!optsContainer) return;
-    optsContainer.innerHTML = "";
-
-    const optionsList = q.options || q.choices || [];
-    
-    // Auto-detect if question is subjective (typing)
-    const isSubjective = q.type === "subjective" || q.type === "text" || optionsList.length === 0;
-
-    if (isSubjective) {
-        // Render Textarea for Subjective Typing
-        const textarea = document.createElement("textarea");
-        textarea.className = "subjective-textarea";
-        textarea.placeholder = "Type your answer here...";
-        
-        // Restore saved text if any
-        if (userAnswers[index] !== undefined) {
-            textarea.value = userAnswers[index];
-        }
-
-        // Save instantly as user types (without reloading UI)
-        textarea.oninput = (e) => {
-            userAnswers[index] = e.target.value;
-            updateMatrixButtonState(index);
-        };
-
-        optsContainer.appendChild(textarea);
-    } else {
-        // Render MCQ Cards
-        const labels = ["A", "B", "C", "D", "E"];
-        optionsList.forEach((optText, optIdx) => {
-            const optCard = document.createElement("div");
-            optCard.className = `option-card ${userAnswers[index] === optIdx ? "selected" : ""}`;
-            optCard.onclick = () => selectOption(optIdx);
-
-            optCard.innerHTML = `
-                <div class="opt-index">${labels[optIdx] || optIdx + 1}</div>
-                <div class="opt-label">${optText}</div>
-            `;
-            optsContainer.appendChild(optCard);
-        });
-    }
-
-    renderMatrix();
+    .close-matrix-btn { display: none; }
 }
 
-function selectOption(optIndex) {
-    userAnswers[currentQIndex] = optIndex;
-    renderQuestion(currentQIndex);
-}
-
-function toggleFlag() {
-    if (flaggedQuestions.has(currentQIndex)) {
-        flaggedQuestions.delete(currentQIndex);
-    } else {
-        flaggedQuestions.add(currentQIndex);
-    }
-    renderQuestion(currentQIndex);
-}
-
-function nextQuestion() {
-    if (currentQIndex < testConfig.questions.length - 1) {
-        renderQuestion(currentQIndex + 1);
+@media (max-width: 992px) {
+    .matrix-card {
+        max-width: 100%;
+        height: 75vh;
+        border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+        margin-top: auto;
     }
 }
-
-function prevQuestion() {
-    if (currentQIndex > 0) {
-        renderQuestion(currentQIndex - 1);
-    }
-}
-
-// ---------------- MATRIX PALETTE ----------------
-function renderMatrix() {
-    const grid = document.getElementById("palette-grid");
-    if (!grid) return;
-    grid.innerHTML = "";
-
-    testConfig.questions.forEach((_, idx) => {
-        const btn = document.createElement("button");
-        btn.className = "p-item";
-        btn.innerText = idx + 1;
-
-        if (idx === currentQIndex) btn.classList.add("active-q");
-        
-        // Matrix Status Color check (works for Integer MCQ or String Subjective)
-        const isAnswered = userAnswers[idx] !== undefined && userAnswers[idx] !== "" && String(userAnswers[idx]).trim() !== "";
-        
-        if (isAnswered) {
-            btn.classList.add("status-answered");
-        } else if (flaggedQuestions.has(idx)) {
-            btn.classList.add("status-flagged");
-        } else if (visitedQuestions.has(idx)) {
-            btn.classList.add("status-visited");
-        }
-
-        btn.onclick = () => {
-            renderQuestion(idx);
-            if (window.innerWidth <= 992) toggleMatrix();
-        };
-
-        grid.appendChild(btn);
-    });
-}
-
-// Real-time matrix updater for Typing box
-function updateMatrixButtonState(idx) {
-    const grid = document.getElementById("palette-grid");
-    if (!grid) return;
-    const btn = grid.children[idx];
-    if (!btn) return;
-    
-    const isAnswered = userAnswers[idx] !== undefined && String(userAnswers[idx]).trim() !== "";
-    
-    if (isAnswered) {
-        btn.classList.add("status-answered");
-        btn.classList.remove("status-visited");
-    } else {
-        btn.classList.remove("status-answered");
-        if (visitedQuestions.has(idx)) btn.classList.add("status-visited");
-    }
-}
-
-function toggleMatrix() {
-    const sidebar = document.getElementById("sidebar");
-    if (sidebar) sidebar.classList.toggle("active-matrix");
-}
-
-function initFabDraggable() {
-    const fab = document.getElementById("draggable-fab");
-    if (!fab) return;
-
-    const startDrag = (e) => {
-        fabDragState.isDragging = true;
-        fabDragState.dragDistance = 0;
-        
-        const clientX = e.touches ? e.touches[0].clientX : e.clientX;
-        const clientY = e.touches ? e.touches[0].clientY : e.clientY;
-        
-        fabDragState.startX = clientX;
-        fabDragState.startY = clientY;
-
-        const rect = fab.getBoundingClientRect();
-        fabDragState.initialLeft = rect.left;
-        fabDragState.initialTop = rect.top;
-
-        fab.style.transition = 'none';
-        fab.style.bottom = 'auto';
-        fab.style.right = 'auto';
-        fab.style.left = `${rect.left}px`;
-        fab.style.top = `${rect.top}px`;
-    };
-
-    const doDrag = (e) => {
-        if (!fabDragState.isDragging) return;
-
-        const clientX = e.touches ? e.touches[0].clientX : e.clientX;
-        const clientY = e.touches ? e.touches[0].clientY : e.clientY;
-
-        const deltaX = clientX - fabDragState.startX;
-        const deltaY = clientY - fabDragState.startY;
-
-        fabDragState.dragDistance = Math.hypot(deltaX, deltaY);
-
-        let newLeft = fabDragState.initialLeft + deltaX;
-        let newTop = fabDragState.initialTop + deltaY;
-
-        const maxLeft = window.innerWidth - fab.offsetWidth - 10;
-        const maxTop = window.innerHeight - fab.offsetHeight - 10;
-
-        newLeft = Math.max(10, Math.min(newLeft, maxLeft));
-        newTop = Math.max(10, Math.min(newTop, maxTop));
-
-        fab.style.left = `${newLeft}px`;
-        fab.style.top = `${newTop}px`;
-    };
-
-    const stopDrag = () => {
-        if (!fabDragState.isDragging) return;
-        fabDragState.isDragging = false;
-        fab.style.transition = 'transform 0.1s ease';
-        
-        if (fabDragState.dragDistance < 12) toggleMatrix();
-    };
-
-    fab.addEventListener('touchstart', startDrag, { passive: true });
-    window.addEventListener('touchmove', doDrag, { passive: true });
-    window.addEventListener('touchend', stopDrag);
-
-    fab.addEventListener('mousedown', startDrag);
-    window.addEventListener('mousemove', doDrag);
-    window.addEventListener('mouseup', stopDrag);
-}
-
-// ---------------- SUBMISSION LOGIC ----------------
-function openSubmitConfirm() {
-    if (isSubmitting) return;
-    const total = testConfig.questions.length;
-    const answered = Object.keys(userAnswers).filter(k => userAnswers[k] !== undefined && String(userAnswers[k]).trim() !== "").length;
-    const flagged = flaggedQuestions.size;
-    const unanswered = total - answered;
-
-    document.getElementById("sum-total").innerText = total;
-    document.getElementById("sum-answered").innerText = answered;
-    document.getElementById("sum-flagged").innerText = flagged;
-    document.getElementById("sum-unanswered").innerText = unanswered;
-
-    document.getElementById("confirm-modal").classList.remove("hidden");
-}
-
-function closeSubmitConfirm() {
-    document.getElementById("confirm-modal").classList.add("hidden");
-}
-
-const headerSubBtn = document.getElementById("header-submit-btn");
-if (headerSubBtn) headerSubBtn.onclick = openSubmitConfirm;
-
-async function submitTestFinal() {
-    if (isSubmitting) return;
-    isSubmitting = true;
-    
-    if (timerInterval) clearInterval(timerInterval);
-    closeSubmitConfirm();
-
-    var now = Date.now();
-    var finalStudentName = sessionStorage.getItem("student_name") || 
-                           localStorage.getItem("rjStudyUsername") || 
-                           studentName || 
-                           "Student";
-
-    var payload = {
-        studentName: finalStudentName,
-        testId: testConfig.testId,
-        answers: userAnswers,
-        submittedAt: now
-    };
-
-    try {
-        var res = await fetch(WORKER_URL + "/api/submit", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify(payload)
-        });
-        
-        var result = await res.json();
-        
-        if (result.success || res.ok) {
-            localStorage.setItem("submitted_" + testConfig.testId, "true");
-            localStorage.setItem("submitted_time_" + testConfig.testId, now.toString());
-            
-            showLockedScreen(
-                "TEST SUBMITTED SUCCESSFULLY", 
-                `Thank you, ${finalStudentName}. Your responses have been recorded!`
-            );
-        } else {
-            isSubmitting = false;
-            alert(result.error || "Submission failed. Please try again.");
-        }
-    } catch (err) {
-        isSubmitting = false;
-        console.warn("Submit error:", err);
-        localStorage.setItem("submitted_" + testConfig.testId, "true");
-        localStorage.setItem("submitted_time_" + testConfig.testId, now.toString());
-        showLockedScreen("TEST SUBMITTED (OFFLINE)", `Response recorded locally for ${finalStudentName}.`);
-    }
-}
-
-function autoSubmitOnTimeout() {
-    if (isSubmitting) return;
-    alert("Time limit reached! Auto-submitting your exam.");
-    submitTestFinal();
-}
-
-function showLockedScreen(title, msg) {
-    const titleEl = document.getElementById("locked-title");
-    if (titleEl && title) titleEl.innerText = title;
-
-    const msgEl = document.getElementById("locked-message");
-    if (msgEl) msgEl.innerText = msg;
-
-    const timeEl = document.getElementById("locked-timestamp");
-    if (timeEl) timeEl.innerText = `Time: ${new Date().toLocaleString()}`;
-
-    const lockedScreen = document.getElementById("locked-screen");
-    if (lockedScreen) lockedScreen.classList.remove("hidden");
-}
-
-function goToDashboard() {
-    window.location.href = DASHBOARD_URL;
-}
-
-function initDashboardBtn() {
-    const btn = document.getElementById("dash-btn");
-    if (btn) {
-        btn.addEventListener("click", goToDashboard);
-        btn.addEventListener("touchend", (e) => {
-            e.preventDefault();
-            goToDashboard();
-        });
-    }
-}
-
-// Global functions binding
-window.prevQuestion = prevQuestion;
-window.nextQuestion = nextQuestion;
-window.toggleFlag = toggleFlag;
-window.toggleMatrix = toggleMatrix;
-window.openSubmitConfirm = openSubmitConfirm;
-window.closeSubmitConfirm = closeSubmitConfirm;
-window.submitTestFinal = submitTestFinal;
-window.goToDashboard = goToDashboard;
