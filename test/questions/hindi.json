@@ -1,1 +1,28 @@
-
+[
+  {
+    "id": "h1",
+    "type": "mcq",
+    "question": "इनमें से कौन सा शब्द संज्ञा (Noun) है?",
+    "options": ["सुंदर", "राम", "दौड़ना", "वह"],
+    "answer": 1
+  },
+  {
+    "id": "h2",
+    "type": "mcq",
+    "question": "'जल' का सही पर्यायवाची शब्द चुनें:",
+    "options": ["अग्नि", "पानी", "वायु", "धरती"],
+    "answer": 1
+  },
+  {
+    "id": "h3",
+    "type": "text",
+    "question": "दिन का विलोम शब्द लिखें (Type in Hindi/Hinglish):"  ,
+    "answer": "raat"
+  },
+  {
+    "id": "h4",
+    "type": "text",
+    "question": "भारत की राष्ट्रभाषा क्या है? (Type in English alphabets like 'hindi')",
+    "answer": "hindi"
+  }
+]
