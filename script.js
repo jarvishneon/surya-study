@@ -9,6 +9,7 @@ const competitiveView = document.getElementById('competitive-view');
 const boardsView = document.getElementById('boards-view');
 const notificationsView = document.getElementById('notifications-view');
 const chatView = document.getElementById('chat-view');
+const testSubjectsView = document.getElementById('test-subjects-view'); // Naya View
 
 const displayUsername = document.getElementById('displayUsername');
 const profileInitial = document.getElementById('profileInitial');
@@ -16,6 +17,7 @@ const profileInitial2 = document.getElementById('profileInitial2');
 const profileInitial3 = document.getElementById('profileInitial3');
 const profileInitial4 = document.getElementById('profileInitial4');
 const profileInitial5 = document.getElementById('profileInitial5');
+const profileInitial6 = document.getElementById('profileInitial6'); // Naya Initial
 const profileDropdown = document.getElementById('profileDropdown');
 
 // Base64 Encoded Passwords
@@ -32,6 +34,7 @@ function hideAllViews() {
     boardsView.classList.remove('active');
     notificationsView.classList.remove('active');
     chatView.classList.remove('active');
+    testSubjectsView.classList.remove('active'); // Hide new view
 }
 
 // Handle Login Submission
@@ -57,6 +60,7 @@ loginForm.addEventListener('submit', function(e) {
         profileInitial3.innerText = initial;
         profileInitial4.innerText = initial;
         profileInitial5.innerText = initial;
+        if(profileInitial6) profileInitial6.innerText = initial;
 
         hideAllViews();
         dashboardView.classList.add('active');
@@ -96,6 +100,18 @@ function logout() {
     hideAllViews();
     stopChatPolling();
     loginView.classList.add('active');
+}
+
+// ==================== TEST SUBJECT ROUTING ====================
+function startSubjectTest(subject) {
+    const studentName = sessionStorage.getItem("student_name");
+    if (!studentName) {
+        alert("Session expired. Please login again.");
+        logout();
+        return;
+    }
+    // Open test folder with subject parameter in URL
+    window.open('test/index.html?subject=' + subject, '_blank');
 }
 
 // ==================== CHAT SYSTEM LOGIC ====================
@@ -197,7 +213,6 @@ async function sendChatMessage() {
     
     if (!text || !sender) return;
 
-    // Optimistic UI update
     const tempDiv = document.createElement('div');
     tempDiv.className = 'chat-message sent';
     tempDiv.innerHTML = `
