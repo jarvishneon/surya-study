@@ -1,6 +1,6 @@
-// RJ STUDY ACADEMY - script.js v28.4
+// RJ STUDY ACADEMY - script.js v29.0 (Pro Design Update)
 // Passwords: 04783 | pdhlo | 4181723
-// Chat: 1s poll sync + max 3 msgs + 2 min auto wipe (server)
+// Chat: poll sync + max 3 msgs + 2 min auto wipe (server)
 
 const VALID_PASSWORDS = ["04783", "pdhlo", "4181723"];
 const WORKER_URL = "https://rj-test-backen.internationalbgi.workers.dev";
@@ -65,37 +65,57 @@ function checkExistingSession() {
     return false;
 }
 
+/* -------------- GREETING HELPER -------------- */
+function getGreeting() {
+    var h = new Date().getHours();
+    if (h < 12) return "Good Morning ☀️";
+    if (h < 17) return "Good Afternoon 🌤️";
+    if (h < 21) return "Good Evening 🌙";
+    return "Good Night 🌑";
+}
+
 /* -------------- DASHBOARD NAVIGATION -------------- */
 function activateDashboard(studentName) {
-    const displayUsername = document.getElementById("displayUsername");
+    var displayUsername = document.getElementById("displayUsername");
     if (displayUsername) displayUsername.innerText = studentName;
 
     document.querySelectorAll(".displayUsernameCopy").forEach(function (el) {
         el.innerText = studentName;
     });
 
-    const initial = studentName.charAt(0).toUpperCase();
+    var initial = studentName.charAt(0).toUpperCase();
+
+    // Update profile circles
     ["profileInitial", "profileInitial2", "profileInitial3", "profileInitial4", "profileInitial5"].forEach(function (id) {
-        const el = document.getElementById(id);
+        var el = document.getElementById(id);
         if (el) el.innerText = initial;
     });
 
+    // Update dropdown avatars
+    document.querySelectorAll(".dropdown-avatar").forEach(function (el) {
+        el.innerText = initial;
+    });
+
+    // Update greeting
+    var greetEl = document.getElementById("greetingText");
+    if (greetEl) greetEl.innerText = getGreeting();
+
     hideAllViews();
-    const dash = document.getElementById("dashboard-view");
+    var dash = document.getElementById("dashboard-view");
     if (dash) dash.classList.add("active");
 }
 
 function hideAllViews() {
     ["login-view", "dashboard-view", "competitive-view", "boards-view", "notifications-view", "subjects-view"].forEach(function (id) {
-        const v = document.getElementById(id);
+        var v = document.getElementById(id);
         if (v) v.classList.remove("active");
     });
 }
 
 function toggleProfileMenu(event) {
     event.stopPropagation();
-    const container = event.currentTarget.closest(".profile-menu-container");
-    const dropdown = container ? container.querySelector(".profile-dropdown") : null;
+    var container = event.currentTarget.closest(".profile-menu-container");
+    var dropdown = container ? container.querySelector(".profile-dropdown") : null;
     closeAllDropdowns();
     if (dropdown) dropdown.classList.toggle("active");
 }
@@ -112,30 +132,32 @@ function logout() {
     localStorage.removeItem("rjStudyUsername");
     sessionStorage.removeItem("student_name");
 
-    const u = document.getElementById("usernameInput");
-    const p = document.getElementById("passwordInput");
+    var u = document.getElementById("usernameInput");
+    var p = document.getElementById("passwordInput");
     if (u) u.value = "";
     if (p) p.value = "";
 
     closeAllDropdowns();
     if (isChatOpen) toggleChat(false);
     hideAllViews();
-    const loginView = document.getElementById("login-view");
+    var loginView = document.getElementById("login-view");
     if (loginView) loginView.classList.add("active");
 }
 
 function switchSubView(viewId) {
     closeAllDropdowns();
     hideAllViews();
-    const target = document.getElementById(viewId);
+    var target = document.getElementById(viewId);
     if (target) target.classList.add("active");
+    window.scrollTo({ top: 0, behavior: "smooth" });
 }
 
 function goHome() {
     closeAllDropdowns();
     hideAllViews();
-    const dash = document.getElementById("dashboard-view");
+    var dash = document.getElementById("dashboard-view");
     if (dash) dash.classList.add("active");
+    window.scrollTo({ top: 0, behavior: "smooth" });
 }
 
 function getStudentName() {
@@ -149,7 +171,7 @@ function getStudentName() {
 
 /* -------------- LAUNCH TEST -------------- */
 function launchTest(subject) {
-    const studentName = getStudentName();
+    var studentName = getStudentName();
 
     if (!studentName) {
         alert("Session expired! Please login again.");
@@ -163,18 +185,18 @@ function launchTest(subject) {
 }
 
 /* -------------- CHAT SYSTEM -------------- */
-let chatInterval = null;
-let isChatOpen = false;
-let lastChatHash = "";
-let chatPollInFlight = false;
+var chatInterval = null;
+var isChatOpen = false;
+var lastChatHash = "";
+var chatPollInFlight = false;
 
 function setChatStatus(text) {
-    const el = document.getElementById("chatStatus");
+    var el = document.getElementById("chatStatus");
     if (el) el.textContent = text || "";
 }
 
 function toggleChat(forceState) {
-    const overlay = document.getElementById("chatOverlay");
+    var overlay = document.getElementById("chatOverlay");
     if (!overlay) return;
 
     if (typeof forceState === "boolean") {
@@ -197,9 +219,9 @@ function toggleChat(forceState) {
             if (!document.hidden) pollChat(false);
         }, 3000);
         setTimeout(function () {
-            const input = document.getElementById("chatInput");
+            var input = document.getElementById("chatInput");
             if (input) input.focus();
-        }, 100);
+        }, 150);
     } else {
         overlay.classList.remove("active");
         setChatStatus("");
@@ -207,22 +229,22 @@ function toggleChat(forceState) {
 }
 
 async function pollChat(forceRender) {
-    const studentName = getStudentName();
+    var studentName = getStudentName();
     if (!studentName || !isChatOpen) return;
     if (chatPollInFlight) return;
 
     chatPollInFlight = true;
     try {
-        const res = await fetch(WORKER_URL + "/api/chat?ts=" + Date.now(), {
+        var res = await fetch(WORKER_URL + "/api/chat?ts=" + Date.now(), {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             cache: "no-store",
             body: JSON.stringify({ action: "get", studentName: studentName })
         });
-        const data = await res.json();
+        var data = await res.json();
         if (data && data.success) {
-            const history = data.history || [];
-            const hash = JSON.stringify(history);
+            var history = data.history || [];
+            var hash = JSON.stringify(history);
             if (forceRender || hash !== lastChatHash) {
                 lastChatHash = hash;
                 renderChat(history);
@@ -239,11 +261,11 @@ async function pollChat(forceRender) {
 }
 
 async function sendChatMessage() {
-    const input = document.getElementById("chatInput");
+    var input = document.getElementById("chatInput");
     if (!input) return;
 
-    const msg = input.value.trim();
-    const studentName = getStudentName();
+    var msg = input.value.trim();
+    var studentName = getStudentName();
     if (!msg || !studentName) return;
 
     input.value = "";
@@ -251,13 +273,13 @@ async function sendChatMessage() {
     setChatStatus("Sending...");
 
     try {
-        const res = await fetch(WORKER_URL + "/api/chat?ts=" + Date.now(), {
+        var res = await fetch(WORKER_URL + "/api/chat?ts=" + Date.now(), {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             cache: "no-store",
             body: JSON.stringify({ studentName: studentName, message: msg })
         });
-        const data = await res.json();
+        var data = await res.json();
         if (data && data.success) {
             lastChatHash = JSON.stringify(data.history || []);
             renderChat(data.history || []);
@@ -279,19 +301,21 @@ async function sendChatMessage() {
 }
 
 function renderChat(history) {
-    const body = document.getElementById("chatBody");
+    var body = document.getElementById("chatBody");
     if (!body) return;
 
     body.innerHTML = "";
     if (!history || history.length === 0) {
         body.innerHTML =
-            "<div style='text-align:center; color:#64748b; font-size:0.85rem; margin-top:20px;'>Max 3 messages. Chat clears after 2 min idle.</div>";
+            '<div style="text-align:center; color:' + "var(--text-dim)" + '; font-size:0.84rem; margin-top:30px; line-height:1.7;">' +
+            '<i class="fa-solid fa-message" style="font-size:2rem; color:rgba(32,232,137,0.15); display:block; margin-bottom:12px;"></i>' +
+            "Max 3 messages. Chat clears after 2 min idle.</div>";
         return;
     }
 
     history.forEach(function (msg) {
-        const div = document.createElement("div");
-        const sender = (msg.sender || "student").toLowerCase();
+        var div = document.createElement("div");
+        var sender = (msg.sender || "student").toLowerCase();
         div.className = "chat-message " + (sender === "admin" ? "admin" : "student");
         div.innerText = msg.text || "";
         body.appendChild(div);
@@ -304,9 +328,8 @@ function renderChat(history) {
 function initPortal() {
     checkExistingSession();
 
-    const form = document.getElementById("loginForm");
+    var form = document.getElementById("loginForm");
     if (form) {
-        // One submit listener only: prevents the login routine running twice.
         form.addEventListener("submit", handleLogin);
     }
 
@@ -320,6 +343,14 @@ function initPortal() {
     window.addEventListener("focus", function () {
         if (isChatOpen) pollChat(true);
     });
+
+    // Update greeting every minute
+    setInterval(function () {
+        var greetEl = document.getElementById("greetingText");
+        if (greetEl && document.getElementById("dashboard-view").classList.contains("active")) {
+            greetEl.innerText = getGreeting();
+        }
+    }, 60000);
 }
 
 if (document.readyState === "loading") {
@@ -337,17 +368,18 @@ window.launchTest = launchTest;
 window.toggleChat = toggleChat;
 window.sendChatMessage = sendChatMessage;
 
+/* -------------- TERMINAL ANIMATION -------------- */
 (function () {
-    const terminal = document.getElementById("terminal-bg");
+    var terminal = document.getElementById("terminal-bg");
     if (!terminal) return;
-    const logs = [
+    var logs = [
         "Initializing secure hypervisor environment...",
         "Loading root credentials for RJ_STUDY_ACADEMY_PORTAL...",
         "Establishing encrypted handshake... [SECURE]",
         "Injecting pathways: [ENGLISH, HINDI, MATH, SCIENCE]",
-        "Status: Multi-Subject Test Engine v28.4 ONLINE."
+        "Status: Multi-Subject Test Engine v29.0 ONLINE."
     ];
-    let li = 0,
+    var li = 0,
         ci = 0,
         text = "";
     function type() {
