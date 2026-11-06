@@ -1,28 +1,279 @@
+```json
 [
   {
     "id": "e1",
     "type": "mcq",
-    "question": "Choose the correct verb: He ___ to the market everyday.",
-    "options": ["go", "goes", "going", "gone"],
-    "answer": 1
+    "question": "Choose the correct Present Continuous form: She ___ a book right now.",
+    "options": ["read", "reads", "is reading", "reading"],
+    "answer": 2
   },
   {
     "id": "e2",
     "type": "mcq",
-    "question": "Identify the pronoun in this sentence: 'She is my best friend.'",
-    "options": ["She", "is", "my", "friend"],
-    "answer": 0
+    "question": "Choose the correct sentence (Affirmative):",
+    "options": ["He are playing cricket.", "He is playing cricket.", "He play cricket.", "He playing cricket."],
+    "answer": 1
   },
   {
     "id": "e3",
-    "type": "text",
-    "question": "Write the plural form of the word 'Child'.",
-    "answer": "children"
+    "type": "mcq",
+    "question": "Choose the correct Negative form: They ___ dancing now.",
+    "options": ["is not", "am not", "are not", "not are"],
+    "answer": 2
   },
   {
     "id": "e4",
+    "type": "mcq",
+    "question": "Choose the correct verb: I ___ writing a letter.",
+    "options": ["is", "am", "are", "be"],
+    "answer": 1
+  },
+  {
+    "id": "e5",
+    "type": "mcq",
+    "question": "Choose the correct Negative sentence:",
+    "options": ["She is not singing a song.", "She not singing a song.", "She is no singing a song.", "She are not singing a song."],
+    "answer": 0
+  },
+  {
+    "id": "e6",
+    "type": "mcq",
+    "question": "Choose the correct form: The children ___ in the garden.",
+    "options": ["is playing", "am playing", "are playing", "plays"],
+    "answer": 2
+  },
+  {
+    "id": "e7",
+    "type": "mcq",
+    "question": "Choose the correct Affirmative sentence:",
+    "options": ["Ram is going to school.", "Ram are going to school.", "Ram am going to school.", "Ram going to school."],
+    "answer": 0
+  },
+  {
+    "id": "e8",
+    "type": "mcq",
+    "question": "Choose the correct Negative form: He ___ watching TV now.",
+    "options": ["are not", "is not", "am not", "do not"],
+    "answer": 1
+  },
+  {
+    "id": "e9",
+    "type": "mcq",
+    "question": "Choose the correct verb: You ___ making noise.",
+    "options": ["is", "am", "are", "be"],
+    "answer": 2
+  },
+  {
+    "id": "e10",
+    "type": "mcq",
+    "question": "Choose the correct Affirmative sentence:",
+    "options": ["We are eat dinner.", "We is eating dinner.", "We are eating dinner.", "We am eating dinner."],
+    "answer": 2
+  },
+  {
+    "id": "e11",
+    "type": "mcq",
+    "question": "Choose the correct Negative sentence:",
+    "options": ["I am not sleeping now.", "I not sleeping now.", "I am no sleeping now.", "I are not sleeping now."],
+    "answer": 0
+  },
+  {
+    "id": "e12",
+    "type": "mcq",
+    "question": "Choose the correct form: My mother ___ food in the kitchen.",
+    "options": ["cook", "is cooking", "are cooking", "am cooking"],
+    "answer": 1
+  },
+  {
+    "id": "e13",
+    "type": "mcq",
+    "question": "Choose the correct Negative form: The dogs ___ barking.",
+    "options": ["is not", "am not", "are not", "not"],
+    "answer": 2
+  },
+  {
+    "id": "e14",
+    "type": "mcq",
+    "question": "Choose the correct Affirmative sentence:",
+    "options": ["It is raining outside.", "It are raining outside.", "It am raining outside.", "It raining outside."],
+    "answer": 0
+  },
+  {
+    "id": "e15",
+    "type": "mcq",
+    "question": "Choose the correct verb: The boys ___ football on the ground.",
+    "options": ["is playing", "are playing", "am playing", "plays"],
+    "answer": 1
+  },
+  {
+    "id": "e16",
+    "type": "mcq",
+    "question": "Choose the correct Negative sentence:",
+    "options": ["She are not writing a letter.", "She is not writing a letter.", "She not writing a letter.", "She am not writing a letter."],
+    "answer": 1
+  },
+  {
+    "id": "e17",
+    "type": "mcq",
+    "question": "Choose the correct form: I ___ listening to music.",
+    "options": ["is", "am", "are", "be"],
+    "answer": 1
+  },
+  {
+    "id": "e18",
+    "type": "mcq",
+    "question": "Choose the correct Affirmative sentence:",
+    "options": ["They is dancing on stage.", "They are dancing on stage.", "They am dancing on stage.", "They dancing on stage."],
+    "answer": 1
+  },
+  {
+    "id": "e19",
+    "type": "mcq",
+    "question": "Choose the correct Negative form: My father ___ driving the car.",
+    "options": ["are not", "am not", "is not", "not is"],
+    "answer": 2
+  },
+  {
+    "id": "e20",
+    "type": "mcq",
+    "question": "Choose the correct verb: The baby ___ crying loudly.",
+    "options": ["are", "am", "is", "be"],
+    "answer": 2
+  },
+  {
+    "id": "e21",
+    "type": "mcq",
+    "question": "Choose the correct Affirmative sentence:",
+    "options": ["Students are studying hard.", "Students is studying hard.", "Students am studying hard.", "Students studying hard."],
+    "answer": 0
+  },
+  {
+    "id": "e22",
+    "type": "mcq",
+    "question": "Choose the correct Negative sentence:",
+    "options": ["We is not going to park.", "We am not going to park.", "We are not going to park.", "We not going to park."],
+    "answer": 2
+  },
+  {
+    "id": "e23",
+    "type": "mcq",
+    "question": "Choose the correct form: The sun ___ brightly.",
+    "options": ["are shining", "is shining", "am shining", "shining"],
+    "answer": 1
+  },
+  {
+    "id": "e24",
+    "type": "mcq",
+    "question": "Choose the correct Negative form: You ___ telling the truth.",
+    "options": ["is not", "am not", "are not", "do not"],
+    "answer": 2
+  },
+  {
+    "id": "e25",
+    "type": "mcq",
+    "question": "Choose the correct Affirmative sentence:",
+    "options": ["He is wearing a new shirt.", "He are wearing a new shirt.", "He am wearing a new shirt.", "He wearing a new shirt."],
+    "answer": 0
+  },
+  {
+    "id": "e26",
+    "type": "mcq",
+    "question": "Choose the correct verb: The birds ___ in the sky.",
+    "options": ["is flying", "am flying", "are flying", "flies"],
+    "answer": 2
+  },
+  {
+    "id": "e27",
+    "type": "mcq",
+    "question": "Choose the correct Negative sentence:",
+    "options": ["It is not snowing today.", "It are not snowing today.", "It am not snowing today.", "It not snowing today."],
+    "answer": 0
+  },
+  {
+    "id": "e28",
+    "type": "mcq",
+    "question": "Choose the correct Affirmative form: Sita ___ a beautiful song.",
+    "options": ["sing", "sings", "is singing", "are singing"],
+    "answer": 2
+  },
+  {
+    "id": "e29",
+    "type": "mcq",
+    "question": "Choose the correct Negative form: The teachers ___ teaching in class.",
+    "options": ["is not", "am not", "are not", "not are"],
+    "answer": 2
+  },
+  {
+    "id": "e30",
+    "type": "mcq",
+    "question": "Choose the correct Affirmative sentence:",
+    "options": ["My friends are coming to my house.", "My friends is coming to my house.", "My friends am coming to my house.", "My friends coming to my house."],
+    "answer": 0
+  },
+  {
+    "id": "e31",
     "type": "text",
-    "question": "Translate to English: 'राम स्कूल जाता है।' (Type translation without full stop)",
-    "answer": "ram goes to school"
+    "question": "Translate to English: 'वह एक किताब पढ़ रहा है' (Type translation without full stop)",
+    "answer": "he is reading a book"
+  },
+  {
+    "id": "e32",
+    "type": "text",
+    "question": "Translate to English: 'मैं खाना खा रहा हूँ' (Type translation without full stop)",
+    "answer": "i am eating food"
+  },
+  {
+    "id": "e33",
+    "type": "text",
+    "question": "Translate to English: 'वे क्रिकेट खेल रहे हैं' (Type translation without full stop)",
+    "answer": "they are playing cricket"
+  },
+  {
+    "id": "e34",
+    "type": "text",
+    "question": "Translate to English: 'सीता गाना गा रही है' (Type translation without full stop)",
+    "answer": "sita is singing a song"
+  },
+  {
+    "id": "e35",
+    "type": "text",
+    "question": "Translate to English: 'बच्चे बगीचे में खेल रहे हैं' (Type translation without full stop)",
+    "answer": "children are playing in the garden"
+  },
+  {
+    "id": "e36",
+    "type": "mcq",
+    "question": "Translate to Hindi: 'He is writing a letter.'",
+    "options": ["वह एक पत्र लिखता है।", "वह एक पत्र लिख रहा है।", "वह एक पत्र लिखेगा।", "वह एक पत्र लिखा।"],
+    "answer": 1
+  },
+  {
+    "id": "e37",
+    "type": "mcq",
+    "question": "Translate to Hindi: 'They are not dancing.'",
+    "options": ["वे नाच रहे हैं।", "वे नहीं नाचते।", "वे नाच नहीं रहे हैं।", "वे नाचेंगे नहीं।"],
+    "answer": 2
+  },
+  {
+    "id": "e38",
+    "type": "mcq",
+    "question": "Translate to Hindi: 'I am going to school.'",
+    "options": ["मैं स्कूल जाता हूँ।", "मैं स्कूल जा रहा हूँ।", "मैं स्कूल गया।", "मैं स्कूल जाऊँगा।"],
+    "answer": 1
+  },
+  {
+    "id": "e39",
+    "type": "mcq",
+    "question": "Translate to Hindi: 'She is not cooking food.'",
+    "options": ["वह खाना बनाती है।", "वह खाना नहीं बनाती।", "वह खाना नहीं बना रही है।", "वह खाना बनाएगी।"],
+    "answer": 2
+  },
+  {
+    "id": "e40",
+    "type": "mcq",
+    "question": "Translate to Hindi: 'The boys are playing football.'",
+    "options": ["लड़के फुटबॉल खेलते हैं।", "लड़के फुटबॉल खेल रहे हैं।", "लड़के फुटबॉल खेलेंगे।", "लड़के फुटबॉल खेले।"],
+    "answer": 1
   }
 ]
+```
