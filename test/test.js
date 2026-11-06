@@ -1,5 +1,6 @@
 /* ==========================================================================
-   RJ ACADEMY PRO - Core Functional Script (v27.2 Sync Fixed)
+   RJ ACADEMY PRO - Core Functional Script (v28.0 MASTER BLUEPRINT)
+   Multi-Subject | Independent Locks | Live Invigilation | Secure Scorecard
    ========================================================================== */
 
 const WORKER_URL = "https://rj-test-backen.internationalbgi.workers.dev";
@@ -8,13 +9,15 @@ const DASHBOARD_URL = "https://surya-study.pages.dev";
 // Global State
 let testConfig = null;
 let currentQIndex = 0;
-let userAnswers = {}; 
+let userAnswers = {};
 let flaggedQuestions = new Set();
 let visitedQuestions = new Set();
 let timerInterval = null;
 let timeRemaining = 0;
 let studentName = "";
+let currentSubject = "english";
 let isSubmitting = false;
+let testStarted = false;
 
 // FAB Dragging State
 let fabDragState = {
@@ -26,110 +29,129 @@ let fabDragState = {
     dragDistance: 0
 };
 
-// Initialization
+// ==================== INIT ====================
 document.addEventListener("DOMContentLoaded", () => {
+    // Read subject from URL
+    const urlParams = new URLSearchParams(window.location.search);
+    currentSubject = (urlParams.get("subject") || "english").toLowerCase().trim();
+
+    // Get student name from login session
+    studentName = localStorage.getItem("rj_student_name") ||
+                  localStorage.getItem("rjStudyUsername") ||
+                  sessionStorage.getItem("student_name") ||
+                  "Student";
+    sessionStorage.setItem("student_name", studentName);
+
     initFabDraggable();
     initDashboardBtn();
     fetchConfigAndInit();
 });
 
+// ==================== FETCH CONFIG + ANTI-CHEAT ====================
 async function fetchConfigAndInit() {
     try {
-        const res = await fetch(WORKER_URL + "/api/config?t=" + Date.now());
+        const res = await fetch(
+            `${WORKER_URL}/api/config?subject=${currentSubject}&t=${Date.now()}`
+        );
         if (!res.ok) throw new Error("Server Error");
         testConfig = await res.json();
 
         if (testConfig.status && testConfig.status !== "open") {
-            showLockedScreen("TEST CURRENTLY CLOSED", "This test is currently closed or locked by Admin.");
+            showLockedScreen(
+                "TEST CURRENTLY CLOSED",
+                "This test is currently closed or locked by Admin."
+            );
             return;
         }
 
         if (!testConfig.questions || !Array.isArray(testConfig.questions) || testConfig.questions.length === 0) {
-            loadMockData();
+            showLockedScreen(
+                "NO QUESTIONS FOUND",
+                `No questions available for ${currentSubject.toUpperCase()}. Please contact Admin.`
+            );
             return;
         }
+
+        // Sync subject from server response if present
+        if (testConfig.subject) currentSubject = testConfig.subject.toLowerCase();
 
         checkLockStatus();
     } catch (err) {
         console.error("Config fetch error:", err);
-        loadMockData();
+        showLockedScreen(
+            "CONNECTION ERROR",
+            "Could not load test. Please check internet and try again."
+        );
     }
 }
 
+// ==================== SUBJECT-WISE INDEPENDENT LOCK ====================
 function checkLockStatus() {
-    const urlParams = new URLSearchParams(window.location.search);
-    const testId = testConfig.testId || urlParams.get("testId") || "ENG_TENSE_001";
+    const lockKey = `submitted_${currentSubject}`;
+    const timeKey = `submitted_time_${currentSubject}`;
 
-    var isSubmitted = localStorage.getItem("submitted_" + testId);
-    var submittedTimeRaw = localStorage.getItem("submitted_time_" + testId);
+    const isSubmitted = localStorage.getItem(lockKey);
+    const submittedTimeRaw = localStorage.getItem(timeKey);
 
     if (isSubmitted) {
-        var reopenTime = testConfig.reopenTimestamp || Date.now();
-        var submittedTime = submittedTimeRaw ? parseInt(submittedTimeRaw, 10) : 0;
+        const reopenTime = testConfig.reopenTimestamp || 0;
+        const submittedTime = submittedTimeRaw ? parseInt(submittedTimeRaw, 10) : 0;
 
-        if (reopenTime > 0 && (submittedTime === 0 || submittedTime < reopenTime)) {
-            localStorage.removeItem("submitted_" + testId);
-            localStorage.removeItem("submitted_time_" + testId);
+        // If admin did /reopen or /unlock <subject>, reopenTimestamp will be newer
+        if (reopenTime > 0 && submittedTime < reopenTime) {
+            localStorage.removeItem(lockKey);
+            localStorage.removeItem(timeKey);
         } else {
-            showLockedScreen("TEST ALREADY SUBMITTED", "You have already completed this test session.");
+            showLockedScreen(
+                "TEST ALREADY SUBMITTED",
+                `You have already completed the ${currentSubject.toUpperCase()} test.\nAsk Admin to unlock if needed.`
+            );
             return;
         }
     }
 
-    studentName = sessionStorage.getItem("student_name") || 
-                  localStorage.getItem("rjStudyUsername") || 
-                  urlParams.get("name") || 
-                  "Student";
-                  
-    sessionStorage.setItem("student_name", studentName);
+    // All clear — start the test
+    beginTest();
+}
 
+// ==================== START TEST + LIVE INVIGILATION ====================
+async function beginTest() {
     const titleEl = document.getElementById("test-title-display");
     if (titleEl) {
-        titleEl.innerText = testConfig.title || testConfig.testName || "Present Indefinite Tense";
+        titleEl.innerText = testConfig.title || testConfig.testName || currentSubject.toUpperCase();
     }
 
     timeRemaining = (testConfig.durationMinutes || testConfig.duration || 15) * 60;
 
+    // 🔥 LIVE INVIGILATION: Alert Admin on Telegram
+    if (!testStarted) {
+        testStarted = true;
+        try {
+            await fetch(`${WORKER_URL}/api/start`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    studentName: studentName,
+                    subject: currentSubject
+                })
+            });
+        } catch (e) {
+            console.warn("Start alert failed (non-critical):", e);
+        }
+    }
+
     startTimer();
     renderQuestion(0);
     renderMatrix();
 }
 
-function loadMockData() {
-    testConfig = {
-        testId: "ENG_TENSE_001",
-        title: "Present Indefinite Tense (Hindi to English)",
-        testName: "Present Indefinite Tense (Hindi to English)",
-        durationMinutes: 15,
-        questions: [
-            { id: 1, type: "mcq", question: "मैं रोज स्कूल जाता हूँ।", options: ["I goes to school every day.", "I go to school every day.", "I going to school every day.", "I went to school every day."] },
-            { id: 2, type: "mcq", question: "वह क्रिकेट खेलता है।", options: ["He play cricket.", "He playing cricket.", "He plays cricket.", "He played cricket."] },
-            { id: 3, type: "mcq", question: "सीता खाना बनाती है।", options: ["Sita cook food.", "Sita cooks food.", "Sita cooking food.", "Sita cooked food."] },
-            { id: 4, type: "mcq", question: "हम अंग्रेजी पढ़ते हैं।", options: ["We studies English.", "We studying English.", "We study English.", "We studied English."] },
-            { id: 5, type: "mcq", question: "वे बाजार जाते हैं।", options: ["They goes to the market.", "They go to the market.", "They going to the market.", "They went to the market."] }
-        ]
-    };
-
-    studentName = sessionStorage.getItem("student_name") || localStorage.getItem("rjStudyUsername") || "Student";
-    sessionStorage.setItem("student_name", studentName);
-    
-    const titleEl = document.getElementById("test-title-display");
-    if (titleEl) titleEl.innerText = testConfig.title;
-
-    timeRemaining = testConfig.durationMinutes * 60;
-    
-    startTimer();
-    renderQuestion(0);
-    renderMatrix();
-}
-
+// ==================== TIMER ====================
 function startTimer() {
     if (timerInterval) clearInterval(timerInterval);
     updateTimerDisplay();
     timerInterval = setInterval(() => {
         timeRemaining--;
         updateTimerDisplay();
-        
         if (timeRemaining <= 0) {
             clearInterval(timerInterval);
             autoSubmitOnTimeout();
@@ -143,47 +165,49 @@ function updateTimerDisplay() {
     const secs = timeRemaining % 60;
 
     const display = [hours, mins, secs]
-        .map(v => String(v).padStart(2, '0'))
-        .filter((v, i) => i > 0 || v !== '00')
-        .join(':');
+        .map(v => String(v).padStart(2, "0"))
+        .filter((v, i) => i > 0 || v !== "00")
+        .join(":");
 
     const timerElem = document.getElementById("time-left");
+    const timerBox = document.getElementById("timer-box");
     if (timerElem) {
         timerElem.innerText = display;
-        if (timeRemaining <= 60) timerElem.style.color = "#EF4444";
-        else timerElem.style.color = "";
+        if (timeRemaining <= 60) {
+            timerElem.style.color = "#EF4444";
+            if (timerBox) timerBox.classList.add("timer-warning");
+        } else {
+            timerElem.style.color = "";
+            if (timerBox) timerBox.classList.remove("timer-warning");
+        }
     }
 }
 
-// ---------------- QUESTION RENDER ----------------
+// ==================== QUESTION RENDER ====================
 function renderQuestion(index) {
     if (!testConfig || !testConfig.questions || !testConfig.questions[index]) return;
-    
+
     currentQIndex = index;
     visitedQuestions.add(index);
-    
+
     const q = testConfig.questions[index];
-    
     const questionContent = q.question || q.text || q.questionText || q.title || "";
+
     const qNumEl = document.getElementById("q-number");
     if (qNumEl) qNumEl.innerText = `Q.${index + 1}`;
 
     const qTextEl = document.getElementById("question-text");
     if (qTextEl) qTextEl.innerText = questionContent;
-    
+
     const flagBtn = document.getElementById("flag-btn");
     if (flagBtn) {
-        if (flaggedQuestions.has(index)) {
-            flagBtn.classList.add("flagged");
-        } else {
-            flagBtn.classList.remove("flagged");
-        }
+        flagBtn.classList.toggle("flagged", flaggedQuestions.has(index));
     }
 
+    // Optional image
     const imgContainer = document.getElementById("question-image-container");
     const imgEl = document.getElementById("question-image");
     const imageUrl = q.imageUrl || q.image || q.img || "";
-    
     if (imgContainer && imgEl) {
         if (imageUrl) {
             imgEl.src = imageUrl;
@@ -204,16 +228,12 @@ function renderQuestion(index) {
         const textarea = document.createElement("textarea");
         textarea.className = "subjective-textarea";
         textarea.placeholder = "Type your answer here...";
-        
-        if (userAnswers[index] !== undefined) {
-            textarea.value = userAnswers[index];
-        }
+        if (userAnswers[index] !== undefined) textarea.value = userAnswers[index];
 
         textarea.oninput = (e) => {
             userAnswers[index] = e.target.value;
             updateMatrixButtonState(index);
         };
-
         optsContainer.appendChild(textarea);
     } else {
         const labels = ["A", "B", "C", "D", "E"];
@@ -221,7 +241,6 @@ function renderQuestion(index) {
             const optCard = document.createElement("div");
             optCard.className = `option-card ${userAnswers[index] === optIdx ? "selected" : ""}`;
             optCard.onclick = () => selectOption(optIdx);
-
             optCard.innerHTML = `
                 <div class="opt-index">${labels[optIdx] || optIdx + 1}</div>
                 <div class="opt-label">${optText}</div>
@@ -259,10 +278,10 @@ function prevQuestion() {
     }
 }
 
-// ---------------- MATRIX PALETTE ----------------
+// ==================== MATRIX PALETTE ====================
 function renderMatrix() {
     const grid = document.getElementById("palette-grid");
-    if (!grid) return;
+    if (!grid || !testConfig) return;
     grid.innerHTML = "";
 
     testConfig.questions.forEach((_, idx) => {
@@ -271,9 +290,12 @@ function renderMatrix() {
         btn.innerText = idx + 1;
 
         if (idx === currentQIndex) btn.classList.add("active-q");
-        
-        const isAnswered = userAnswers[idx] !== undefined && userAnswers[idx] !== "" && String(userAnswers[idx]).trim() !== "";
-        
+
+        const isAnswered =
+            userAnswers[idx] !== undefined &&
+            userAnswers[idx] !== "" &&
+            String(userAnswers[idx]).trim() !== "";
+
         if (isAnswered) {
             btn.classList.add("status-answered");
         } else if (flaggedQuestions.has(idx)) {
@@ -286,7 +308,6 @@ function renderMatrix() {
             renderQuestion(idx);
             if (window.innerWidth <= 992) toggleMatrix();
         };
-
         grid.appendChild(btn);
     });
 }
@@ -296,9 +317,10 @@ function updateMatrixButtonState(idx) {
     if (!grid) return;
     const btn = grid.children[idx];
     if (!btn) return;
-    
-    const isAnswered = userAnswers[idx] !== undefined && String(userAnswers[idx]).trim() !== "";
-    
+
+    const isAnswered =
+        userAnswers[idx] !== undefined && String(userAnswers[idx]).trim() !== "";
+
     if (isAnswered) {
         btn.classList.add("status-answered");
         btn.classList.remove("status-visited");
@@ -313,6 +335,7 @@ function toggleMatrix() {
     if (sidebar) sidebar.classList.toggle("active-matrix");
 }
 
+// ==================== FAB DRAGGABLE ====================
 function initFabDraggable() {
     const fab = document.getElementById("draggable-fab");
     if (!fab) return;
@@ -320,44 +343,33 @@ function initFabDraggable() {
     const startDrag = (e) => {
         fabDragState.isDragging = true;
         fabDragState.dragDistance = 0;
-        
         const clientX = e.touches ? e.touches[0].clientX : e.clientX;
         const clientY = e.touches ? e.touches[0].clientY : e.clientY;
-        
         fabDragState.startX = clientX;
         fabDragState.startY = clientY;
-
         const rect = fab.getBoundingClientRect();
         fabDragState.initialLeft = rect.left;
         fabDragState.initialTop = rect.top;
-
-        fab.style.transition = 'none';
-        fab.style.bottom = 'auto';
-        fab.style.right = 'auto';
+        fab.style.transition = "none";
+        fab.style.bottom = "auto";
+        fab.style.right = "auto";
         fab.style.left = `${rect.left}px`;
         fab.style.top = `${rect.top}px`;
     };
 
     const doDrag = (e) => {
         if (!fabDragState.isDragging) return;
-
         const clientX = e.touches ? e.touches[0].clientX : e.clientX;
         const clientY = e.touches ? e.touches[0].clientY : e.clientY;
-
         const deltaX = clientX - fabDragState.startX;
         const deltaY = clientY - fabDragState.startY;
-
         fabDragState.dragDistance = Math.hypot(deltaX, deltaY);
-
         let newLeft = fabDragState.initialLeft + deltaX;
         let newTop = fabDragState.initialTop + deltaY;
-
         const maxLeft = window.innerWidth - fab.offsetWidth - 10;
         const maxTop = window.innerHeight - fab.offsetHeight - 10;
-
         newLeft = Math.max(10, Math.min(newLeft, maxLeft));
         newTop = Math.max(10, Math.min(newTop, maxTop));
-
         fab.style.left = `${newLeft}px`;
         fab.style.top = `${newTop}px`;
     };
@@ -365,39 +377,33 @@ function initFabDraggable() {
     const stopDrag = () => {
         if (!fabDragState.isDragging) return;
         fabDragState.isDragging = false;
-        fab.style.transition = 'transform 0.1s ease';
-        
+        fab.style.transition = "transform 0.1s ease";
         if (fabDragState.dragDistance < 12) toggleMatrix();
     };
 
-    fab.addEventListener('touchstart', startDrag, { passive: true });
-    window.addEventListener('touchmove', doDrag, { passive: true });
-    window.addEventListener('touchend', stopDrag);
-
-    fab.addEventListener('mousedown', startDrag);
-    window.addEventListener('mousemove', doDrag);
-    window.addEventListener('mouseup', stopDrag);
+    fab.addEventListener("touchstart", startDrag, { passive: true });
+    window.addEventListener("touchmove", doDrag, { passive: true });
+    window.addEventListener("touchend", stopDrag);
+    fab.addEventListener("mousedown", startDrag);
+    window.addEventListener("mousemove", doDrag);
+    window.addEventListener("mouseup", stopDrag);
 }
 
-// ---------------- SUBMISSION LOGIC ----------------
+// ==================== SUBMISSION ====================
 function openSubmitConfirm() {
     if (isSubmitting) return;
     const total = testConfig.questions.length;
-    const answered = Object.keys(userAnswers).filter(k => userAnswers[k] !== undefined && String(userAnswers[k]).trim() !== "").length;
+    const answered = Object.keys(userAnswers).filter(
+        (k) => userAnswers[k] !== undefined && String(userAnswers[k]).trim() !== ""
+    ).length;
     const flagged = flaggedQuestions.size;
     const unanswered = total - answered;
 
-    const sumTot = document.getElementById("sum-total");
-    if (sumTot) sumTot.innerText = total;
-
-    const sumAns = document.getElementById("sum-answered");
-    if (sumAns) sumAns.innerText = answered;
-
-    const sumFlg = document.getElementById("sum-flagged");
-    if (sumFlg) sumFlg.innerText = flagged;
-
-    const sumUnans = document.getElementById("sum-unanswered");
-    if (sumUnans) sumUnans.innerText = unanswered;
+    const el = (id) => document.getElementById(id);
+    if (el("sum-total")) el("sum-total").innerText = total;
+    if (el("sum-answered")) el("sum-answered").innerText = answered;
+    if (el("sum-flagged")) el("sum-flagged").innerText = flagged;
+    if (el("sum-unanswered")) el("sum-unanswered").innerText = unanswered;
 
     const modal = document.getElementById("confirm-modal");
     if (modal) modal.classList.remove("hidden");
@@ -414,50 +420,60 @@ if (headerSubBtn) headerSubBtn.onclick = openSubmitConfirm;
 async function submitTestFinal() {
     if (isSubmitting) return;
     isSubmitting = true;
-    
+
     if (timerInterval) clearInterval(timerInterval);
     closeSubmitConfirm();
 
-    var now = Date.now();
-    var finalStudentName = sessionStorage.getItem("student_name") || 
-                           localStorage.getItem("rjStudyUsername") || 
-                           studentName || 
-                           "Student";
+    const now = Date.now();
+    const finalStudentName =
+        localStorage.getItem("rj_student_name") ||
+        sessionStorage.getItem("student_name") ||
+        localStorage.getItem("rjStudyUsername") ||
+        studentName ||
+        "Student";
 
-    var payload = {
+    // Build answers array in correct order (index-based)
+    const answersArray = [];
+    for (let i = 0; i < testConfig.questions.length; i++) {
+        answersArray.push(
+            userAnswers[i] !== undefined ? userAnswers[i] : ""
+        );
+    }
+
+    const payload = {
         studentName: finalStudentName,
-        testId: testConfig.testId,
-        answers: userAnswers,
+        subject: currentSubject,
+        testId: testConfig.testId || `${currentSubject.toUpperCase()}_TEST`,
+        answers: answersArray,
         submittedAt: now
     };
 
     try {
-        var res = await fetch(WORKER_URL + "/api/submit", {
+        const res = await fetch(`${WORKER_URL}/api/submit`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify(payload)
         });
-        
-        var result = await res.json();
-        
+
+        const result = await res.json();
+
         if (result.success || res.ok) {
-            localStorage.setItem("submitted_" + testConfig.testId, "true");
-            localStorage.setItem("submitted_time_" + testConfig.testId, now.toString());
-            
-            showLockedScreen(
-                "TEST SUBMITTED SUCCESSFULLY", 
-                `Thank you, ${finalStudentName}. Your responses have been recorded!`
-            );
+            // Subject-wise lock (NOT global)
+            localStorage.setItem(`submitted_${currentSubject}`, "true");
+            localStorage.setItem(`submitted_time_${currentSubject}`, now.toString());
+
+            // Show MINIMAL scorecard to student
+            showResultScreen(result, finalStudentName);
         } else {
             isSubmitting = false;
             alert(result.error || "Submission failed. Please try again.");
+            startTimer(); // resume timer if failed
         }
     } catch (err) {
         isSubmitting = false;
         console.warn("Submit error:", err);
-        localStorage.setItem("submitted_" + testConfig.testId, "true");
-        localStorage.setItem("submitted_time_" + testConfig.testId, now.toString());
-        showLockedScreen("TEST SUBMITTED (OFFLINE)", `Response recorded locally for ${finalStudentName}.`);
+        alert("Network error. Please check internet and try again.");
+        startTimer();
     }
 }
 
@@ -467,6 +483,40 @@ function autoSubmitOnTimeout() {
     submitTestFinal();
 }
 
+// ==================== MINIMAL STUDENT SCORECARD ====================
+function showResultScreen(result, name) {
+    const score = result.score !== undefined ? result.score : "—";
+    const total = result.total !== undefined ? result.total : testConfig.questions.length;
+    const attempted = result.attempted !== undefined ? result.attempted : "—";
+    const unattempted = result.unattempted !== undefined ? result.unattempted : "—";
+
+    const titleEl = document.getElementById("locked-title");
+    if (titleEl) titleEl.innerText = "Assessment Completed";
+
+    const msgEl = document.getElementById("locked-message");
+    if (msgEl) {
+        msgEl.innerText = `Well done, ${name}! Your ${currentSubject.toUpperCase()} test has been recorded.`;
+    }
+
+    // Show score display block
+    const scoreDisplay = document.getElementById("final-score-display");
+    if (scoreDisplay) {
+        scoreDisplay.style.display = "block";
+        const marksEl = document.getElementById("final-marks");
+        if (marksEl) marksEl.innerText = `${score}/${total}`;
+        const attEl = document.getElementById("final-attempted");
+        if (attEl) attEl.innerText = attempted;
+        const unEl = document.getElementById("final-unattempted");
+        if (unEl) unEl.innerText = unattempted;
+    }
+
+    const timeEl = document.getElementById("locked-timestamp");
+    if (timeEl) timeEl.innerText = `Submitted: ${new Date().toLocaleString("en-IN")}`;
+
+    const lockedScreen = document.getElementById("locked-screen");
+    if (lockedScreen) lockedScreen.classList.remove("hidden");
+}
+
 function showLockedScreen(title, msg) {
     const titleEl = document.getElementById("locked-title");
     if (titleEl && title) titleEl.innerText = title;
@@ -474,8 +524,12 @@ function showLockedScreen(title, msg) {
     const msgEl = document.getElementById("locked-message");
     if (msgEl) msgEl.innerText = msg;
 
+    // Hide score if just locked/closed
+    const scoreDisplay = document.getElementById("final-score-display");
+    if (scoreDisplay) scoreDisplay.style.display = "none";
+
     const timeEl = document.getElementById("locked-timestamp");
-    if (timeEl) timeEl.innerText = `Time: ${new Date().toLocaleString()}`;
+    if (timeEl) timeEl.innerText = `Time: ${new Date().toLocaleString("en-IN")}`;
 
     const lockedScreen = document.getElementById("locked-screen");
     if (lockedScreen) lockedScreen.classList.remove("hidden");
@@ -496,7 +550,7 @@ function initDashboardBtn() {
     }
 }
 
-// Global functions binding
+// Global bindings for HTML onclick
 window.prevQuestion = prevQuestion;
 window.nextQuestion = nextQuestion;
 window.toggleFlag = toggleFlag;
