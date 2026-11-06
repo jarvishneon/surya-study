@@ -1,8 +1,8 @@
-// RJ STUDY ACADEMY - script.js v28.0 (FIXED LOGIN & RESTORED DASHBOARD CHAT)
+// RJ STUDY ACADEMY - script.js v28.1 (CHAT SYNC FIXED)
 // Passwords: 04783 | pdhlo | 4181723  (case-insensitive)
 
 const VALID_PASSWORDS = ["04783", "pdhlo", "4181723"];
-const WORKER_URL = "https://rj-test-backen.internationalbgi.workers.dev"; // Added for Chat polling
+const WORKER_URL = "https://rj-test-backen.internationalbgi.workers.dev";
 
 /* -------------- LOGIN SYSTEM -------------- */
 function handleLogin(e) {
@@ -117,8 +117,8 @@ function logout() {
     if (p) p.value = "";
 
     closeAllDropdowns();
+    if (isChatOpen) toggleChat(false);
     hideAllViews();
-    if (isChatOpen) toggleChat(); // Close chat if open on logout
     const loginView = document.getElementById("login-view");
     if (loginView) loginView.classList.add("active");
 }
@@ -155,70 +155,137 @@ function launchTest(subject) {
     window.open("test/index.html?subject=" + subject, "_blank");
 }
 
-/* -------------- CHAT SYSTEM -------------- */
+/* -------------- CHAT SYSTEM (FAST SYNC) -------------- */
 let chatInterval = null;
 let isChatOpen = false;
+let lastChatHash = "";
+let chatPollInFlight = false;
 
-function toggleChat() {
+function getStudentName() {
+    return (
+        localStorage.getItem("rj_student_name") ||
+        sessionStorage.getItem("student_name") ||
+        localStorage.getItem("rjStudyUsername") ||
+        ""
+    ).trim();
+}
+
+function toggleChat(forceState) {
     const overlay = document.getElementById("chatOverlay");
-    isChatOpen = !isChatOpen;
+    if (!overlay) return;
+
+    if (typeof forceState === "boolean") {
+        isChatOpen = forceState;
+    } else {
+        isChatOpen = !isChatOpen;
+    }
+
+    if (chatInterval) {
+        clearInterval(chatInterval);
+        chatInterval = null;
+    }
+
     if (isChatOpen) {
         overlay.classList.add("active");
-        pollChat();
-        chatInterval = setInterval(pollChat, 3000); // Poll every 3 seconds
+        lastChatHash = "";
+        pollChat(true);
+        // Har 1 second me check karega naye message ke liye
+        chatInterval = setInterval(function () {
+            pollChat(false);
+        }, 1000);
+        setTimeout(function () {
+            const input = document.getElementById("chatInput");
+            if (input) input.focus();
+        }, 100);
     } else {
         overlay.classList.remove("active");
-        clearInterval(chatInterval);
     }
 }
 
-async function pollChat() {
-    const studentName = localStorage.getItem("rj_student_name");
+async function pollChat(forceRender) {
+    const studentName = getStudentName();
     if (!studentName || !isChatOpen) return;
+    if (chatPollInFlight) return;
+
+    chatPollInFlight = true;
     try {
         const res = await fetch(WORKER_URL + "/api/chat", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ action: "get", studentName })
+            cache: "no-store",
+            body: JSON.stringify({ action: "get", studentName: studentName })
         });
         const data = await res.json();
-        if (data.success) renderChat(data.history);
-    } catch (e) {}
+        if (data && data.success) {
+            const hash = JSON.stringify(data.history || []);
+            if (forceRender || hash !== lastChatHash) {
+                lastChatHash = hash;
+                renderChat(data.history || []);
+            }
+        }
+    } catch (e) {
+        // silent
+    } finally {
+        chatPollInFlight = false;
+    }
 }
 
 async function sendChatMessage() {
     const input = document.getElementById("chatInput");
+    if (!input) return;
+
     const msg = input.value.trim();
-    const studentName = localStorage.getItem("rj_student_name");
+    const studentName = getStudentName();
     if (!msg || !studentName) return;
 
-    input.value = ""; // Clear input immediately
+    input.value = "";
+    input.disabled = true;
+
     try {
         const res = await fetch(WORKER_URL + "/api/chat", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ studentName, message: msg })
+            cache: "no-store",
+            body: JSON.stringify({ studentName: studentName, message: msg })
         });
         const data = await res.json();
-        if (data.success) renderChat(data.history);
-    } catch (e) {}
+        if (data && data.success) {
+            lastChatHash = JSON.stringify(data.history || []);
+            renderChat(data.history || []);
+        } else {
+            input.value = msg;
+        }
+    } catch (e) {
+        input.value = msg;
+    } finally {
+        input.disabled = false;
+        input.focus();
+        setTimeout(function () {
+            pollChat(true);
+        }, 400);
+    }
 }
 
 function renderChat(history) {
     const body = document.getElementById("chatBody");
     if (!body) return;
+
     body.innerHTML = "";
     if (!history || history.length === 0) {
-        body.innerHTML = "<div style='text-align:center; color:#64748b; font-size:0.85rem; margin-top:20px;'>Send a message to start chatting with Admin.</div>";
+        body.innerHTML =
+            "<div style='text-align:center; color:#64748b; font-size:0.85rem; margin-top:20px;'>Send a message to start chatting with Admin.</div>";
         return;
     }
-    history.forEach(msg => {
+
+    history.forEach(function (msg) {
         const div = document.createElement("div");
-        div.className = "chat-message " + (msg.sender === "student" ? "student" : "admin");
-        div.innerText = msg.text;
+        const sender = (msg.sender || "student").toLowerCase();
+        div.className = "chat-message " + (sender === "admin" ? "admin" : "student");
+        div.innerText = msg.text || "";
         body.appendChild(div);
     });
-    body.scrollTop = body.scrollHeight; // Auto-scroll to bottom
+
+    body.scrollTop = body.scrollHeight;
 }
 
 /* -------------- INIT PORTAL -------------- */
@@ -232,6 +299,14 @@ function initPortal() {
 
     window.addEventListener("click", function (e) {
         if (!e.target.closest(".profile-menu-container")) closeAllDropdowns();
+    });
+
+    // Tab par wapas aate hi turant refresh karega
+    document.addEventListener("visibilitychange", function () {
+        if (!document.hidden && isChatOpen) pollChat(true);
+    });
+    window.addEventListener("focus", function () {
+        if (isChatOpen) pollChat(true);
     });
 }
 
@@ -260,9 +335,11 @@ window.sendChatMessage = sendChatMessage;
         "Loading root credentials for RJ_STUDY_ACADEMY_PORTAL...",
         "Establishing encrypted handshake... [SECURE]",
         "Injecting pathways: [ENGLISH, HINDI, MATH, SCIENCE]",
-        "Status: Multi-Subject Test Engine v28.0 ONLINE."
+        "Status: Multi-Subject Test Engine v28.1 ONLINE."
     ];
-    let li = 0, ci = 0, text = "";
+    let li = 0,
+        ci = 0,
+        text = "";
     function type() {
         if (li < logs.length) {
             if (ci < logs[li].length) {
@@ -279,7 +356,12 @@ window.sendChatMessage = sendChatMessage;
         } else {
             text += "> root@rj-academy:~$ ";
             terminal.innerText = text;
-            setTimeout(function () { text = ""; li = 0; ci = 0; type(); }, 4000);
+            setTimeout(function () {
+                text = "";
+                li = 0;
+                ci = 0;
+                type();
+            }, 4000);
         }
     }
     type();
