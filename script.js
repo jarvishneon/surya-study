@@ -1,221 +1,213 @@
-// RJ STUDY ACADEMY - script.js (v28.0 MASTER BLUEPRINT)
-// Features: One-time Login, 3D Subject Launch, Session Persistence
+// RJ STUDY ACADEMY - script.js v28.0 (FIXED LOGIN)
+// Passwords: 04783 | pdhlo | 4181723  (case-insensitive)
 
-const loginForm = document.getElementById('loginForm');
-const usernameInput = document.getElementById('usernameInput');
-const passwordInput = document.getElementById('passwordInput');
-const errorMsg = document.getElementById('errorMsg');
+const VALID_PASSWORDS = ["04783", "pdhlo", "4181723"];
 
-const loginView = document.getElementById('login-view');
-const dashboardView = document.getElementById('dashboard-view');
-const competitiveView = document.getElementById('competitive-view');
-const boardsView = document.getElementById('boards-view');
-const notificationsView = document.getElementById('notifications-view');
-const subjectsView = document.getElementById('subjects-view');
+function handleLogin(e) {
+    if (e) {
+        e.preventDefault();
+        e.stopPropagation();
+    }
 
-const displayUsername = document.getElementById('displayUsername');
-const profileInitial = document.getElementById('profileInitial');
-const profileInitial2 = document.getElementById('profileInitial2');
-const profileInitial3 = document.getElementById('profileInitial3');
-const profileInitial4 = document.getElementById('profileInitial4');
-const profileInitial5 = document.getElementById('profileInitial5');
+    const nameInput = document.getElementById("usernameInput");
+    const passInput = document.getElementById("passwordInput");
+    const errorMsg = document.getElementById("errorMsg");
 
-// Base64 Encoded Passwords
-const validPasswords = [
-    atob("NDE4MTcyMw=="), // 4181723
-    atob("MDQ3ODM="),     // 04783
-    atob("UGFkaGxv")      // Padhlo
-];
+    if (!nameInput || !passInput) return false;
 
-// ==================== SESSION PERSISTENCE (NO RE-LOGIN ON REFRESH) ====================
+    const enteredName = nameInput.value.trim();
+    const enteredPass = passInput.value.trim().toLowerCase();
+
+    if (!enteredName) {
+        if (errorMsg) {
+            errorMsg.innerText = "Please enter your name!";
+            errorMsg.style.display = "block";
+        }
+        return false;
+    }
+
+    if (VALID_PASSWORDS.includes(enteredPass)) {
+        if (errorMsg) errorMsg.style.display = "none";
+
+        localStorage.setItem("rj_student_name", enteredName);
+        localStorage.setItem("rj_login_time", Date.now().toString());
+        localStorage.setItem("rjStudyUsername", enteredName);
+        sessionStorage.setItem("student_name", enteredName);
+
+        activateDashboard(enteredName);
+    } else {
+        if (errorMsg) {
+            errorMsg.innerText = "Incorrect password!";
+            errorMsg.style.display = "block";
+        }
+        passInput.value = "";
+        passInput.focus();
+    }
+    return false;
+}
+
 function checkExistingSession() {
     const savedName = localStorage.getItem("rj_student_name");
     const loginTime = localStorage.getItem("rj_login_time");
-    
-    // Session valid for 24 hours
+
     if (savedName && loginTime) {
         const hoursPassed = (Date.now() - Number(loginTime)) / (1000 * 60 * 60);
         if (hoursPassed < 24) {
             activateDashboard(savedName);
             return true;
-        } else {
-            // Session expired
-            localStorage.removeItem("rj_student_name");
-            localStorage.removeItem("rj_login_time");
         }
+        localStorage.removeItem("rj_student_name");
+        localStorage.removeItem("rj_login_time");
     }
     return false;
 }
 
 function activateDashboard(studentName) {
-    // Set Name everywhere
+    const displayUsername = document.getElementById("displayUsername");
     if (displayUsername) displayUsername.innerText = studentName;
-    document.querySelectorAll('.displayUsernameCopy').forEach(el => el.innerText = studentName);
-    
+
+    document.querySelectorAll(".displayUsernameCopy").forEach(function (el) {
+        el.innerText = studentName;
+    });
+
     const initial = studentName.charAt(0).toUpperCase();
-    if (profileInitial) profileInitial.innerText = initial;
-    if (profileInitial2) profileInitial2.innerText = initial;
-    if (profileInitial3) profileInitial3.innerText = initial;
-    if (profileInitial4) profileInitial4.innerText = initial;
-    if (profileInitial5) profileInitial5.innerText = initial;
+    ["profileInitial", "profileInitial2", "profileInitial3", "profileInitial4", "profileInitial5"].forEach(function (id) {
+        const el = document.getElementById(id);
+        if (el) el.innerText = initial;
+    });
 
     hideAllViews();
-    dashboardView.classList.add('active');
+    const dash = document.getElementById("dashboard-view");
+    if (dash) dash.classList.add("active");
 }
-
-// Run on page load
-window.addEventListener('DOMContentLoaded', () => {
-    checkExistingSession();
-});
 
 function hideAllViews() {
-    const views = [loginView, dashboardView, competitiveView, boardsView, notificationsView, subjectsView];
-    views.forEach(v => { if (v) v.classList.remove('active'); });
-}
-
-// Handle Login Submission
-if (loginForm) {
-    loginForm.addEventListener('submit', function(e) {
-        e.preventDefault();
-        const enteredName = usernameInput.value.trim();
-        const enteredPass = passwordInput.value.trim();
-
-        if (!enteredName) {
-            errorMsg.innerText = "Please enter your name!";
-            errorMsg.style.display = "block";
-            return;
-        }
-
-        if (validPasswords.includes(enteredPass)) {
-            errorMsg.style.display = "none";
-            
-            // Save to localStorage (Persists on refresh)
-            localStorage.setItem("rj_student_name", enteredName);
-            localStorage.setItem("rj_login_time", Date.now().toString());
-            
-            // Also keep for test portal compatibility
-            sessionStorage.setItem("student_name", enteredName);
-            localStorage.setItem("rjStudyUsername", enteredName);
-            
-            activateDashboard(enteredName);
-        } else {
-            errorMsg.innerText = "Incorrect password!";
-            errorMsg.style.display = "block";
-            passwordInput.value = "";
-        }
+    ["login-view", "dashboard-view", "competitive-view", "boards-view", "notifications-view", "subjects-view"].forEach(function (id) {
+        const v = document.getElementById(id);
+        if (v) v.classList.remove("active");
     });
 }
 
-// Toggle Profile Dropdown Menu
 function toggleProfileMenu(event) {
     event.stopPropagation();
-    const currentContainer = event.currentTarget.closest('.profile-menu-container');
-    const dropdown = currentContainer.querySelector('.profile-dropdown');
-    
+    const container = event.currentTarget.closest(".profile-menu-container");
+    const dropdown = container ? container.querySelector(".profile-dropdown") : null;
     closeAllDropdowns();
-    if (dropdown) dropdown.classList.toggle('active');
+    if (dropdown) dropdown.classList.toggle("active");
 }
 
 function closeAllDropdowns() {
-    document.querySelectorAll('.profile-dropdown').forEach(d => {
-        d.classList.remove('active');
+    document.querySelectorAll(".profile-dropdown").forEach(function (d) {
+        d.classList.remove("active");
     });
 }
 
-window.addEventListener('click', function(e) {
-    if (!e.target.closest('.profile-menu-container')) {
-        closeAllDropdowns();
-    }
-});
-
 function logout() {
-    // Clear all session data
     localStorage.removeItem("rj_student_name");
     localStorage.removeItem("rj_login_time");
     localStorage.removeItem("rjStudyUsername");
     sessionStorage.removeItem("student_name");
-    
-    if (usernameInput) usernameInput.value = "";
-    if (passwordInput) passwordInput.value = "";
-    
+
+    const u = document.getElementById("usernameInput");
+    const p = document.getElementById("passwordInput");
+    if (u) u.value = "";
+    if (p) p.value = "";
+
     closeAllDropdowns();
     hideAllViews();
-    loginView.classList.add('active');
+    const loginView = document.getElementById("login-view");
+    if (loginView) loginView.classList.add("active");
 }
 
-// ==================== VIEW NAVIGATION ====================
 function switchSubView(viewId) {
     closeAllDropdowns();
     hideAllViews();
     const target = document.getElementById(viewId);
-    if (target) target.classList.add('active');
+    if (target) target.classList.add("active");
 }
 
 function goHome() {
     closeAllDropdowns();
     hideAllViews();
-    dashboardView.classList.add('active');
+    const dash = document.getElementById("dashboard-view");
+    if (dash) dash.classList.add("active");
 }
 
-// ==================== 3D SUBJECT CARD → LAUNCH TEST ====================
 function launchTest(subject) {
-    const studentName = localStorage.getItem("rj_student_name") || sessionStorage.getItem("student_name");
-    
+    const studentName =
+        localStorage.getItem("rj_student_name") ||
+        sessionStorage.getItem("student_name") ||
+        localStorage.getItem("rjStudyUsername");
+
     if (!studentName) {
         alert("Session expired! Please login again.");
         logout();
         return;
     }
-    
-    // Ensure name is available for test portal
+
     sessionStorage.setItem("student_name", studentName);
     localStorage.setItem("rjStudyUsername", studentName);
-    
-    // Open test portal with subject parameter
-    window.open(`test/index.html?subject=${subject}`, '_blank');
+    window.open("test/index.html?subject=" + subject, "_blank");
 }
 
-// ==================== TERMINAL ANIMATION ====================
-const terminal = document.getElementById('terminal-bg');
-const hackerLogs = [
-    "Initializing secure hypervisor environment...",
-    "Loading root credentials for RJ_STUDY_ACADEMY_PORTAL...",
-    "Establishing encrypted handshake with node 127.0.0.1:443 [SECURE]",
-    "Injecting neural-net study pathways: [ENGLISH, HINDI, MATH, SCIENCE]",
-    "Bypassing perimeter security filters... ACCESS GRANTED.",
-    "Live system telemetry: CPU load 3.8% | Memory footprint: 1.1 GB",
-    "Mounting student database: Encrypted via AES-256-GCM",
-    "Listening for incoming student authentication packets on port 8080...",
-    "Status: Multi-Subject Test Engine v28.0 operating at peak efficiency."
-];
+// Init
+function initPortal() {
+    checkExistingSession();
 
-let lineIndex = 0;
-let charIndex = 0;
-let currentText = "";
-
-function typeTerminal() {
-    if (!terminal) return;
-    if (lineIndex < hackerLogs.length) {
-        if (charIndex < hackerLogs[lineIndex].length) {
-            currentText += hackerLogs[lineIndex].charAt(charIndex);
-            terminal.innerText = currentText + "█";
-            charIndex++;
-            setTimeout(typeTerminal, 20);
-        } else {
-            currentText += "\n\n";
-            lineIndex++;
-            charIndex = 0;
-            setTimeout(typeTerminal, 350);
-        }
-    } else {
-        currentText += "> root@rj-academy-system:~$ ";
-        terminal.innerText = currentText;
-        setTimeout(() => {
-            currentText = "";
-            lineIndex = 0;
-            typeTerminal();
-        }, 4000);
+    const form = document.getElementById("loginForm");
+    if (form) {
+        form.addEventListener("submit", handleLogin);
     }
+
+    window.addEventListener("click", function (e) {
+        if (!e.target.closest(".profile-menu-container")) closeAllDropdowns();
+    });
 }
 
-typeTerminal();
+if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", initPortal);
+} else {
+    initPortal();
+}
+
+// Global
+window.handleLogin = handleLogin;
+window.toggleProfileMenu = toggleProfileMenu;
+window.logout = logout;
+window.switchSubView = switchSubView;
+window.goHome = goHome;
+window.launchTest = launchTest;
+
+// Terminal animation
+(function () {
+    const terminal = document.getElementById("terminal-bg");
+    if (!terminal) return;
+    const logs = [
+        "Initializing secure hypervisor environment...",
+        "Loading root credentials for RJ_STUDY_ACADEMY_PORTAL...",
+        "Establishing encrypted handshake... [SECURE]",
+        "Injecting pathways: [ENGLISH, HINDI, MATH, SCIENCE]",
+        "Status: Multi-Subject Test Engine v28.0 ONLINE."
+    ];
+    let li = 0, ci = 0, text = "";
+    function type() {
+        if (li < logs.length) {
+            if (ci < logs[li].length) {
+                text += logs[li].charAt(ci);
+                terminal.innerText = text + "█";
+                ci++;
+                setTimeout(type, 18);
+            } else {
+                text += "\n\n";
+                li++;
+                ci = 0;
+                setTimeout(type, 300);
+            }
+        } else {
+            text += "> root@rj-academy:~$ ";
+            terminal.innerText = text;
+            setTimeout(function () { text = ""; li = 0; ci = 0; type(); }, 4000);
+        }
+    }
+    type();
+})();
