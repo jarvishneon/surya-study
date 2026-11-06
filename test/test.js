@@ -1,4 +1,5 @@
-   RJ ACADEMY PRO - Core Functional Script (with Subjective Auto-Detect)
+/* ==========================================================================
+   RJ ACADEMY PRO - Core Functional Script (v27.2 Sync Fixed)
    ========================================================================== */
 
 const WORKER_URL = "https://rj-test-backen.internationalbgi.workers.dev";
@@ -7,7 +8,7 @@ const DASHBOARD_URL = "https://surya-study.pages.dev";
 // Global State
 let testConfig = null;
 let currentQIndex = 0;
-let userAnswers = {}; // { qIndex: value } -> Integer for MCQ, String for Typing
+let userAnswers = {}; 
 let flaggedQuestions = new Set();
 let visitedQuestions = new Set();
 let timerInterval = null;
@@ -43,6 +44,11 @@ async function fetchConfigAndInit() {
             return;
         }
 
+        if (!testConfig.questions || !Array.isArray(testConfig.questions) || testConfig.questions.length === 0) {
+            loadMockData();
+            return;
+        }
+
         checkLockStatus();
     } catch (err) {
         console.error("Config fetch error:", err);
@@ -52,13 +58,13 @@ async function fetchConfigAndInit() {
 
 function checkLockStatus() {
     const urlParams = new URLSearchParams(window.location.search);
-    const testId = testConfig.testId || urlParams.get("testId") || "demo_test";
+    const testId = testConfig.testId || urlParams.get("testId") || "ENG_TENSE_001";
 
     var isSubmitted = localStorage.getItem("submitted_" + testId);
     var submittedTimeRaw = localStorage.getItem("submitted_time_" + testId);
 
     if (isSubmitted) {
-        var reopenTime = testConfig.reopenTimestamp || 0;
+        var reopenTime = testConfig.reopenTimestamp || Date.now();
         var submittedTime = submittedTimeRaw ? parseInt(submittedTimeRaw, 10) : 0;
 
         if (reopenTime > 0 && (submittedTime === 0 || submittedTime < reopenTime)) {
@@ -77,8 +83,12 @@ function checkLockStatus() {
                   
     sessionStorage.setItem("student_name", studentName);
 
-    document.getElementById("test-title-display").innerText = testConfig.title || "Assessment";
-    timeRemaining = (testConfig.durationMinutes || testConfig.duration || 45) * 60;
+    const titleEl = document.getElementById("test-title-display");
+    if (titleEl) {
+        titleEl.innerText = testConfig.title || testConfig.testName || "Present Indefinite Tense";
+    }
+
+    timeRemaining = (testConfig.durationMinutes || testConfig.duration || 15) * 60;
 
     startTimer();
     renderQuestion(0);
@@ -87,27 +97,25 @@ function checkLockStatus() {
 
 function loadMockData() {
     testConfig = {
-        testId: "demo_test",
-        title: "RJ ACADEMY PRO Mock Test",
-        durationMinutes: 30,
+        testId: "ENG_TENSE_001",
+        title: "Present Indefinite Tense (Hindi to English)",
+        testName: "Present Indefinite Tense (Hindi to English)",
+        durationMinutes: 15,
         questions: [
-            {
-                id: "q1",
-                question: "Choose the grammatically correct sentence:",
-                options: ["I goes to school.", "I go to school."]
-            },
-            {
-                id: "q2",
-                type: "text", // Auto-detects subjective
-                question: "Translate into English: राम स्कूल जाता है।"
-            }
+            { id: 1, type: "mcq", question: "मैं रोज स्कूल जाता हूँ।", options: ["I goes to school every day.", "I go to school every day.", "I going to school every day.", "I went to school every day."] },
+            { id: 2, type: "mcq", question: "वह क्रिकेट खेलता है।", options: ["He play cricket.", "He playing cricket.", "He plays cricket.", "He played cricket."] },
+            { id: 3, type: "mcq", question: "सीता खाना बनाती है।", options: ["Sita cook food.", "Sita cooks food.", "Sita cooking food.", "Sita cooked food."] },
+            { id: 4, type: "mcq", question: "हम अंग्रेजी पढ़ते हैं।", options: ["We studies English.", "We studying English.", "We study English.", "We studied English."] },
+            { id: 5, type: "mcq", question: "वे बाजार जाते हैं।", options: ["They goes to the market.", "They go to the market.", "They going to the market.", "They went to the market."] }
         ]
     };
 
     studentName = sessionStorage.getItem("student_name") || localStorage.getItem("rjStudyUsername") || "Student";
     sessionStorage.setItem("student_name", studentName);
     
-    document.getElementById("test-title-display").innerText = testConfig.title;
+    const titleEl = document.getElementById("test-title-display");
+    if (titleEl) titleEl.innerText = testConfig.title;
+
     timeRemaining = testConfig.durationMinutes * 60;
     
     startTimer();
@@ -147,7 +155,7 @@ function updateTimerDisplay() {
     }
 }
 
-// ---------------- QUESTION RENDER (MCQ & TYPING BOX SUPPORT) ----------------
+// ---------------- QUESTION RENDER ----------------
 function renderQuestion(index) {
     if (!testConfig || !testConfig.questions || !testConfig.questions[index]) return;
     
@@ -157,8 +165,11 @@ function renderQuestion(index) {
     const q = testConfig.questions[index];
     
     const questionContent = q.question || q.text || q.questionText || q.title || "";
-    document.getElementById("q-number").innerText = `Q.${index + 1}`;
-    document.getElementById("question-text").innerText = questionContent;
+    const qNumEl = document.getElementById("q-number");
+    if (qNumEl) qNumEl.innerText = `Q.${index + 1}`;
+
+    const qTextEl = document.getElementById("question-text");
+    if (qTextEl) qTextEl.innerText = questionContent;
     
     const flagBtn = document.getElementById("flag-btn");
     if (flagBtn) {
@@ -187,22 +198,17 @@ function renderQuestion(index) {
     optsContainer.innerHTML = "";
 
     const optionsList = q.options || q.choices || [];
-    
-    // Auto-detect if question is subjective (typing)
     const isSubjective = q.type === "subjective" || q.type === "text" || optionsList.length === 0;
 
     if (isSubjective) {
-        // Render Textarea for Subjective Typing
         const textarea = document.createElement("textarea");
         textarea.className = "subjective-textarea";
         textarea.placeholder = "Type your answer here...";
         
-        // Restore saved text if any
         if (userAnswers[index] !== undefined) {
             textarea.value = userAnswers[index];
         }
 
-        // Save instantly as user types (without reloading UI)
         textarea.oninput = (e) => {
             userAnswers[index] = e.target.value;
             updateMatrixButtonState(index);
@@ -210,7 +216,6 @@ function renderQuestion(index) {
 
         optsContainer.appendChild(textarea);
     } else {
-        // Render MCQ Cards
         const labels = ["A", "B", "C", "D", "E"];
         optionsList.forEach((optText, optIdx) => {
             const optCard = document.createElement("div");
@@ -267,7 +272,6 @@ function renderMatrix() {
 
         if (idx === currentQIndex) btn.classList.add("active-q");
         
-        // Matrix Status Color check (works for Integer MCQ or String Subjective)
         const isAnswered = userAnswers[idx] !== undefined && userAnswers[idx] !== "" && String(userAnswers[idx]).trim() !== "";
         
         if (isAnswered) {
@@ -287,7 +291,6 @@ function renderMatrix() {
     });
 }
 
-// Real-time matrix updater for Typing box
 function updateMatrixButtonState(idx) {
     const grid = document.getElementById("palette-grid");
     if (!grid) return;
@@ -384,16 +387,25 @@ function openSubmitConfirm() {
     const flagged = flaggedQuestions.size;
     const unanswered = total - answered;
 
-    document.getElementById("sum-total").innerText = total;
-    document.getElementById("sum-answered").innerText = answered;
-    document.getElementById("sum-flagged").innerText = flagged;
-    document.getElementById("sum-unanswered").innerText = unanswered;
+    const sumTot = document.getElementById("sum-total");
+    if (sumTot) sumTot.innerText = total;
 
-    document.getElementById("confirm-modal").classList.remove("hidden");
+    const sumAns = document.getElementById("sum-answered");
+    if (sumAns) sumAns.innerText = answered;
+
+    const sumFlg = document.getElementById("sum-flagged");
+    if (sumFlg) sumFlg.innerText = flagged;
+
+    const sumUnans = document.getElementById("sum-unanswered");
+    if (sumUnans) sumUnans.innerText = unanswered;
+
+    const modal = document.getElementById("confirm-modal");
+    if (modal) modal.classList.remove("hidden");
 }
 
 function closeSubmitConfirm() {
-    document.getElementById("confirm-modal").classList.add("hidden");
+    const modal = document.getElementById("confirm-modal");
+    if (modal) modal.classList.add("hidden");
 }
 
 const headerSubBtn = document.getElementById("header-submit-btn");
