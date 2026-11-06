@@ -1,8 +1,10 @@
-// RJ STUDY ACADEMY - script.js v28.0 (FIXED LOGIN)
+// RJ STUDY ACADEMY - script.js v28.0 (FIXED LOGIN & RESTORED DASHBOARD CHAT)
 // Passwords: 04783 | pdhlo | 4181723  (case-insensitive)
 
 const VALID_PASSWORDS = ["04783", "pdhlo", "4181723"];
+const WORKER_URL = "https://rj-test-backen.internationalbgi.workers.dev"; // Added for Chat polling
 
+/* -------------- LOGIN SYSTEM -------------- */
 function handleLogin(e) {
     if (e) {
         e.preventDefault();
@@ -62,6 +64,7 @@ function checkExistingSession() {
     return false;
 }
 
+/* -------------- DASHBOARD NAVIGATION -------------- */
 function activateDashboard(studentName) {
     const displayUsername = document.getElementById("displayUsername");
     if (displayUsername) displayUsername.innerText = studentName;
@@ -115,6 +118,7 @@ function logout() {
 
     closeAllDropdowns();
     hideAllViews();
+    if (isChatOpen) toggleChat(); // Close chat if open on logout
     const loginView = document.getElementById("login-view");
     if (loginView) loginView.classList.add("active");
 }
@@ -133,6 +137,7 @@ function goHome() {
     if (dash) dash.classList.add("active");
 }
 
+/* -------------- LAUNCH TEST -------------- */
 function launchTest(subject) {
     const studentName =
         localStorage.getItem("rj_student_name") ||
@@ -150,7 +155,73 @@ function launchTest(subject) {
     window.open("test/index.html?subject=" + subject, "_blank");
 }
 
-// Init
+/* -------------- CHAT SYSTEM -------------- */
+let chatInterval = null;
+let isChatOpen = false;
+
+function toggleChat() {
+    const overlay = document.getElementById("chatOverlay");
+    isChatOpen = !isChatOpen;
+    if (isChatOpen) {
+        overlay.classList.add("active");
+        pollChat();
+        chatInterval = setInterval(pollChat, 3000); // Poll every 3 seconds
+    } else {
+        overlay.classList.remove("active");
+        clearInterval(chatInterval);
+    }
+}
+
+async function pollChat() {
+    const studentName = localStorage.getItem("rj_student_name");
+    if (!studentName || !isChatOpen) return;
+    try {
+        const res = await fetch(WORKER_URL + "/api/chat", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ action: "get", studentName })
+        });
+        const data = await res.json();
+        if (data.success) renderChat(data.history);
+    } catch (e) {}
+}
+
+async function sendChatMessage() {
+    const input = document.getElementById("chatInput");
+    const msg = input.value.trim();
+    const studentName = localStorage.getItem("rj_student_name");
+    if (!msg || !studentName) return;
+
+    input.value = ""; // Clear input immediately
+    try {
+        const res = await fetch(WORKER_URL + "/api/chat", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ studentName, message: msg })
+        });
+        const data = await res.json();
+        if (data.success) renderChat(data.history);
+    } catch (e) {}
+}
+
+function renderChat(history) {
+    const body = document.getElementById("chatBody");
+    if (!body) return;
+    body.innerHTML = "";
+    if (!history || history.length === 0) {
+        body.innerHTML = "<div style='text-align:center; color:#64748b; font-size:0.85rem; margin-top:20px;'>Send a message to start chatting with Admin.</div>";
+        return;
+    }
+    history.forEach(msg => {
+        const div = document.createElement("div");
+        div.className = "chat-message " + (msg.sender === "student" ? "student" : "admin");
+        div.innerText = msg.text;
+        body.appendChild(div);
+    });
+    body.scrollTop = body.scrollHeight; // Auto-scroll to bottom
+}
+
+/* -------------- INIT PORTAL -------------- */
 function initPortal() {
     checkExistingSession();
 
@@ -170,13 +241,15 @@ if (document.readyState === "loading") {
     initPortal();
 }
 
-// Global
+// Global Exports
 window.handleLogin = handleLogin;
 window.toggleProfileMenu = toggleProfileMenu;
 window.logout = logout;
 window.switchSubView = switchSubView;
 window.goHome = goHome;
 window.launchTest = launchTest;
+window.toggleChat = toggleChat;
+window.sendChatMessage = sendChatMessage;
 
 // Terminal animation
 (function () {
