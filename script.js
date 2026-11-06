@@ -1,5 +1,6 @@
-// RJ STUDY ACADEMY - script.js v28.1 (CHAT SYNC FIXED)
-// Passwords: 04783 | pdhlo | 4181723  (case-insensitive)
+// RJ STUDY ACADEMY - script.js v28.3
+// Passwords: 04783 | pdhlo | 4181723
+// Chat: fast sync + max 3 msgs + 2 min auto wipe (server)
 
 const VALID_PASSWORDS = ["04783", "pdhlo", "4181723"];
 const WORKER_URL = "https://rj-test-backen.internationalbgi.workers.dev";
@@ -137,12 +138,18 @@ function goHome() {
     if (dash) dash.classList.add("active");
 }
 
-/* -------------- LAUNCH TEST -------------- */
-function launchTest(subject) {
-    const studentName =
+function getStudentName() {
+    return (
         localStorage.getItem("rj_student_name") ||
         sessionStorage.getItem("student_name") ||
-        localStorage.getItem("rjStudyUsername");
+        localStorage.getItem("rjStudyUsername") ||
+        ""
+    ).trim();
+}
+
+/* -------------- LAUNCH TEST -------------- */
+function launchTest(subject) {
+    const studentName = getStudentName();
 
     if (!studentName) {
         alert("Session expired! Please login again.");
@@ -155,19 +162,15 @@ function launchTest(subject) {
     window.open("test/index.html?subject=" + subject, "_blank");
 }
 
-/* -------------- CHAT SYSTEM (FAST SYNC) -------------- */
+/* -------------- CHAT SYSTEM -------------- */
 let chatInterval = null;
 let isChatOpen = false;
 let lastChatHash = "";
 let chatPollInFlight = false;
 
-function getStudentName() {
-    return (
-        localStorage.getItem("rj_student_name") ||
-        sessionStorage.getItem("student_name") ||
-        localStorage.getItem("rjStudyUsername") ||
-        ""
-    ).trim();
+function setChatStatus(text) {
+    const el = document.getElementById("chatStatus");
+    if (el) el.textContent = text || "";
 }
 
 function toggleChat(forceState) {
@@ -188,8 +191,8 @@ function toggleChat(forceState) {
     if (isChatOpen) {
         overlay.classList.add("active");
         lastChatHash = "";
+        setChatStatus("Syncing...");
         pollChat(true);
-        // Har 1 second me check karega naye message ke liye
         chatInterval = setInterval(function () {
             pollChat(false);
         }, 1000);
@@ -199,6 +202,7 @@ function toggleChat(forceState) {
         }, 100);
     } else {
         overlay.classList.remove("active");
+        setChatStatus("");
     }
 }
 
@@ -209,7 +213,7 @@ async function pollChat(forceRender) {
 
     chatPollInFlight = true;
     try {
-        const res = await fetch(WORKER_URL + "/api/chat", {
+        const res = await fetch(WORKER_URL + "/api/chat?ts=" + Date.now(), {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             cache: "no-store",
@@ -217,14 +221,18 @@ async function pollChat(forceRender) {
         });
         const data = await res.json();
         if (data && data.success) {
-            const hash = JSON.stringify(data.history || []);
+            const history = data.history || [];
+            const hash = JSON.stringify(history);
             if (forceRender || hash !== lastChatHash) {
                 lastChatHash = hash;
-                renderChat(data.history || []);
+                renderChat(history);
             }
+            setChatStatus("Live • " + history.length + "/3 • auto-clear 2 min");
+        } else {
+            setChatStatus("Sync failed");
         }
     } catch (e) {
-        // silent
+        setChatStatus("Network error");
     } finally {
         chatPollInFlight = false;
     }
@@ -240,9 +248,10 @@ async function sendChatMessage() {
 
     input.value = "";
     input.disabled = true;
+    setChatStatus("Sending...");
 
     try {
-        const res = await fetch(WORKER_URL + "/api/chat", {
+        const res = await fetch(WORKER_URL + "/api/chat?ts=" + Date.now(), {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             cache: "no-store",
@@ -252,11 +261,14 @@ async function sendChatMessage() {
         if (data && data.success) {
             lastChatHash = JSON.stringify(data.history || []);
             renderChat(data.history || []);
+            setChatStatus("Sent • " + (data.history || []).length + "/3");
         } else {
             input.value = msg;
+            setChatStatus((data && data.error) || "Send failed");
         }
     } catch (e) {
         input.value = msg;
+        setChatStatus("Network error");
     } finally {
         input.disabled = false;
         input.focus();
@@ -273,7 +285,7 @@ function renderChat(history) {
     body.innerHTML = "";
     if (!history || history.length === 0) {
         body.innerHTML =
-            "<div style='text-align:center; color:#64748b; font-size:0.85rem; margin-top:20px;'>Send a message to start chatting with Admin.</div>";
+            "<div style='text-align:center; color:#64748b; font-size:0.85rem; margin-top:20px;'>Max 3 messages. Chat clears after 2 min idle.</div>";
         return;
     }
 
@@ -301,7 +313,6 @@ function initPortal() {
         if (!e.target.closest(".profile-menu-container")) closeAllDropdowns();
     });
 
-    // Tab par wapas aate hi turant refresh karega
     document.addEventListener("visibilitychange", function () {
         if (!document.hidden && isChatOpen) pollChat(true);
     });
@@ -316,7 +327,6 @@ if (document.readyState === "loading") {
     initPortal();
 }
 
-// Global Exports
 window.handleLogin = handleLogin;
 window.toggleProfileMenu = toggleProfileMenu;
 window.logout = logout;
@@ -326,7 +336,6 @@ window.launchTest = launchTest;
 window.toggleChat = toggleChat;
 window.sendChatMessage = sendChatMessage;
 
-// Terminal animation
 (function () {
     const terminal = document.getElementById("terminal-bg");
     if (!terminal) return;
@@ -335,7 +344,7 @@ window.sendChatMessage = sendChatMessage;
         "Loading root credentials for RJ_STUDY_ACADEMY_PORTAL...",
         "Establishing encrypted handshake... [SECURE]",
         "Injecting pathways: [ENGLISH, HINDI, MATH, SCIENCE]",
-        "Status: Multi-Subject Test Engine v28.1 ONLINE."
+        "Status: Multi-Subject Test Engine v28.3 ONLINE."
     ];
     let li = 0,
         ci = 0,
