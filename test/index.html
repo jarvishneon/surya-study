@@ -3,15 +3,15 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>RJ ACADEMY PRO - Assessment Portal</title>
+    <title>RJ ACADEMY | Secure Live Test</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="test.css?v=21.0">
+    <link rel="stylesheet" href="test.css?v=28.0">
 </head>
 <body>
 
-    <!- Main Application Wrapper -->
+    <!-- Main Application Wrapper -->
     <div id="exam-app" class="app-container">
 
         <!-- Top Header Navigation -->
@@ -146,11 +146,22 @@
         <div class="locked-card">
             <div class="success-icon">✓</div>
             <h2 id="locked-title">Assessment Completed</h2>
-            <p id="locked-message">Your response has been successfully recorded.</p>
+            
+            <!-- SECURE SCORE DISPLAY (Minimal Details For Student) -->
+            <div class="score-display" id="final-score-display" style="display: none; background: rgba(0, 255, 102, 0.1); border: 1px solid rgba(0, 255, 102, 0.3); padding: 15px; border-radius: 12px; margin: 20px 0;">
+                <h1 style="color: #00ff66; margin: 0; font-size: 3rem; font-weight: 800;" id="final-marks">0/0</h1>
+                <p style="color: rgba(255,255,255,0.7); margin-top: 5px; font-size: 0.9rem;">Final Score</p>
+                <div style="display: flex; justify-content: space-around; margin-top: 15px; padding-top: 15px; border-top: 1px solid rgba(255,255,255,0.1);">
+                    <div><span style="display: block; font-weight: bold; color: #fff;" id="final-attempted">0</span><span style="font-size: 0.75rem; color: #94a3b8;">Attempted</span></div>
+                    <div><span style="display: block; font-weight: bold; color: #fff;" id="final-unattempted">0</span><span style="font-size: 0.75rem; color: #94a3b8;">Unattempted</span></div>
+                </div>
+            </div>
+            
+            <p id="locked-message" style="margin-top: 10px;">Your response has been successfully recorded securely.</p>
             <div class="locked-time" id="locked-timestamp"></div>
             
             <!-- Direct Back to Dashboard Button -->
-            <button type="button" class="back-dashboard-btn" id="dash-btn" onclick="goToDashboard()">
+            <button type="button" class="back-dashboard-btn" id="dash-btn" onclick="goToDashboard()" style="margin-top: 20px;">
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
                     <line x1="19" y1="12" x2="5" y2="12"></line>
                     <polyline points="12 19 5 12 12 5"></polyline>
@@ -160,6 +171,7 @@
         </div>
     </div>
 
-    <script src="test.js?v=21.0"></script>
+    <!-- Script versioning to clear cache -->
+    <script src="test.js?v=28.0"></script>
 </body>
 </html>
