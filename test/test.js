@@ -1,6 +1,7 @@
 // ==========================================================================
-// RJ ACADEMY PRO - Core Functional Script (v29.0 SECURITY PATCH)
-// Multi-Subject | Server-Side Lock | Server Timer | Login Required | Shuffle
+// RJ ACADEMY PRO - Core Functional Script (v29.1 LOCK FIX)
+// Multi-Subject | Server-Side Lock + localStorage Backup | Server Timer
+// Login Required | Question Shuffle
 // ==========================================================================
 
 const WORKER_URL = "https://rj-test-backen.internationalbgi.workers.dev";
@@ -18,7 +19,7 @@ let studentName = "";
 let currentSubject = "english";
 let isSubmitting = false;
 let testStarted = false;
-let sessionId = ""; // Server session for timer + lock
+let sessionId = "";
 let serverSyncInterval = null;
 
 // FAB Dragging State
@@ -31,9 +32,35 @@ let fabDragState = {
     dragDistance: 0
 };
 
+// ==================== HELPERS: LOCAL LOCK BACKUP ====================
+function localLockKey(subject) {
+    return `submitted_${String(subject || "english").toLowerCase().trim()}`;
+}
+function localLockTimeKey(subject) {
+    return `submitted_time_${String(subject || "english").toLowerCase().trim()}`;
+}
+function setLocalLock(subject) {
+    try {
+        localStorage.setItem(localLockKey(subject), "true");
+        localStorage.setItem(localLockTimeKey(subject), Date.now().toString());
+    } catch (e) {}
+}
+function clearLocalLock(subject) {
+    try {
+        localStorage.removeItem(localLockKey(subject));
+        localStorage.removeItem(localLockTimeKey(subject));
+    } catch (e) {}
+}
+function hasLocalLock(subject) {
+    try {
+        return localStorage.getItem(localLockKey(subject)) === "true";
+    } catch (e) {
+        return false;
+    }
+}
+
 // ==================== INIT ====================
 document.addEventListener("DOMContentLoaded", () => {
-    // Read subject from URL
     const urlParams = new URLSearchParams(window.location.search);
     currentSubject = (urlParams.get("subject") || "english").toLowerCase().trim();
 
@@ -47,7 +74,6 @@ document.addEventListener("DOMContentLoaded", () => {
     const cleanName = String(loggedInName).trim();
 
     if (!cleanName || cleanName.toLowerCase() === "student" || cleanName.length < 2) {
-        // No valid login found — block test and redirect
         showLockedScreen(
             "LOGIN REQUIRED",
             "Please login from Dashboard first to start the test.\nRedirecting..."
@@ -61,19 +87,65 @@ document.addEventListener("DOMContentLoaded", () => {
     studentName = cleanName;
     sessionStorage.setItem("student_name", studentName);
 
+    // 🔒 FAST local lock check (instant block even before server)
+    if (hasLocalLock(currentSubject)) {
+        showLockedScreen(
+            "TEST ALREADY SUBMITTED",
+            `You have already completed the ${currentSubject.toUpperCase()} test.\nAsk Admin to unlock if needed.`
+        );
+        // Still verify with server in background (for admin reopen support)
+        verifyServerLockAndMaybeUnlock();
+        return;
+    }
+
     initFabDraggable();
     initDashboardBtn();
     fetchConfigAndInit();
 });
 
-// ==================== FETCH CONFIG + ANTI-CHEAT ====================
+// If local lock exists, check server — maybe admin reopened
+async function verifyServerLockAndMaybeUnlock() {
+    try {
+        const res = await fetch(
+            `${WORKER_URL}/api/check-lock?student=${encodeURIComponent(studentName)}&subject=${encodeURIComponent(currentSubject)}&t=${Date.now()}`
+        );
+        const data = await res.json();
+        if (data && data.locked === false) {
+            // Admin ne reopen/unlock kar diya
+            clearLocalLock(currentSubject);
+            location.reload();
+        }
+    } catch (e) {}
+}
+
+// ==================== FETCH CONFIG ====================
 async function fetchConfigAndInit() {
     try {
         const res = await fetch(
-            `${WORKER_URL}/api/config?subject=${currentSubject}&student=${encodeURIComponent(studentName)}&t=${Date.now()}`
+            `${WORKER_URL}/api/config?subject=${encodeURIComponent(currentSubject)}&student=${encodeURIComponent(studentName)}&t=${Date.now()}`
         );
-        if (!res.ok) throw new Error("Server Error");
-        testConfig = await res.json();
+
+        const data = await res.json();
+
+        // 🔒 Server says already submitted (from /api/config itself)
+        if (res.status === 403 || data.locked === true || data.error === "ALREADY_SUBMITTED") {
+            setLocalLock(currentSubject);
+            showLockedScreen(
+                "TEST ALREADY SUBMITTED",
+                `You have already completed the ${currentSubject.toUpperCase()} test.\nAsk Admin to unlock if needed.`
+            );
+            return;
+        }
+
+        if (data.error === "LOGIN_REQUIRED" || res.status === 401) {
+            showLockedScreen("LOGIN REQUIRED", "Please login from Dashboard first.");
+            setTimeout(() => { window.location.href = DASHBOARD_URL; }, 2500);
+            return;
+        }
+
+        if (!res.ok) throw new Error(data.error || "Server Error");
+
+        testConfig = data;
 
         if (testConfig.status && testConfig.status !== "open") {
             showLockedScreen(
@@ -91,9 +163,9 @@ async function fetchConfigAndInit() {
             return;
         }
 
-        // Sync subject from server response if present
         if (testConfig.subject) currentSubject = testConfig.subject.toLowerCase();
 
+        // Double-check lock via dedicated endpoint
         checkLockStatus();
     } catch (err) {
         console.error("Config fetch error:", err);
@@ -107,17 +179,13 @@ async function fetchConfigAndInit() {
 // ==================== SERVER-SIDE LOCK CHECK ====================
 async function checkLockStatus() {
     try {
-        const res = await fetch(`${WORKER_URL}/api/check-lock`, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-                studentName: studentName,
-                subject: currentSubject
-            })
-        });
+        const res = await fetch(
+            `${WORKER_URL}/api/check-lock?student=${encodeURIComponent(studentName)}&subject=${encodeURIComponent(currentSubject)}&t=${Date.now()}`
+        );
         const data = await res.json();
 
-        if (data.locked) {
+        if (data.locked === true) {
+            setLocalLock(currentSubject);
             showLockedScreen(
                 "TEST ALREADY SUBMITTED",
                 `You have already completed the ${currentSubject.toUpperCase()} test.\nAsk Admin to unlock if needed.`
@@ -125,25 +193,34 @@ async function checkLockStatus() {
             return;
         }
 
-        // All clear — start the test
+        // Agar server pe lock nahi — local bhi clear
+        if (data.locked === false) {
+            clearLocalLock(currentSubject);
+        }
+
         beginTest();
     } catch (err) {
         console.error("Lock check error:", err);
-        showLockedScreen(
-            "CONNECTION ERROR",
-            "Could not verify test status. Please check internet and try again."
-        );
+        // Network fail — local lock pe bharosa karo
+        if (hasLocalLock(currentSubject)) {
+            showLockedScreen(
+                "TEST ALREADY SUBMITTED",
+                `You have already completed the ${currentSubject.toUpperCase()} test.`
+            );
+            return;
+        }
+        // No local lock + network error — allow test (better UX)
+        beginTest();
     }
 }
 
-// ==================== START TEST + LIVE INVIGILATION + SERVER TIMER ====================
+// ==================== START TEST ====================
 async function beginTest() {
     const titleEl = document.getElementById("test-title-display");
     if (titleEl) {
         titleEl.innerText = testConfig.title || testConfig.testName || currentSubject.toUpperCase();
     }
 
-    // 🔥 LIVE INVIGILATION + SERVER TIMER START
     if (!testStarted) {
         testStarted = true;
         try {
@@ -157,8 +234,18 @@ async function beginTest() {
             });
             const startData = await startRes.json();
 
+            // Server ne bola already submitted
+            if (startData.error === "ALREADY_SUBMITTED" || startData.locked === true) {
+                setLocalLock(currentSubject);
+                showLockedScreen(
+                    "TEST ALREADY SUBMITTED",
+                    `You have already completed the ${currentSubject.toUpperCase()} test.`
+                );
+                return;
+            }
+
             if (startData.sessionId) sessionId = startData.sessionId;
-            if (startData.timeRemaining !== undefined) {
+            if (typeof startData.timeRemaining === "number") {
                 timeRemaining = startData.timeRemaining;
             } else {
                 timeRemaining = (testConfig.durationMinutes || testConfig.duration || 15) * 60;
@@ -189,7 +276,6 @@ function startTimer() {
     }, 1000);
 }
 
-// ==================== SERVER TIMER SYNC (Every 15 sec) ====================
 function startServerSync() {
     if (serverSyncInterval) clearInterval(serverSyncInterval);
     serverSyncInterval = setInterval(async () => {
@@ -205,7 +291,6 @@ function startServerSync() {
             });
             const data = await res.json();
             if (data.success && typeof data.timeRemaining === "number") {
-                // Trust server time — prevents browser tampering
                 timeRemaining = data.timeRemaining;
                 if (timeRemaining <= 0) {
                     clearInterval(timerInterval);
@@ -218,10 +303,8 @@ function startServerSync() {
                 clearInterval(serverSyncInterval);
                 autoSubmitOnTimeout();
             }
-        } catch (e) {
-            // Silent fail — local timer continues
-        }
-    }, 15000); // Sync every 15 seconds
+        } catch (e) {}
+    }, 15000);
 }
 
 function updateTimerDisplay() {
@@ -269,7 +352,6 @@ function renderQuestion(index) {
         flagBtn.classList.toggle("flagged", flaggedQuestions.has(index));
     }
 
-    // Optional image
     const imgContainer = document.getElementById("question-image-container");
     const imgEl = document.getElementById("question-image");
     const imageUrl = q.imageUrl || q.image || q.img || "";
@@ -343,7 +425,7 @@ function prevQuestion() {
     }
 }
 
-// ==================== MATRIX PALETTE ====================
+// ==================== MATRIX ====================
 function renderMatrix() {
     const grid = document.getElementById("palette-grid");
     if (!grid || !testConfig) return;
@@ -400,7 +482,7 @@ function toggleMatrix() {
     if (sidebar) sidebar.classList.toggle("active-matrix");
 }
 
-// ==================== FAB DRAGGABLE ====================
+// ==================== FAB ====================
 function initFabDraggable() {
     const fab = document.getElementById("draggable-fab");
     if (!fab) return;
@@ -492,13 +574,9 @@ async function submitTestFinal() {
 
     const now = Date.now();
 
-    // Build answers array in correct order (index-based)
-    // IMPORTANT: Server uses questionOrder (shuffled map) to grade correctly
     const answersArray = [];
     for (let i = 0; i < testConfig.questions.length; i++) {
-        answersArray.push(
-            userAnswers[i] !== undefined ? userAnswers[i] : ""
-        );
+        answersArray.push(userAnswers[i] !== undefined ? userAnswers[i] : "");
     }
 
     const payload = {
@@ -520,8 +598,23 @@ async function submitTestFinal() {
         const result = await res.json();
 
         if (result.success || res.ok) {
-            // Server has locked — show scorecard
+            // 🔒 DOUBLE LOCK: localStorage + server
+            setLocalLock(currentSubject);
+
+            // Debug log (optional)
+            if (result.lockSaved === false) {
+                console.warn("Server lock save failed:", result.lockError);
+            } else {
+                console.log("Lock saved:", result.lockKey);
+            }
+
             showResultScreen(result, studentName);
+        } else if (result.error === "ALREADY_SUBMITTED") {
+            setLocalLock(currentSubject);
+            showLockedScreen(
+                "TEST ALREADY SUBMITTED",
+                `You have already completed the ${currentSubject.toUpperCase()} test.`
+            );
         } else {
             isSubmitting = false;
             alert(result.error || "Submission failed. Please try again.");
@@ -543,10 +636,10 @@ function autoSubmitOnTimeout() {
     submitTestFinal();
 }
 
-// ==================== MINIMAL STUDENT SCORECARD ====================
+// ==================== SCORECARD ====================
 function showResultScreen(result, name) {
     const score = result.score !== undefined ? result.score : "—";
-    const total = result.total !== undefined ? result.total : testConfig.questions.length;
+    const total = result.total !== undefined ? result.total : (testConfig ? testConfig.questions.length : "—");
     const attempted = result.attempted !== undefined ? result.attempted : "—";
     const unattempted = result.unattempted !== undefined ? result.unattempted : "—";
 
@@ -558,7 +651,6 @@ function showResultScreen(result, name) {
         msgEl.innerText = `Well done, ${name}! Your ${currentSubject.toUpperCase()} test has been recorded.`;
     }
 
-    // Show score display block
     const scoreDisplay = document.getElementById("final-score-display");
     if (scoreDisplay) {
         scoreDisplay.style.display = "block";
@@ -584,7 +676,6 @@ function showLockedScreen(title, msg) {
     const msgEl = document.getElementById("locked-message");
     if (msgEl) msgEl.innerText = msg;
 
-    // Hide score if just locked/closed
     const scoreDisplay = document.getElementById("final-score-display");
     if (scoreDisplay) scoreDisplay.style.display = "none";
 
@@ -610,7 +701,7 @@ function initDashboardBtn() {
     }
 }
 
-// Global bindings for HTML onclick
+// Global bindings
 window.prevQuestion = prevQuestion;
 window.nextQuestion = nextQuestion;
 window.toggleFlag = toggleFlag;
