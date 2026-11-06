@@ -1,5 +1,5 @@
 /* ==========================================================================
-   RJ ACADEMY PRO - Modern Dark Test Panel Styling
+   RJ ACADEMY PRO - Modern Dark Test Panel Styling (v28.0)
    ========================================================================== */
 
 :root {
@@ -120,7 +120,19 @@ body, html {
     color: var(--accent-cyan);
     font-weight: 700;
     font-size: 14px;
-    font-mono: monospace;
+    font-family: monospace;
+}
+
+.timer-box.timer-warning {
+    background: rgba(239, 68, 68, 0.15);
+    border-color: rgba(239, 68, 68, 0.4);
+    color: #f87171;
+    animation: pulseWarn 1s infinite;
+}
+
+@keyframes pulseWarn {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.7; }
 }
 
 .desktop-submit-btn {
@@ -268,7 +280,7 @@ body, html {
     padding-top: 3px;
 }
 
-/* ---------------- SUBJECTIVE TYPING BOX (NEW) ---------------- */
+/* ---------------- SUBJECTIVE TYPING BOX ---------------- */
 .subjective-textarea {
     width: 100%;
     height: 160px;
@@ -608,7 +620,8 @@ body, html {
 
 .locked-card {
     text-align: center;
-    max-width: 360px;
+    max-width: 400px;
+    width: 100%;
     position: relative;
     z-index: 3001;
 }
@@ -624,6 +637,42 @@ body, html {
     font-size: 32px;
     margin: 0 auto 20px;
     color: white;
+}
+
+/* ===== SECURE MINIMAL SCORECARD (Student View) ===== */
+.score-display {
+    background: rgba(16, 185, 129, 0.1);
+    border: 1px solid rgba(16, 185, 129, 0.3);
+    padding: 20px;
+    border-radius: var(--radius-lg);
+    margin: 20px 0;
+}
+
+.score-display h1 {
+    color: #10b981;
+    margin: 0;
+    font-size: 3rem;
+    font-weight: 800;
+}
+
+.score-stats-row {
+    display: flex;
+    justify-content: space-around;
+    margin-top: 15px;
+    padding-top: 15px;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.score-stat-item span:first-child {
+    display: block;
+    font-weight: 700;
+    color: #fff;
+    font-size: 1.2rem;
+}
+
+.score-stat-item span:last-child {
+    font-size: 0.75rem;
+    color: var(--text-muted);
 }
 
 .locked-time {
