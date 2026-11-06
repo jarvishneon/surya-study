@@ -32,44 +32,52 @@
                 <div class="hero-badge"><i class="fa-solid fa-terminal"></i> SECURE_GATEWAY // v28.0</div>
                 <h1>Elite Cyber & Coding <span>Education Portal</span></h1>
                 <p>Apna naam daalkar secure login karein aur apne student dashboard tak pahunchein.</p>
-                <div class="features-tags">
-                    <div class="tag"><i class="fa-solid fa-check"></i> Competitive Exams</div>
-                    <div class="tag"><i class="fa-solid fa-check"></i> Board Exams</div>
-                    <div class="tag"><i class="fa-solid fa-check"></i> Live Updates</div>
-                </div>
-                <div class="trust-badges">
-                    <div class="trust-item"><i class="fa-solid fa-users"></i> <strong>2K+</strong> Students</div>
-                    <div class="trust-item"><i class="fa-solid fa-star"></i> <strong>4.9</strong> Rating</div>
-                    <div class="trust-item"><i class="fa-solid fa-shield-check"></i> <strong>100%</strong> Secure</div>
-                </div>
             </div>
-            <div class="login-card">
-                <div class="login-card-glow"></div>
-                <h2><i class="fa-solid fa-lock"></i> Student Portal</h2>
-                <p class="subtitle">Enter your name & password to access profile.</p>
-                <form id="loginForm">
-                    <div class="input-group">
-                        <label for="usernameInput">Your Name</label>
-                        <div class="input-with-icon">
-                            <i class="fa-solid fa-user"></i>
-                            <input type="text" id="usernameInput" placeholder="Enter your name" required autocomplete="off">
+            
+            <!-- Right side wrapper: Card on top, Tags/Badges below -->
+            <div class="hero-right">
+                <div class="login-card blue-3d-card">
+                    <div class="login-card-glow"></div>
+                    <h2><i class="fa-solid fa-user-astronaut"></i> Student Portal</h2>
+                    <p class="subtitle">Enter your name & password to access profile.</p>
+                    <form id="loginForm">
+                        <div class="input-group">
+                            <label for="usernameInput">Your Name</label>
+                            <div class="input-with-icon blue-input">
+                                <i class="fa-solid fa-user"></i>
+                                <input type="text" id="usernameInput" placeholder="Enter your name" required autocomplete="off">
+                            </div>
                         </div>
-                    </div>
-                    <div class="input-group">
-                        <label for="passwordInput">Password</label>
-                        <div class="input-with-icon">
-                            <i class="fa-solid fa-key"></i>
-                            <input type="password" id="passwordInput" placeholder="Enter password" required autocomplete="off">
+                        <div class="input-group">
+                            <label for="passwordInput">Password</label>
+                            <div class="input-with-icon blue-input">
+                                <i class="fa-solid fa-key"></i>
+                                <input type="password" id="passwordInput" placeholder="Enter password" required autocomplete="off">
+                            </div>
                         </div>
+                        <div id="errorMsg" class="error-msg">Incorrect password!</div>
+                        <button type="submit" class="login-btn blue-btn">
+                            <span>Authenticate & Login</span>
+                            <i class="fa-solid fa-arrow-right"></i>
+                        </button>
+                    </form>
+                    <div class="login-footer-text">
+                        <i class="fa-solid fa-shield-halved"></i> Protected by AES-256 Encryption
                     </div>
-                    <div id="errorMsg" class="error-msg">Incorrect password!</div>
-                    <button type="submit" class="login-btn">
-                        <span>Authenticate & Login</span>
-                        <i class="fa-solid fa-arrow-right"></i>
-                    </button>
-                </form>
-                <div class="login-footer-text">
-                    <i class="fa-solid fa-shield-halved"></i> Protected by RJ Study Academy Security
+                </div>
+
+                <!-- Tags & Trust Badges moved below login card -->
+                <div class="moved-stats-container">
+                    <div class="features-tags">
+                        <div class="tag"><i class="fa-solid fa-check"></i> Competitive Exams</div>
+                        <div class="tag"><i class="fa-solid fa-check"></i> Board Exams</div>
+                        <div class="tag"><i class="fa-solid fa-check"></i> Live Updates</div>
+                    </div>
+                    <div class="trust-badges">
+                        <div class="trust-item"><i class="fa-solid fa-users"></i> <strong>2K+</strong> Students</div>
+                        <div class="trust-item"><i class="fa-solid fa-star"></i> <strong>4.9</strong> Rating</div>
+                        <div class="trust-item"><i class="fa-solid fa-shield-halved"></i> <strong>100%</strong> Secure</div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -247,7 +255,7 @@
                     <span class="sub-card-arrow"><i class="fa-solid fa-arrow-up-right-from-square"></i></span>
                 </a>
                 <a href="https://www.learnxpw.site/study/batches/69737cfccbe58ca6dbccb146" target="_blank" class="sub-card">
-                    <div class="sub-card-icon"><i class="fa-solid fa-1"></i><i class="fa-solid fa-0"></i></div>
+                    <div class="sub-card-icon"><i class="fa-solid fa-1"></i></div>
                     <h4>Class 10th</h4>
                     <p>Class 10th board prep materials & PYQs.</p>
                     <span class="sub-card-arrow"><i class="fa-solid fa-arrow-up-right-from-square"></i></span>
