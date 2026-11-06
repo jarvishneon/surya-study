@@ -123,13 +123,8 @@
         }
 
         /* Views (Pages container) */
-        .page-view {
-            display: none;
-        }
-
-        .page-view.active {
-            display: block;
-        }
+        .page-view { display: none; }
+        .page-view.active { display: block; }
 
         /* Hero / Front Section with Split Layout */
         .hero-login-container {
@@ -141,9 +136,7 @@
             gap: 50px;
         }
 
-        .hero-left {
-            flex: 1;
-        }
+        .hero-left { flex: 1; }
 
         .hero-badge {
             display: inline-flex;
@@ -202,9 +195,7 @@
             gap: 6px;
         }
 
-        .tag i {
-            color: var(--primary);
-        }
+        .tag i { color: var(--primary); }
 
         /* Front Login Card */
         .login-card {
@@ -239,9 +230,7 @@
             gap: 10px;
         }
 
-        .login-card h2 i {
-            color: var(--primary);
-        }
+        .login-card h2 i { color: var(--primary); }
 
         .login-card p.subtitle {
             font-size: 0.85rem;
@@ -249,9 +238,7 @@
             margin-bottom: 25px;
         }
 
-        .input-group {
-            margin-bottom: 20px;
-        }
+        .input-group { margin-bottom: 20px; }
 
         .input-group label {
             display: block;
@@ -261,9 +248,7 @@
             font-weight: 500;
         }
 
-        .input-with-icon {
-            position: relative;
-        }
+        .input-with-icon { position: relative; }
 
         .input-with-icon i {
             position: absolute;
@@ -319,7 +304,7 @@
             display: none;
         }
 
-        /* --- DASHBOARD STYLES (After Login) --- */
+        /* --- DASHBOARD STYLES --- */
         .dashboard-topbar {
             display: flex;
             justify-content: space-between;
@@ -332,9 +317,7 @@
         }
 
         /* Profile Dropdown Container */
-        .profile-menu-container {
-            position: relative;
-        }
+        .profile-menu-container { position: relative; }
 
         .profile-circle {
             width: 44px;
@@ -359,7 +342,6 @@
             box-shadow: 0 0 20px var(--primary-glow);
         }
 
-        /* Dropdown Box */
         .profile-dropdown {
             position: absolute;
             right: 0;
@@ -374,9 +356,7 @@
             z-index: 9999;
         }
 
-        .profile-dropdown.active {
-            display: block !important;
-        }
+        .profile-dropdown.active { display: block !important; }
 
         .dropdown-username {
             font-size: 1.05rem;
@@ -486,9 +466,7 @@
             box-shadow: 0 15px 35px rgba(0, 255, 102, 0.2);
         }
 
-        .dash-card:hover::before {
-            opacity: 1;
-        }
+        .dash-card:hover::before { opacity: 1; }
 
         .dash-icon {
             font-size: 3rem;
@@ -529,7 +507,7 @@
             box-shadow: 0 0 15px var(--primary-glow);
         }
 
-        /* Sub-section views styling */
+        /* Regular Sub-section styling */
         .sub-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
@@ -567,106 +545,76 @@
             font-size: 0.85rem;
         }
 
-        /* ================= CHAT SYSTEM STYLES ================= */
-        .chat-container {
-            background: var(--card-bg);
-            border: 1px solid var(--border-color);
-            border-radius: 12px;
-            display: flex;
-            flex-direction: column;
-            height: 60vh;
-            min-height: 400px;
-            overflow: hidden;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+        /* ================= 3D PREMIUM SUBJECT CARDS UI ================= */
+        .subject-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            gap: 30px;
+            perspective: 1200px; /* Crucial for 3D effect */
+            margin-top: 30px;
         }
-        .chat-messages {
-            flex: 1;
-            padding: 20px;
-            overflow-y: auto;
-            display: flex;
-            flex-direction: column;
-            gap: 15px;
-        }
-        .chat-message {
-            max-width: 80%;
-            padding: 12px 16px;
-            border-radius: 12px;
-            font-size: 0.95rem;
-            line-height: 1.4;
+
+        .subject-card {
+            background: linear-gradient(145deg, rgba(8, 25, 16, 0.9), rgba(2, 5, 4, 0.95));
+            border: 1px solid rgba(255,255,255,0.1);
+            padding: 40px 20px;
+            border-radius: 20px;
+            text-align: center;
+            transition: all 0.5s cubic-bezier(0.23, 1, 0.32, 1);
+            transform-style: preserve-3d;
             position: relative;
-            word-wrap: break-word;
-        }
-        .chat-message.sent {
-            align-self: flex-end;
-            background: rgba(0, 255, 102, 0.15);
-            border: 1px solid var(--primary);
-            color: #ffffff;
-            border-bottom-right-radius: 2px;
-        }
-        .chat-message.received {
-            align-self: flex-start;
-            background: rgba(255, 255, 255, 0.05);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            color: #ffffff;
-            border-bottom-left-radius: 2px;
-        }
-        .chat-sender {
-            font-size: 0.75rem;
-            font-weight: 700;
-            margin-bottom: 4px;
-            color: var(--primary);
-        }
-        .chat-message.sent .chat-sender {
-            display: none; 
-        }
-        .chat-time {
-            font-size: 0.7rem;
-            color: #94a3b8;
-            margin-top: 5px;
-            text-align: right;
-            display: block;
-        }
-        .chat-message b { color: var(--primary); }
-        .chat-message i { color: #00bfff; }
-        
-        .chat-input-area {
-            display: flex;
-            padding: 15px;
-            background: rgba(2, 5, 4, 0.9);
-            border-top: 1px solid var(--border-color);
-            gap: 10px;
-        }
-        .chat-input-area input {
-            flex: 1;
-            background: rgba(255, 255, 255, 0.05);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: 8px;
-            padding: 12px 15px;
-            color: #fff;
-            font-size: 0.95rem;
-            outline: none;
-            transition: 0.3s;
-        }
-        .chat-input-area input:focus {
-            border-color: var(--primary);
-            box-shadow: 0 0 10px var(--primary-glow);
-        }
-        .send-btn {
-            background: var(--primary);
-            color: #020504;
-            border: none;
-            width: 50px;
-            border-radius: 8px;
             cursor: pointer;
-            font-size: 1.1rem;
-            transition: 0.3s;
-            display: flex;
-            align-items: center;
-            justify-content: center;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.6);
         }
-        .send-btn:hover {
-            transform: scale(1.05);
-            box-shadow: 0 0 15px var(--primary-glow);
+
+        .subject-card::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            border-radius: 20px;
+            border: 2px solid transparent;
+            background: linear-gradient(45deg, transparent, var(--primary), transparent) border-box;
+            -webkit-mask: linear-gradient(#fff 0 0) padding-box, linear-gradient(#fff 0 0);
+            -webkit-mask-composite: destination-out;
+            mask-composite: exclude;
+            opacity: 0;
+            transition: 0.5s;
+        }
+
+        .subject-card:hover {
+            transform: translateY(-15px) rotateX(8deg) rotateY(-5deg);
+            box-shadow: -10px 20px 40px rgba(0, 255, 102, 0.15), 10px 20px 40px rgba(0, 255, 102, 0.15);
+        }
+
+        .subject-card:hover::before {
+            opacity: 1;
+        }
+
+        .subject-icon {
+            font-size: 4.5rem;
+            margin-bottom: 25px;
+            transform: translateZ(50px); /* Pops the icon out */
+            transition: 0.5s;
+            text-shadow: 0 10px 20px rgba(0,0,0,0.8);
+        }
+
+        .subject-card:hover .subject-icon {
+            transform: translateZ(70px) scale(1.1);
+        }
+
+        .subject-card h3 {
+            font-size: 1.6rem;
+            font-weight: 700;
+            color: #fff;
+            transform: translateZ(30px); /* Pops the text out */
+            letter-spacing: 1px;
+            margin-bottom: 10px;
+        }
+        
+        .subject-card p.subject-desc {
+            font-size: 0.85rem;
+            color: #94a3b8;
+            transform: translateZ(20px);
         }
 
         /* Mobile Responsive */
@@ -703,7 +651,7 @@
         <div class="hero-login-container">
             <div class="hero-left">
                 <div class="hero-badge">
-                    <i class="fa-solid fa-terminal"></i> SECURE_GATEWAY // v5.1
+                    <i class="fa-solid fa-terminal"></i> SECURE_GATEWAY // v28.0
                 </div>
                 <h1>Elite Cyber & Coding <span>Education Portal</span></h1>
                 <p>Apna naam daalkar secure login karein aur apne student dashboard tak pahunchein.</p>
@@ -787,20 +735,12 @@
                     <span class="dash-action-btn">View Updates <i class="fa-solid fa-arrow-right"></i></span>
                 </div>
 
-                <!-- Option 4 (Online Test) -->
-                <div class="dash-card" onclick="window.open('test/index.html', '_blank')">
+                <!-- Option 4 (Online Test - NOW ROUTES TO 3D SUBJECT SELECTION) -->
+                <div class="dash-card" onclick="switchSubView('subjects-view')">
                     <div class="dash-icon"><i class="fa-solid fa-laptop-code"></i></div>
                     <h3>Secure Online Test</h3>
-                    <p>Participate in scheduled live tests, view real-time results, and track your performance.</p>
+                    <p>Participate in scheduled live tests, view real-time results, and track your performance subject-wise.</p>
                     <span class="dash-action-btn">Start Test <i class="fa-solid fa-arrow-right"></i></span>
-                </div>
-
-                <!-- Option 5 (Discuss Doubts) -->
-                <div class="dash-card" onclick="switchSubView('chat-view')">
-                    <div class="dash-icon"><i class="fa-solid fa-comments"></i></div>
-                    <h3>Discuss Doubts</h3>
-                    <p>Connect with teachers and peers in our secure live chat room to clear your academic doubts.</p>
-                    <span class="dash-action-btn">Open Chat <i class="fa-solid fa-arrow-right"></i></span>
                 </div>
             </div>
         </div>
@@ -858,125 +798,4 @@
                 <div class="profile-circle" id="profileInitial3" onclick="toggleProfileMenu(event)">A</div>
                 <div class="profile-dropdown">
                     <div class="dropdown-username displayUsernameCopy">Student Name</div>
-                    <div class="dropdown-role"><i class="fa-solid fa-circle" style="color: var(--primary); font-size: 7px;"></i> Active Student</div>
-                    <button class="dropdown-logout-btn" onclick="logout()"><i class="fa-solid fa-right-from-bracket"></i> Logout</button>
-                </div>
-            </div>
-        </div>
-        <div class="dashboard-container">
-            <button class="back-btn" onclick="goHome()"><i class="fa-solid fa-arrow-left"></i> Back to Dashboard</button>
-            <div style="margin-bottom: 25px;">
-                <h2>Board Exams Batches & Servers</h2>
-                <p style="color: #94a3b8; font-size: 0.95rem;">Select your target class, practice exercises, or servers below.</p>
-            </div>
-            <div class="sub-grid">
-                <a href="https://www.learnxpw.site/study/batches/69734ce1b0c696dcee5c35a9" target="_blank" class="sub-card">
-                    <h4>Class 9th</h4>
-                    <p>Access Class 9th lecture videos, notes, important questions & sample papers.</p>
-                </a>
-                <a href="https://www.learnxpw.site/study/batches/69737cfccbe58ca6dbccb146" target="_blank" class="sub-card">
-                    <h4>Class 10th</h4>
-                    <p>Access Class 10th board prep materials, previous year papers & solutions.</p>
-                </a>
-                <a href="YAHAN_APNA_URL_DAALEIN" target="_blank" class="sub-card">
-                    <h4>Practice Exercise</h4>
-                    <p>Access chapter-wise tests and interactive problem sets for practice.</p>
-                </a>
-                <a href="YAHAN_APNA_URL_DAALEIN" target="_blank" class="sub-card" style="border-color: rgba(0, 191, 255, 0.4);">
-                    <h4 style="color: #00bfff;">Servers</h4>
-                    <p>Access dedicated streaming servers:<br>• Class 9th Rj1 & Rj2<br>• Class 10th Rj1 & Rj2</p>
-                </a>
-            </div>
-
-            <div style="margin-top: 40px; margin-bottom: 20px;">
-                <h3>Dedicated Class Servers</h3>
-                <p style="color: #94a3b8; font-size: 0.9rem;">Direct links for individual class servers (Rj1 & Rj2)</p>
-            </div>
-            <div class="sub-grid">
-                <a href="https://vidcloud.eu.org/#BatchDetails/batch/69734ce1b0c696dcee5c35a9" target="_blank" class="sub-card">
-                    <h4>Class 9th Rj1</h4>
-                    <p>Primary server link for Class 9th video modules.</p>
-                </a>
-                <a href="YAHAN_APNA_URL_DAALEIN" target="_blank" class="sub-card">
-                    <h4>Class 9th Rj2</h4>
-                    <p>Secondary high-speed server link for Class 9th.</p>
-                </a>
-                <a href="https://vidcloud.eu.org/#BatchDetails/batch/69737cfccbe58ca6dbccb146" target="_blank" class="sub-card">
-                    <h4>Class 10th Rj1</h4>
-                    <p>Primary server link for Class 10th video modules.</p>
-                </a>
-                <a href="YAHAN_APNA_URL_DAALEIN" target="_blank" class="sub-card">
-                    <h4>Class 10th Rj2</h4>
-                    <p>Secondary high-speed server link for Class 10th.</p>
-                </a>
-            </div>
-        </div>
-    </div>
-
-    <!-- ================= VIEW 5: NOTIFICATIONS SUB-SECTION ================= -->
-    <div id="notifications-view" class="page-view">
-        <div class="dashboard-topbar">
-            <div class="logo" onclick="goHome()">
-                <i class="fa-solid fa-shield-halved" style="color: var(--primary);"></i> RJ <span>Study Academy</span>
-            </div>
-            <div class="profile-menu-container">
-                <div class="profile-circle" id="profileInitial4" onclick="toggleProfileMenu(event)">A</div>
-                <div class="profile-dropdown">
-                    <div class="dropdown-username displayUsernameCopy">Student Name</div>
-                    <div class="dropdown-role"><i class="fa-solid fa-circle" style="color: var(--primary); font-size: 7px;"></i> Active Student</div>
-                    <button class="dropdown-logout-btn" onclick="logout()"><i class="fa-solid fa-right-from-bracket"></i> Logout</button>
-                </div>
-            </div>
-        </div>
-        <div class="dashboard-container">
-            <button class="back-btn" onclick="goHome()"><i class="fa-solid fa-arrow-left"></i> Back to Dashboard</button>
-            <div style="margin-bottom: 25px;">
-                <h2>Notifications And Updates</h2>
-                <p style="color: #94a3b8; font-size: 0.95rem;">Latest announcements and schedule updates.</p>
-            </div>
-            <div class="sub-card" style="text-align: left; cursor: default;">
-                <h4 style="margin-bottom: 5px;"><i class="fa-solid fa-circle-info"></i> New Batch & Server Links Released</h4>
-                <p style="color: #cbd5e1; margin-bottom: 5px;">All competitive and board servers (Rj1, Rj2) are fully configured and updated.</p>
-                <span style="font-size: 0.75rem; color: #64748b;">Updated: Today</span>
-            </div>
-        </div>
-    </div>
-
-    <!-- ================= VIEW 6: DISCUSS DOUBTS (CHAT) ================= -->
-    <div id="chat-view" class="page-view">
-        <div class="dashboard-topbar">
-            <div class="logo" onclick="goHome()">
-                <i class="fa-solid fa-shield-halved" style="color: var(--primary);"></i> RJ <span>Study Academy</span>
-            </div>
-            <div class="profile-menu-container">
-                <div class="profile-circle" id="profileInitial5" onclick="toggleProfileMenu(event)">A</div>
-                <div class="profile-dropdown">
-                    <div class="dropdown-username displayUsernameCopy">Student Name</div>
-                    <div class="dropdown-role"><i class="fa-solid fa-circle" style="color: var(--primary); font-size: 7px;"></i> Active Student</div>
-                    <button class="dropdown-logout-btn" onclick="logout()"><i class="fa-solid fa-right-from-bracket"></i> Logout</button>
-                </div>
-            </div>
-        </div>
-        <div class="dashboard-container">
-            <button class="back-btn" onclick="goHome()"><i class="fa-solid fa-arrow-left"></i> Back to Dashboard</button>
-            <div style="margin-bottom: 25px;">
-                <h2>Discuss Doubts (Live Chat)</h2>
-                <p style="color: #94a3b8; font-size: 0.95rem;">Connect with teachers and peers in our secure chat room.</p>
-            </div>
-            
-            <div class="chat-container">
-                <div class="chat-messages" id="chatBox">
-                    <!-- Messages dynamically loaded here -->
-                </div>
-                <div class="chat-input-area">
-                    <input type="text" id="chatInput" placeholder="Type your message here... Use **bold** or *italic*" onkeypress="handleChatKeyPress(event)">
-                    <button onclick="sendChatMessage()" class="send-btn" id="sendBtn"><i class="fa-solid fa-paper-plane"></i></button>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Link to external JS file -->
-    <script src="script.js"></script>
-</body>
-</html>
+                    <div class="dropdown-role"><i class="fa-solid fa-circle" style="color: 
