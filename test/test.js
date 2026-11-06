@@ -1,7 +1,7 @@
-/* ==========================================================================
-   RJ ACADEMY PRO - Core Functional Script (v28.0 MASTER BLUEPRINT)
-   Multi-Subject | Independent Locks | Live Invigilation | Secure Scorecard
-   ========================================================================== */
+// ==========================================================================
+// RJ ACADEMY PRO - Core Functional Script (v29.0 SECURITY PATCH)
+// Multi-Subject | Server-Side Lock | Server Timer | Login Required | Shuffle
+// ==========================================================================
 
 const WORKER_URL = "https://rj-test-backen.internationalbgi.workers.dev";
 const DASHBOARD_URL = "https://surya-study.pages.dev";
@@ -18,6 +18,8 @@ let studentName = "";
 let currentSubject = "english";
 let isSubmitting = false;
 let testStarted = false;
+let sessionId = ""; // Server session for timer + lock
+let serverSyncInterval = null;
 
 // FAB Dragging State
 let fabDragState = {
@@ -35,11 +37,28 @@ document.addEventListener("DOMContentLoaded", () => {
     const urlParams = new URLSearchParams(window.location.search);
     currentSubject = (urlParams.get("subject") || "english").toLowerCase().trim();
 
-    // Get student name from login session
-    studentName = localStorage.getItem("rj_student_name") ||
-                  localStorage.getItem("rjStudyUsername") ||
-                  sessionStorage.getItem("student_name") ||
-                  "Student";
+    // 🔒 STRICT LOGIN CHECK — No fallback to "Student"
+    const loggedInName =
+        localStorage.getItem("rj_student_name") ||
+        localStorage.getItem("rjStudyUsername") ||
+        sessionStorage.getItem("student_name") ||
+        "";
+
+    const cleanName = String(loggedInName).trim();
+
+    if (!cleanName || cleanName.toLowerCase() === "student" || cleanName.length < 2) {
+        // No valid login found — block test and redirect
+        showLockedScreen(
+            "LOGIN REQUIRED",
+            "Please login from Dashboard first to start the test.\nRedirecting..."
+        );
+        setTimeout(() => {
+            window.location.href = DASHBOARD_URL;
+        }, 2500);
+        return;
+    }
+
+    studentName = cleanName;
     sessionStorage.setItem("student_name", studentName);
 
     initFabDraggable();
@@ -51,7 +70,7 @@ document.addEventListener("DOMContentLoaded", () => {
 async function fetchConfigAndInit() {
     try {
         const res = await fetch(
-            `${WORKER_URL}/api/config?subject=${currentSubject}&t=${Date.now()}`
+            `${WORKER_URL}/api/config?subject=${currentSubject}&student=${encodeURIComponent(studentName)}&t=${Date.now()}`
         );
         if (!res.ok) throw new Error("Server Error");
         testConfig = await res.json();
@@ -85,49 +104,50 @@ async function fetchConfigAndInit() {
     }
 }
 
-// ==================== SUBJECT-WISE INDEPENDENT LOCK ====================
-function checkLockStatus() {
-    const lockKey = `submitted_${currentSubject}`;
-    const timeKey = `submitted_time_${currentSubject}`;
+// ==================== SERVER-SIDE LOCK CHECK ====================
+async function checkLockStatus() {
+    try {
+        const res = await fetch(`${WORKER_URL}/api/check-lock`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+                studentName: studentName,
+                subject: currentSubject
+            })
+        });
+        const data = await res.json();
 
-    const isSubmitted = localStorage.getItem(lockKey);
-    const submittedTimeRaw = localStorage.getItem(timeKey);
-
-    if (isSubmitted) {
-        const reopenTime = testConfig.reopenTimestamp || 0;
-        const submittedTime = submittedTimeRaw ? parseInt(submittedTimeRaw, 10) : 0;
-
-        // If admin did /reopen or /unlock <subject>, reopenTimestamp will be newer
-        if (reopenTime > 0 && submittedTime < reopenTime) {
-            localStorage.removeItem(lockKey);
-            localStorage.removeItem(timeKey);
-        } else {
+        if (data.locked) {
             showLockedScreen(
                 "TEST ALREADY SUBMITTED",
                 `You have already completed the ${currentSubject.toUpperCase()} test.\nAsk Admin to unlock if needed.`
             );
             return;
         }
-    }
 
-    // All clear — start the test
-    beginTest();
+        // All clear — start the test
+        beginTest();
+    } catch (err) {
+        console.error("Lock check error:", err);
+        showLockedScreen(
+            "CONNECTION ERROR",
+            "Could not verify test status. Please check internet and try again."
+        );
+    }
 }
 
-// ==================== START TEST + LIVE INVIGILATION ====================
+// ==================== START TEST + LIVE INVIGILATION + SERVER TIMER ====================
 async function beginTest() {
     const titleEl = document.getElementById("test-title-display");
     if (titleEl) {
         titleEl.innerText = testConfig.title || testConfig.testName || currentSubject.toUpperCase();
     }
 
-    timeRemaining = (testConfig.durationMinutes || testConfig.duration || 15) * 60;
-
-    // 🔥 LIVE INVIGILATION: Alert Admin on Telegram
+    // 🔥 LIVE INVIGILATION + SERVER TIMER START
     if (!testStarted) {
         testStarted = true;
         try {
-            await fetch(`${WORKER_URL}/api/start`, {
+            const startRes = await fetch(`${WORKER_URL}/api/start`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({
@@ -135,12 +155,22 @@ async function beginTest() {
                     subject: currentSubject
                 })
             });
+            const startData = await startRes.json();
+
+            if (startData.sessionId) sessionId = startData.sessionId;
+            if (startData.timeRemaining !== undefined) {
+                timeRemaining = startData.timeRemaining;
+            } else {
+                timeRemaining = (testConfig.durationMinutes || testConfig.duration || 15) * 60;
+            }
         } catch (e) {
             console.warn("Start alert failed (non-critical):", e);
+            timeRemaining = (testConfig.durationMinutes || testConfig.duration || 15) * 60;
         }
     }
 
     startTimer();
+    startServerSync();
     renderQuestion(0);
     renderMatrix();
 }
@@ -157,6 +187,41 @@ function startTimer() {
             autoSubmitOnTimeout();
         }
     }, 1000);
+}
+
+// ==================== SERVER TIMER SYNC (Every 15 sec) ====================
+function startServerSync() {
+    if (serverSyncInterval) clearInterval(serverSyncInterval);
+    serverSyncInterval = setInterval(async () => {
+        try {
+            const res = await fetch(`${WORKER_URL}/api/sync-timer`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    studentName: studentName,
+                    subject: currentSubject,
+                    sessionId: sessionId
+                })
+            });
+            const data = await res.json();
+            if (data.success && typeof data.timeRemaining === "number") {
+                // Trust server time — prevents browser tampering
+                timeRemaining = data.timeRemaining;
+                if (timeRemaining <= 0) {
+                    clearInterval(timerInterval);
+                    clearInterval(serverSyncInterval);
+                    autoSubmitOnTimeout();
+                }
+            }
+            if (data.forceSubmit) {
+                clearInterval(timerInterval);
+                clearInterval(serverSyncInterval);
+                autoSubmitOnTimeout();
+            }
+        } catch (e) {
+            // Silent fail — local timer continues
+        }
+    }, 15000); // Sync every 15 seconds
 }
 
 function updateTimerDisplay() {
@@ -422,17 +487,13 @@ async function submitTestFinal() {
     isSubmitting = true;
 
     if (timerInterval) clearInterval(timerInterval);
+    if (serverSyncInterval) clearInterval(serverSyncInterval);
     closeSubmitConfirm();
 
     const now = Date.now();
-    const finalStudentName =
-        localStorage.getItem("rj_student_name") ||
-        sessionStorage.getItem("student_name") ||
-        localStorage.getItem("rjStudyUsername") ||
-        studentName ||
-        "Student";
 
     // Build answers array in correct order (index-based)
+    // IMPORTANT: Server uses questionOrder (shuffled map) to grade correctly
     const answersArray = [];
     for (let i = 0; i < testConfig.questions.length; i++) {
         answersArray.push(
@@ -441,10 +502,11 @@ async function submitTestFinal() {
     }
 
     const payload = {
-        studentName: finalStudentName,
+        studentName: studentName,
         subject: currentSubject,
         testId: testConfig.testId || `${currentSubject.toUpperCase()}_TEST`,
         answers: answersArray,
+        sessionId: sessionId,
         submittedAt: now
     };
 
@@ -458,22 +520,20 @@ async function submitTestFinal() {
         const result = await res.json();
 
         if (result.success || res.ok) {
-            // Subject-wise lock (NOT global)
-            localStorage.setItem(`submitted_${currentSubject}`, "true");
-            localStorage.setItem(`submitted_time_${currentSubject}`, now.toString());
-
-            // Show MINIMAL scorecard to student
-            showResultScreen(result, finalStudentName);
+            // Server has locked — show scorecard
+            showResultScreen(result, studentName);
         } else {
             isSubmitting = false;
             alert(result.error || "Submission failed. Please try again.");
-            startTimer(); // resume timer if failed
+            startTimer();
+            startServerSync();
         }
     } catch (err) {
         isSubmitting = false;
         console.warn("Submit error:", err);
         alert("Network error. Please check internet and try again.");
         startTimer();
+        startServerSync();
     }
 }
 
