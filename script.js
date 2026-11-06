@@ -1,8 +1,7 @@
 // RJ STUDY ACADEMY - script.js v29.0 (Pro Design Update)
-// Passwords: 04783 | pdhlo | 4181723
 // Chat: poll sync + max 3 msgs + 2 min auto wipe (server)
 
-const VALID_PASSWORDS = ["04783", "pdhlo", "4181723"];
+const VALID_PASSWORDS = ["04783", "padhlo", "4181723"];
 const WORKER_URL = "https://rj-test-backen.internationalbgi.workers.dev";
 
 /* -------------- LOGIN SYSTEM -------------- */
