@@ -2,27 +2,27 @@
   {
     "id": "s1",
     "type": "mcq",
-    "question": "What is the chemical formula for Water?",
-    "options": ["HO", "H2O", "O2", "CO2"],
+    "question": "Which gas is essential for human respiration?",
+    "options": ["Carbon Dioxide", "Oxygen", "Nitrogen", "Hydrogen"],
     "answer": 1
   },
   {
     "id": "s2",
     "type": "mcq",
-    "question": "Which planet is known as the Red Planet?",
-    "options": ["Earth", "Venus", "Mars", "Jupiter"],
-    "answer": 2
+    "question": "What is the chemical symbol for Gold?",
+    "options": ["Ag", "Au", "Fe", "Cu"],
+    "answer": 1
   },
   {
     "id": "s3",
     "type": "text",
-    "question": "Name the gas that humans breathe in to survive.",
-    "answer": "oxygen"
+    "question": "What is the chemical formula of Water?",
+    "answer": "h2o"
   },
   {
     "id": "s4",
     "type": "text",
-    "question": "How many legs does a spider have? (Type the number only)",
-    "answer": "8"
+    "question": "Which organ in the human body pumps blood?",
+    "answer": "heart"
   }
 ]
