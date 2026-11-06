@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <meta name="theme-color" content="#050a08">
+    <meta name="description" content="RJ Study Academy student learning portal">
+    <title>RJ Study Academy | Secure Portal</title>
+    <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;600&family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="cyber-grid"></div>
+    <div class="laser-beam"></div>
+    <div id="terminal-bg"></div>
+
+    <!-- LOGIN VIEW -->
+    <div id="login-view" class="page-view active">
+        <header>
+            <div class="logo">
+                <i class="fa-solid fa-shield-halved" style="color: var(--primary);"></i> RJ <span>Study Academy</span>
+            </div>
+        </header>
+        <div class="hero-login-container">
+            <div class="hero-left">
+                <div class="hero-badge"><i class="fa-solid fa-terminal"></i> SECURE_GATEWAY // v28.0</div>
+                <h1>Elite Cyber & Coding <span>Education Portal</span></h1>
+                <p>Apna naam daalkar secure login karein aur apne student dashboard tak pahunchein.</p>
+                <div class="features-tags">
+                    <div class="tag"><i class="fa-solid fa-check"></i> Competitive Exams</div>
+                    <div class="tag"><i class="fa-solid fa-check"></i> Board Exams</div>
+                    <div class="tag"><i class="fa-solid fa-check"></i> Live Updates</div>
+                </div>
+            </div>
+            <div class="login-card">
+                <h2><i class="fa-solid fa-lock"></i> Student Portal</h2>
+                <p class="subtitle">Enter your name & password to access profile.</p>
+                <form id="loginForm">
+                    <div class="input-group">
+                        <label for="usernameInput">Your Name</label>
+                        <div class="input-with-icon">
+                            <i class="fa-solid fa-user"></i>
+                            <input type="text" id="usernameInput" placeholder="Enter your name" required autocomplete="off">
+                        </div>
+                    </div>
+                    <div class="input-group">
+                        <label for="passwordInput">Password</label>
+                        <div class="input-with-icon">
+                            <i class="fa-solid fa-key"></i>
+                            <input type="password" id="passwordInput" placeholder="Enter password" required autocomplete="off">
+                        </div>
+                    </div>
+                    <div id="errorMsg" class="error-msg">Incorrect password!</div>
+                    <button type="submit" class="login-btn">Authenticate & Login</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- DASHBOARD VIEW -->
+    <div id="dashboard-view" class="page-view">
+        <div class="dashboard-topbar">
+            <div class="logo" onclick="goHome()">
+                <i class="fa-solid fa-shield-halved" style="color: var(--primary);"></i> RJ <span>Study Academy</span>
+            </div>
+            <div class="profile-menu-container">
+                <div class="profile-circle" id="profileInitial" onclick="toggleProfileMenu(event)">A</div>
+                <div class="profile-dropdown" id="profileDropdown">
+                    <div class="dropdown-username" id="displayUsername">Student Name</div>
+                    <div class="dropdown-role"><i class="fa-solid fa-circle" style="color: var(--primary); font-size: 7px;"></i> Active Student</div>
+                    <button class="dropdown-logout-btn" onclick="logout()"><i class="fa-solid fa-right-from-bracket"></i> Logout</button>
+                </div>
+            </div>
+        </div>
+        <div class="dashboard-container">
+            <section class="dashboard-intro" aria-label="Student dashboard welcome">
+                <div class="intro-kicker"><span class="status-dot"></span> STUDENT WORKSPACE</div>
+                <h1>Welcome to your <span>learning hub</span></h1>
+                <p>Choose a section below and continue your learning journey.</p>
+            </section>
+            <div class="dashboard-grid">
+                <div class="dash-card" onclick="switchSubView('competitive-view')">
+                    <div class="dash-icon"><i class="fa-solid fa-trophy"></i></div>
+                    <h3>Competitive Exams</h3>
+                    <p>Access high-level practice tests, PYQs, mock tests for JEE, NEET, UPSC & Tech certifications.</p>
+                    <span class="dash-action-btn">Explore Section <i class="fa-solid fa-arrow-right"></i></span>
+                </div>
+                <div class="dash-card" onclick="switchSubView('boards-view')">
+                    <div class="dash-icon"><i class="fa-solid fa-book-open"></i></div>
+                    <h3>Board Exams</h3>
+                    <p>Get chapter-wise notes, sample papers and revision modules for class 9th & 10th boards.</p>
+                    <span class="dash-action-btn">Explore Section <i class="fa-solid fa-arrow-right"></i></span>
+                </div>
+                <div class="dash-card" onclick="switchSubView('notifications-view')">
+                    <div class="dash-icon"><i class="fa-solid fa-bell"></i></div>
+                    <h3>Notifications And Updates</h3>
+                    <p>Stay updated with latest exam dates, scholarship announcements and academy notices.</p>
+                    <span class="dash-action-btn">View Updates <i class="fa-solid fa-arrow-right"></i></span>
+                </div>
+                <div class="dash-card" onclick="switchSubView('subjects-view')">
+                    <div class="dash-icon"><i class="fa-solid fa-laptop-code"></i></div>
+                    <h3>Secure Online Test</h3>
+                    <p>Participate in scheduled live tests, view real-time results and track performance.</p>
+                    <span class="dash-action-btn">Start Test <i class="fa-solid fa-arrow-right"></i></span>
+                </div>
+                <!-- Discuss Doubts Card -->
+                <div class="dash-card" onclick="toggleChat()">
+                    <div class="dash-icon"><i class="fa-solid fa-comments"></i></div>
+                    <h3>Discuss Doubts</h3>
+                    <p>Facing issues or have questions? Chat directly with Academy Admins.</p>
+                    <span class="dash-action-btn">Open Chat <i class="fa-solid fa-comment-dots"></i></span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- COMPETITIVE VIEW -->
+    <div id="competitive-view" class="page-view">
+        <div class="dashboard-topbar">
+            <div class="logo" onclick="goHome()">
+                <i class="fa-solid fa-shield-halved" style="color: var(--primary);"></i> RJ <span>Study Academy</span>
+            </div>
+            <div class="profile-menu-container">
+                <div class="profile-circle" id="profileInitial2" onclick="toggleProfileMenu(event)">A</div>
+                <div class="profile-dropdown">
+                    <div class="dropdown-username displayUsernameCopy">Student Name</div>
+                    <div class="dropdown-role"><i class="fa-solid fa-circle" style="color: var(--primary); font-size: 7px;"></i> Active Student</div>
+                    <button class="dropdown-logout-btn" onclick="logout()"><i class="fa-solid fa-right-from-bracket"></i> Logout</button>
+                </div>
+            </div>
+        </div>
+        <div class="dashboard-container">
+            <button class="back-btn" onclick="goHome()"><i class="fa-solid fa-arrow-left"></i> Back to Dashboard</button>
+            <div style="margin-bottom: 25px;">
+                <h2>Competitive Exams Batches</h2>
+                <p style="color: #94a3b8; font-size: 0.95rem;">Select your preferred coaching platform batch below.</p>
+            </div>
+            <div class="sub-grid">
+                <a href="https://www.learnxpw.site/study/batches" target="_blank" class="sub-card"><h4>PW Batches</h4><p>Physics Wallah live classes & study modules.</p></a>
+                <a href="https://studybeepro.site/rwax/" target="_blank" class="sub-card"><h4>RWA Batches</h4><p>Rojgar with Ankit batches & practice sets.</p></a>
+                <a href="https://studybeepro.site/vidyagram/content.html?id=41" target="_blank" class="sub-card"><h4>Vidyagram Batches</h4><p>Vidyagram elite exam prep materials.</p></a>
+                <a href="https://gb.ayushindmods1.workers.dev/KGSNEW/" target="_blank" class="sub-card"><h4>KGS Batches</h4><p>Khan Global Studies batches & video lectures.</p></a>
+            </div>
+        </div>
+    </div>
+
+    <!-- BOARDS VIEW -->
+    <div id="boards-view" class="page-view">
+        <div class="dashboard-topbar">
+            <div class="logo" onclick="goHome()">
+                <i class="fa-solid fa-shield-halved" style="color: var(--primary);"></i> RJ <span>Study Academy</span>
+            </div>
+            <div class="profile-menu-container">
+                <div class="profile-circle" id="profileInitial3" onclick="toggleProfileMenu(event)">A</div>
+                <div class="profile-dropdown">
+                    <div class="dropdown-username displayUsernameCopy">Student Name</div>
+                    <div class="dropdown-role"><i class="fa-solid fa-circle" style="color: var(--primary); font-size: 7px;"></i> Active Student</div>
+                    <button class="dropdown-logout-btn" onclick="logout()"><i class="fa-solid fa-right-from-bracket"></i> Logout</button>
+                </div>
+            </div>
+        </div>
+        <div class="dashboard-container">
+            <button class="back-btn" onclick="goHome()"><i class="fa-solid fa-arrow-left"></i> Back to Dashboard</button>
+            <div style="margin-bottom: 25px;">
+                <h2>Board Exams Batches & Servers</h2>
+                <p style="color: #94a3b8; font-size: 0.95rem;">Select your target class or servers below.</p>
+            </div>
+            <div class="sub-grid">
+                <a href="https://www.learnxpw.site/study/batches/69734ce1b0c696dcee5c35a9" target="_blank" class="sub-card"><h4>Class 9th</h4><p>Class 9th lectures, notes & sample papers.</p></a>
+                <a href="https://www.learnxpw.site/study/batches/69737cfccbe58ca6dbccb146" target="_blank" class="sub-card"><h4>Class 10th</h4><p>Class 10th board prep materials & PYQs.</p></a>
+                <a href="https://vidcloud.eu.org/#BatchDetails/batch/69734ce1b0c696dcee5c35a9" target="_blank" class="sub-card"><h4>Class 9th Rj1</h4><p>Primary server for Class 9th.</p></a>
+                <a href="https://vidcloud.eu.org/#BatchDetails/batch/69737cfccbe58ca6dbccb146" target="_blank" class="sub-card"><h4>Class 10th Rj1</h4><p>Primary server for Class 10th.</p></a>
+            </div>
+        </div>
+    </div>
+
+    <!-- NOTIFICATIONS VIEW -->
+    <div id="notifications-view" class="page-view">
+        <div class="dashboard-topbar">
+            <div class="logo" onclick="goHome()">
+                <i class="fa-solid fa-shield-halved" style="color: var(--primary);"></i> RJ <span>Study Academy</span>
+            </div>
+            <div class="profile-menu-container">
+                <div class="profile-circle" id="profileInitial4" onclick="toggleProfileMenu(event)">A</div>
+                <div class="profile-dropdown">
+                    <div class="dropdown-username displayUsernameCopy">Student Name</div>
+                    <div class="dropdown-role"><i class="fa-solid fa-circle" style="color: var(--primary); font-size: 7px;"></i> Active Student</div>
+                    <button class="dropdown-logout-btn" onclick="logout()"><i class="fa-solid fa-right-from-bracket"></i> Logout</button>
+                </div>
+            </div>
+        </div>
+        <div class="dashboard-container">
+            <button class="back-btn" onclick="goHome()"><i class="fa-solid fa-arrow-left"></i> Back to Dashboard</button>
+            <div style="margin-bottom: 25px;">
+                <h2>Notifications And Updates</h2>
+                <p style="color: #94a3b8; font-size: 0.95rem;">Latest announcements and schedule updates.</p>
+            </div>
+            <div class="sub-card" style="text-align: left; cursor: default;">
+                <h4 style="margin-bottom: 5px;"><i class="fa-solid fa-circle-info"></i> Multi-Subject Test Engine Live</h4>
+                <p style="color: #cbd5e1; margin-bottom: 5px;">English, Hindi, Math & Science secure tests are now available.</p>
+                <span style="font-size: 0.75rem; color: #64748b;">Updated: Today</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- 3D SUBJECTS VIEW -->
+    <div id="subjects-view" class="page-view">
+        <div class="dashboard-topbar">
+            <div class="logo" onclick="goHome()">
+                <i class="fa-solid fa-shield-halved" style="color: var(--primary);"></i> RJ <span>Study Academy</span>
+            </div>
+            <div class="profile-menu-container">
+                <div class="profile-circle" id="profileInitial5" onclick="toggleProfileMenu(event)">A</div>
+                <div class="profile-dropdown">
+                    <div class="dropdown-username displayUsernameCopy">Student Name</div>
+                    <div class="dropdown-role"><i class="fa-solid fa-circle" style="color: var(--primary); font-size: 7px;"></i> Active Student</div>
+                    <button class="dropdown-logout-btn" onclick="logout()"><i class="fa-solid fa-right-from-bracket"></i> Logout</button>
+                </div>
+            </div>
+        </div>
+        <div class="dashboard-container">
+            <button class="back-btn" onclick="goHome()"><i class="fa-solid fa-arrow-left"></i> Back to Dashboard</button>
+            <div style="margin-bottom: 10px;">
+                <h2><i class="fa-solid fa-laptop-code" style="color: var(--primary);"></i> Select Subject</h2>
+                <p style="color: #94a3b8; font-size: 0.95rem;">Choose a subject below to start your secure live test.</p>
+            </div>
+            <div class="subject-grid">
+                <div class="subject-card" onclick="launchTest('english')">
+                    <div class="subject-icon">📘</div>
+                    <h3>English</h3>
+                    <p class="subject-desc">Grammar & Vocabulary</p>
+                </div>
+                <div class="subject-card" onclick="launchTest('hindi')">
+                    <div class="subject-icon">📙</div>
+                    <h3>Hindi</h3>
+                    <p class="subject-desc">Sahitya & Vyakaran</p>
+                </div>
+                <div class="subject-card" onclick="launchTest('math')">
+                    <div class="subject-icon">📐</div>
+                    <h3>Mathematics</h3>
+                    <p class="subject-desc">Formulas & Reasoning</p>
+                </div>
+                <div class="subject-card" onclick="launchTest('science')">
+                    <div class="subject-icon">🔬</div>
+                    <h3>Science</h3>
+                    <p class="subject-desc">Physics, Chem & Bio</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- CHAT OVERLAY -->
+    <div class="chat-overlay" id="chatOverlay">
+        <div class="chat-header">
+            <div class="chat-heading">
+                <span class="chat-heading-icon"><i class="fa-solid fa-headset"></i></span>
+                <span><strong>Admin Support</strong><small id="chatStatus" aria-live="polite"></small></span>
+            </div>
+            <button class="chat-close" type="button" aria-label="Close chat" onclick="toggleChat()"><i class="fa-solid fa-xmark"></i></button>
+        </div>
+        <div class="chat-body" id="chatBody"></div>
+        <div class="chat-input-area">
+            <input type="text" id="chatInput" placeholder="Type your doubt..." aria-label="Type your message" onkeypress="if(event.key==='Enter') sendChatMessage()">
+            <button type="button" aria-label="Send message" onclick="sendChatMessage()"><i class="fa-solid fa-paper-plane"></i></button>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
