@@ -1,6 +1,6 @@
-// RJ STUDY ACADEMY - script.js v28.3
+// RJ STUDY ACADEMY - script.js v28.4
 // Passwords: 04783 | pdhlo | 4181723
-// Chat: fast sync + max 3 msgs + 2 min auto wipe (server)
+// Chat: 1s poll sync + max 3 msgs + 2 min auto wipe (server)
 
 const VALID_PASSWORDS = ["04783", "pdhlo", "4181723"];
 const WORKER_URL = "https://rj-test-backen.internationalbgi.workers.dev";
@@ -307,6 +307,10 @@ function initPortal() {
     const form = document.getElementById("loginForm");
     if (form) {
         form.addEventListener("submit", handleLogin);
+        form.onsubmit = function (e) {
+            handleLogin(e);
+            return false;
+        };
     }
 
     window.addEventListener("click", function (e) {
@@ -344,7 +348,7 @@ window.sendChatMessage = sendChatMessage;
         "Loading root credentials for RJ_STUDY_ACADEMY_PORTAL...",
         "Establishing encrypted handshake... [SECURE]",
         "Injecting pathways: [ENGLISH, HINDI, MATH, SCIENCE]",
-        "Status: Multi-Subject Test Engine v28.3 ONLINE."
+        "Status: Multi-Subject Test Engine v28.4 ONLINE."
     ];
     let li = 0,
         ci = 0,
