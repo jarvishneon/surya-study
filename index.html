@@ -3,111 +3,270 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-    <meta name="theme-color" content="#030504">
+    <meta name="theme-color" content="#030b1a">
     <meta name="description" content="RJ Study Academy student learning portal">
     <title>RJ Study Academy | Secure Portal</title>
-    <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600&family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;600&family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Orbitron:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <!-- Premium Ambient Background -->
-    <div class="mesh-bg">
-        <div class="mesh-blob blob-1"></div>
-        <div class="mesh-blob blob-2"></div>
-        <div class="mesh-blob blob-3"></div>
-    </div>
-    <div class="cyber-grid"></div>
 
-    <!-- LOGIN VIEW -->
+    <!-- ANIMATED BACKGROUND LAYERS -->
+    <div class="bg-layer">
+        <div class="ambient-orb orb-1"></div>
+        <div class="ambient-orb orb-2"></div>
+        <div class="ambient-orb orb-3"></div>
+        <div class="ambient-orb orb-4"></div>
+        <div class="cyber-grid"></div>
+        <div class="floating-particles" id="particles"></div>
+        <div class="aurora-glow"></div>
+        <div class="scan-line"></div>
+    </div>
+
+    <!-- ===================== LOGIN VIEW ===================== -->
     <div id="login-view" class="page-view active">
         <header class="glass-header">
             <div class="logo">
-                <div class="logo-icon"><i class="fa-solid fa-shield-halved"></i></div>
-                RJ <span>Study Academy</span>
+                <div class="logo-icon pulse-ring">
+                    <i class="fa-solid fa-shield-halved"></i>
+                </div>
+                <span class="logo-text">RJ <span class="accent">Study Academy</span></span>
             </div>
-            <div class="header-badge"><i class="fa-solid fa-lock"></i> AES-256 Secured</div>
+            <div class="header-badge glass-badge">
+                <span class="live-dot"></span>
+                <i class="fa-solid fa-lock"></i> Secured Portal
+            </div>
         </header>
-        
+
         <div class="hero-login-container">
             <div class="hero-left">
-                <div class="hero-badge"><i class="fa-solid fa-terminal"></i> SYSTEM_ONLINE // v28.0</div>
-                <h1>Elite Cyber & Coding <br><span>Education Portal</span></h1>
+                <div class="hero-badge glass-badge-sm">
+                    <i class="fa-solid fa-terminal"></i> SECURE_GATEWAY // v28.0
+                </div>
+                <h1 class="glitch-text" data-text="Elite Cyber & Coding">
+                    Elite Cyber & Coding
+                    <span class="highlight-block">Education Portal</span>
+                </h1>
+                <p class="hero-desc">Apna naam daalkar secure login karein aur apne student dashboard tak pahunchein.</p>
+                
+                <!-- Animated Stats Counter -->
+                <div class="hero-stats-row">
+                    <div class="hero-stat glass-stat">
+                        <div class="stat-number" data-count="2500">0</div>
+                        <div class="stat-label">Students</div>
+                    </div>
+                    <div class="hero-stat glass-stat">
+                        <div class="stat-number" data-count="150">0</div>
+                        <div class="stat-label">Tests Live</div>
+                    </div>
+                    <div class="hero-stat glass-stat">
+                        <div class="stat-number" data-count="98">0</div>
+                        <div class="stat-label">% Uptime</div>
+                    </div>
+                </div>
             </div>
-            
+
             <div class="hero-right">
-                <!-- ULTRA PREMIUM GLASS CARD -->
-                <div class="login-card premium-glass-card">
-                    <div class="card-highlight"></div>
-                    <h2><i class="fa-solid fa-fingerprint"></i> Student Portal</h2>
-                    <p class="subtitle">Authenticate your identity to access the dashboard.</p>
-                    
-                    <form id="loginForm">
-                        <div class="input-group">
-                            <label for="usernameInput">Identity Name</label>
-                            <div class="input-with-icon glass-input">
-                                <i class="fa-solid fa-user"></i>
-                                <input type="text" id="usernameInput" placeholder="Enter your name" required autocomplete="off">
+                <!-- 3D GLASS LOGIN CARD -->
+                <div class="login-card glass-card-3d">
+                    <div class="card-shine"></div>
+                    <div class="card-border-glow"></div>
+                    <div class="card-inner">
+                        <div class="login-card-header">
+                            <div class="card-icon-circle">
+                                <i class="fa-solid fa-user-astronaut"></i>
                             </div>
+                            <h2>Student Portal</h2>
+                            <p class="subtitle">Enter your name & password to access profile.</p>
                         </div>
-                        <div class="input-group">
-                            <label for="passwordInput">Security Passkey</label>
-                            <div class="input-with-icon glass-input">
-                                <i class="fa-solid fa-key"></i>
-                                <input type="password" id="passwordInput" placeholder="Enter password" required autocomplete="off">
-                            </div>
-                        </div>
-                        <div id="errorMsg" class="error-msg">Incorrect password!</div>
                         
-                        <!-- SMART DARK GLOW BUTTON -->
-                        <button type="submit" class="login-btn smart-btn">
-                            <span>Authenticate & Login</span>
-                            <i class="fa-solid fa-arrow-right"></i>
-                        </button>
-                    </form>
-                    
-                    <div class="login-footer-text">
-                        <i class="fa-solid fa-shield-check"></i> End-to-End Encrypted Session
+                        <form id="loginForm">
+                            <div class="input-group">
+                                <label for="usernameInput">
+                                    <i class="fa-solid fa-user"></i> Your Name
+                                </label>
+                                <div class="input-wrapper glass-input">
+                                    <input type="text" id="usernameInput" placeholder="Enter your name" required autocomplete="off">
+                                    <div class="input-glow"></div>
+                                </div>
+                            </div>
+                            <div class="input-group">
+                                <label for="passwordInput">
+                                    <i class="fa-solid fa-key"></i> Password
+                                </label>
+                                <div class="input-wrapper glass-input">
+                                    <input type="password" id="passwordInput" placeholder="Enter password" required autocomplete="off">
+                                    <div class="input-glow"></div>
+                                    <button type="button" class="toggle-pass" onclick="togglePassword()">
+                                        <i class="fa-solid fa-eye" id="eyeIcon"></i>
+                                    </button>
+                                </div>
+                            </div>
+                            <div id="errorMsg" class="error-msg">
+                                <i class="fa-solid fa-triangle-exclamation"></i> Incorrect password!
+                            </div>
+
+                            <button type="submit" class="login-btn neon-btn">
+                                <span class="btn-content">
+                                    <span>Authenticate & Login</span>
+                                    <i class="fa-solid fa-bolt"></i>
+                                </span>
+                                <div class="btn-glow"></div>
+                                <div class="btn-particles"></div>
+                            </button>
+                        </form>
+
+                        <div class="login-footer-text">
+                            <div class="security-badge">
+                                <i class="fa-solid fa-shield-halved"></i>
+                                <span>Protected by AES-256 Encryption</span>
+                            </div>
+                        </div>
                     </div>
                 </div>
 
-                <!-- TAGS & BADGES (Clean & Professional) -->
-                <div class="stats-container">
+                <!-- FEATURES & TRUST BADGES -->
+                <div class="moved-stats-container">
                     <div class="features-tags">
-                        <div class="glass-tag"><i class="fa-solid fa-check"></i> Competitive Exams</div>
-                        <div class="glass-tag"><i class="fa-solid fa-check"></i> Board Exams</div>
-                        <div class="glass-tag"><i class="fa-solid fa-check"></i> Live Updates</div>
+                        <div class="tag glass-tag">
+                            <i class="fa-solid fa-check-circle"></i> Competitive Exams
+                        </div>
+                        <div class="tag glass-tag">
+                            <i class="fa-solid fa-check-circle"></i> Board Exams
+                        </div>
+                        <div class="tag glass-tag">
+                            <i class="fa-solid fa-check-circle"></i> Live Updates
+                        </div>
                     </div>
                     <div class="trust-badges">
-                        <div class="trust-item"><i class="fa-solid fa-users"></i> <strong>2K+</strong> Students</div>
-                        <div class="trust-item"><i class="fa-solid fa-star"></i> <strong>4.9</strong> Rating</div>
-                        <div class="trust-item"><i class="fa-solid fa-shield-halved"></i> <strong>100%</strong> Secure</div>
+                        <div class="trust-item glass-trust">
+                            <i class="fa-solid fa-users"></i>
+                            <strong>2K+</strong> Students
+                        </div>
+                        <div class="trust-item glass-trust">
+                            <i class="fa-solid fa-star"></i>
+                            <strong>4.9</strong> Rating
+                        </div>
+                        <div class="trust-item glass-trust">
+                            <i class="fa-solid fa-shield-halved"></i>
+                            <strong>100%</strong> Secure
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
-        <footer class="site-footer">
-            <p>© 2025 RJ Study Academy. Built with 💚 for Students.</p>
+
+        <footer class="site-footer glass-footer">
+            <p>© 2025 RJ Study Academy. All rights reserved. | Built with 💚 for Students</p>
         </footer>
     </div>
 
-    <!-- DASHBOARD VIEW -->
+    <!-- ===================== DASHBOARD VIEW ===================== -->
     <div id="dashboard-view" class="page-view">
-        <div class="dashboard-topbar glass-header">
+        <div class="dashboard-topbar glass-topbar">
             <div class="logo" onclick="goHome()">
-                <div class="logo-icon"><i class="fa-solid fa-shield-halved"></i></div>
-                RJ <span>Study Academy</span>
+                <div class="logo-icon pulse-ring">
+                    <i class="fa-solid fa-shield-halved"></i>
+                </div>
+                <span class="logo-text">RJ <span class="accent">Study Academy</span></span>
             </div>
             <div class="topbar-right">
-                <div class="topbar-greeting" id="greetingText">Good Morning</div>
+                <div class="topbar-greeting" id="greetingText">
+                    <i class="fa-solid fa-sun"></i> Good Morning
+                </div>
                 <div class="profile-menu-container">
-                    <div class="profile-circle" id="profileInitial" onclick="toggleProfileMenu(event)">A</div>
-                    <div class="profile-dropdown premium-glass-card" id="profileDropdown">
+                    <div class="profile-circle glow-avatar" id="profileInitial" onclick="toggleProfileMenu(event)">A</div>
+                    <div class="profile-dropdown glass-dropdown" id="profileDropdown">
                         <div class="dropdown-header">
                             <div class="dropdown-avatar" id="dropdownAvatar">A</div>
                             <div>
                                 <div class="dropdown-username" id="displayUsername">Student Name</div>
-                                <div class="dropdown-role"><i class="fa-solid fa-circle"></i> Active Student</div>
+                                <div class="dropdown-role"><span class="live-dot-sm"></span> Active Student</div>
+                            </div>
+                        </div>
+                        <div class="dropdown-divider"></div>
+                        <button class="dropdown-logout-btn" onclick="logout()">
+                            <i class="fa-solid fa-right-from-bracket"></i> Logout
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="dashboard-container">
+            <section class="dashboard-intro">
+                <div class="intro-kicker glass-kicker">
+                    <span class="status-dot"></span> STUDENT WORKSPACE
+                </div>
+                <h1 class="dash-title">Welcome to your <span class="gradient-text">learning hub</span></h1>
+                <p class="dash-subtitle">Choose a section below and continue your learning journey.</p>
+            </section>
+
+            <div class="dashboard-grid">
+                <div class="dash-card glass-dash-card" onclick="switchSubView('competitive-view')">
+                    <div class="card-glow-line"></div>
+                    <div class="dash-icon icon-trophy"><i class="fa-solid fa-trophy"></i></div>
+                    <h3>Competitive Exams</h3>
+                    <p>Access high-level practice tests, PYQs, mock tests for JEE, NEET, UPSC & Tech certifications.</p>
+                    <span class="dash-action-btn">Explore Section <i class="fa-solid fa-arrow-right"></i></span>
+                </div>
+
+                <div class="dash-card glass-dash-card" onclick="switchSubView('boards-view')">
+                    <div class="card-glow-line"></div>
+                    <div class="dash-icon icon-book"><i class="fa-solid fa-book-open"></i></div>
+                    <h3>Board Exams</h3>
+                    <p>Get chapter-wise notes, sample papers and revision modules for class 9th & 10th boards.</p>
+                    <span class="dash-action-btn">Explore Section <i class="fa-solid fa-arrow-right"></i></span>
+                </div>
+
+                <div class="dash-card glass-dash-card notification-card" onclick="switchSubView('notifications-view')">
+                    <div class="card-glow-line"></div>
+                    <div class="dash-icon icon-bell"><i class="fa-solid fa-bell"></i></div>
+                    <h3>Notifications And Updates</h3>
+                    <p>Stay updated with latest exam dates, scholarship announcements and academy notices.</p>
+                    <span class="dash-action-btn">View Updates <i class="fa-solid fa-arrow-right"></i></span>
+                </div>
+
+                <div class="dash-card glass-dash-card" onclick="switchSubView('subjects-view')">
+                    <div class="card-glow-line"></div>
+                    <div class="dash-icon icon-test"><i class="fa-solid fa-laptop-code"></i></div>
+                    <h3>Secure Online Test</h3>
+                    <p>Participate in scheduled live tests, view real-time results and track performance.</p>
+                    <span class="dash-action-btn">Start Test <i class="fa-solid fa-arrow-right"></i></span>
+                </div>
+
+                <div class="dash-card glass-dash-card" onclick="toggleChat()">
+                    <div class="card-glow-line"></div>
+                    <div class="dash-icon icon-chat"><i class="fa-solid fa-comments"></i></div>
+                    <h3>Discuss Doubts</h3>
+                    <p>Facing issues or have questions? Chat directly with Academy Admins.</p>
+                    <span class="dash-action-btn">Open Chat <i class="fa-solid fa-comment-dots"></i></span>
+                </div>
+            </div>
+        </div>
+
+        <footer class="site-footer glass-footer">
+            <p>© 2025 RJ Study Academy. All rights reserved. | Built with 💚 for Students</p>
+        </footer>
+    </div>
+
+    <!-- ===================== COMPETITIVE VIEW ===================== -->
+    <div id="competitive-view" class="page-view">
+        <div class="dashboard-topbar glass-topbar">
+            <div class="logo" onclick="goHome()">
+                <div class="logo-icon pulse-ring"><i class="fa-solid fa-shield-halved"></i></div>
+                <span class="logo-text">RJ <span class="accent">Study Academy</span></span>
+            </div>
+            <div class="topbar-right">
+                <div class="profile-menu-container">
+                    <div class="profile-circle glow-avatar" id="profileInitial2" onclick="toggleProfileMenu(event)">A</div>
+                    <div class="profile-dropdown glass-dropdown">
+                        <div class="dropdown-header">
+                            <div class="dropdown-avatar">A</div>
+                            <div>
+                                <div class="dropdown-username displayUsernameCopy">Student Name</div>
+                                <div class="dropdown-role"><span class="live-dot-sm"></span> Active Student</div>
                             </div>
                         </div>
                         <div class="dropdown-divider"></div>
@@ -117,88 +276,38 @@
             </div>
         </div>
         <div class="dashboard-container">
-            <section class="dashboard-intro">
-                <div class="intro-kicker"><span class="status-dot"></span> STUDENT WORKSPACE</div>
-                <h1>Welcome to your <span>learning hub</span></h1>
-                <p>Choose a section below and continue your learning journey.</p>
-            </section>
-            <div class="dashboard-grid">
-                <div class="dash-card premium-glass-card" onclick="switchSubView('competitive-view')">
-                    <div class="dash-icon"><i class="fa-solid fa-trophy"></i></div>
-                    <h3>Competitive Exams</h3>
-                    <p>Access high-level practice tests, PYQs, mock tests for JEE, NEET, UPSC & Tech certifications.</p>
-                    <span class="dash-action-btn">Explore Section <i class="fa-solid fa-arrow-right"></i></span>
-                </div>
-                <div class="dash-card premium-glass-card" onclick="switchSubView('boards-view')">
-                    <div class="dash-icon"><i class="fa-solid fa-book-open"></i></div>
-                    <h3>Board Exams</h3>
-                    <p>Get chapter-wise notes, sample papers and revision modules for class 9th & 10th boards.</p>
-                    <span class="dash-action-btn">Explore Section <i class="fa-solid fa-arrow-right"></i></span>
-                </div>
-                <div class="dash-card premium-glass-card notification-card" onclick="switchSubView('notifications-view')">
-                    <div class="dash-icon"><i class="fa-solid fa-bell"></i></div>
-                    <h3>Notifications & Updates</h3>
-                    <p>Stay updated with latest exam dates, scholarship announcements and academy notices.</p>
-                    <span class="dash-action-btn">View Updates <i class="fa-solid fa-arrow-right"></i></span>
-                </div>
-                <div class="dash-card premium-glass-card" onclick="switchSubView('subjects-view')">
-                    <div class="dash-icon"><i class="fa-solid fa-laptop-code"></i></div>
-                    <h3>Secure Online Test</h3>
-                    <p>Participate in scheduled live tests, view real-time results and track performance.</p>
-                    <span class="dash-action-btn">Start Test <i class="fa-solid fa-arrow-right"></i></span>
-                </div>
-                <div class="dash-card premium-glass-card" onclick="toggleChat()">
-                    <div class="dash-icon"><i class="fa-solid fa-comments"></i></div>
-                    <h3>Discuss Doubts</h3>
-                    <p>Facing issues or have questions? Chat directly with Academy Admins.</p>
-                    <span class="dash-action-btn">Open Chat <i class="fa-solid fa-comment-dots"></i></span>
-                </div>
-            </div>
-        </div>
-        <footer class="site-footer">
-            <p>© 2025 RJ Study Academy. Built with 💚 for Students.</p>
-        </footer>
-    </div>
-
-    <!-- COMPETITIVE VIEW -->
-    <div id="competitive-view" class="page-view">
-        <div class="dashboard-topbar glass-header">
-            <div class="logo" onclick="goHome()">
-                <div class="logo-icon"><i class="fa-solid fa-shield-halved"></i></div>
-                RJ <span>Study Academy</span>
-            </div>
-            <div class="topbar-right">
-                <div class="profile-menu-container">
-                    <div class="profile-circle" id="profileInitial2" onclick="toggleProfileMenu(event)">A</div>
-                </div>
-            </div>
-        </div>
-        <div class="dashboard-container">
-            <button class="back-btn glass-btn" onclick="goHome()"><i class="fa-solid fa-arrow-left"></i> Back to Dashboard</button>
+            <button class="back-btn glass-back-btn" onclick="goHome()">
+                <i class="fa-solid fa-arrow-left"></i> Back to Dashboard
+            </button>
             <div class="section-header">
-                <h2><i class="fa-solid fa-trophy"></i> Competitive Exams Batches</h2>
+                <div class="section-icon-wrap"><i class="fa-solid fa-trophy"></i></div>
+                <h2>Competitive Exams Batches</h2>
                 <p>Select your preferred coaching platform batch below.</p>
             </div>
             <div class="sub-grid">
-                <a href="https://www.learnxpw.site/study/batches" target="_blank" class="sub-card premium-glass-card">
+                <a href="https://www.learnxpw.site/study/batches" target="_blank" class="sub-card glass-sub-card">
+                    <div class="sub-card-shine"></div>
                     <div class="sub-card-icon"><i class="fa-solid fa-graduation-cap"></i></div>
                     <h4>PW Batches</h4>
                     <p>Physics Wallah live classes & study modules.</p>
                     <span class="sub-card-arrow"><i class="fa-solid fa-arrow-up-right-from-square"></i></span>
                 </a>
-                <a href="https://studybeepro.site/rwax/" target="_blank" class="sub-card premium-glass-card">
+                <a href="https://studybeepro.site/rwax/" target="_blank" class="sub-card glass-sub-card">
+                    <div class="sub-card-shine"></div>
                     <div class="sub-card-icon"><i class="fa-solid fa-book-bookmark"></i></div>
                     <h4>RWA Batches</h4>
                     <p>Rojgar with Ankit batches & practice sets.</p>
                     <span class="sub-card-arrow"><i class="fa-solid fa-arrow-up-right-from-square"></i></span>
                 </a>
-                <a href="https://studybeepro.site/vidyagram/content.html?id=41" target="_blank" class="sub-card premium-glass-card">
+                <a href="https://studybeepro.site/vidyagram/content.html?id=41" target="_blank" class="sub-card glass-sub-card">
+                    <div class="sub-card-shine"></div>
                     <div class="sub-card-icon"><i class="fa-solid fa-video"></i></div>
                     <h4>Vidyagram Batches</h4>
                     <p>Vidyagram elite exam prep materials.</p>
                     <span class="sub-card-arrow"><i class="fa-solid fa-arrow-up-right-from-square"></i></span>
                 </a>
-                <a href="https://gb.ayushindmods1.workers.dev/KGSNEW/" target="_blank" class="sub-card premium-glass-card">
+                <a href="https://gb.ayushindmods1.workers.dev/KGSNEW/" target="_blank" class="sub-card glass-sub-card">
+                    <div class="sub-card-shine"></div>
                     <div class="sub-card-icon"><i class="fa-solid fa-globe"></i></div>
                     <h4>KGS Batches</h4>
                     <p>Khan Global Studies batches & video lectures.</p>
@@ -206,50 +315,68 @@
                 </a>
             </div>
         </div>
-        <footer class="site-footer">
-            <p>© 2025 RJ Study Academy. Built with 💚 for Students.</p>
+        <footer class="site-footer glass-footer">
+            <p>© 2025 RJ Study Academy. All rights reserved. | Built with 💚 for Students</p>
         </footer>
     </div>
 
-    <!-- BOARDS VIEW -->
+    <!-- ===================== BOARDS VIEW ===================== -->
     <div id="boards-view" class="page-view">
-        <div class="dashboard-topbar glass-header">
+        <div class="dashboard-topbar glass-topbar">
             <div class="logo" onclick="goHome()">
-                <div class="logo-icon"><i class="fa-solid fa-shield-halved"></i></div>
-                RJ <span>Study Academy</span>
+                <div class="logo-icon pulse-ring"><i class="fa-solid fa-shield-halved"></i></div>
+                <span class="logo-text">RJ <span class="accent">Study Academy</span></span>
             </div>
             <div class="topbar-right">
                 <div class="profile-menu-container">
-                    <div class="profile-circle" id="profileInitial3" onclick="toggleProfileMenu(event)">A</div>
+                    <div class="profile-circle glow-avatar" id="profileInitial3" onclick="toggleProfileMenu(event)">A</div>
+                    <div class="profile-dropdown glass-dropdown">
+                        <div class="dropdown-header">
+                            <div class="dropdown-avatar">A</div>
+                            <div>
+                                <div class="dropdown-username displayUsernameCopy">Student Name</div>
+                                <div class="dropdown-role"><span class="live-dot-sm"></span> Active Student</div>
+                            </div>
+                        </div>
+                        <div class="dropdown-divider"></div>
+                        <button class="dropdown-logout-btn" onclick="logout()"><i class="fa-solid fa-right-from-bracket"></i> Logout</button>
+                    </div>
                 </div>
             </div>
         </div>
         <div class="dashboard-container">
-            <button class="back-btn glass-btn" onclick="goHome()"><i class="fa-solid fa-arrow-left"></i> Back to Dashboard</button>
+            <button class="back-btn glass-back-btn" onclick="goHome()">
+                <i class="fa-solid fa-arrow-left"></i> Back to Dashboard
+            </button>
             <div class="section-header">
-                <h2><i class="fa-solid fa-book-open"></i> Board Exams Batches & Servers</h2>
+                <div class="section-icon-wrap"><i class="fa-solid fa-book-open"></i></div>
+                <h2>Board Exams Batches & Servers</h2>
                 <p>Select your target class or servers below.</p>
             </div>
             <div class="sub-grid">
-                <a href="https://www.learnxpw.site/study/batches/69734ce1b0c696dcee5c35a9" target="_blank" class="sub-card premium-glass-card">
+                <a href="https://www.learnxpw.site/study/batches/69734ce1b0c696dcee5c35a9" target="_blank" class="sub-card glass-sub-card">
+                    <div class="sub-card-shine"></div>
                     <div class="sub-card-icon"><i class="fa-solid fa-9"></i></div>
                     <h4>Class 9th</h4>
                     <p>Class 9th lectures, notes & sample papers.</p>
                     <span class="sub-card-arrow"><i class="fa-solid fa-arrow-up-right-from-square"></i></span>
                 </a>
-                <a href="https://www.learnxpw.site/study/batches/69737cfccbe58ca6dbccb146" target="_blank" class="sub-card premium-glass-card">
+                <a href="https://www.learnxpw.site/study/batches/69737cfccbe58ca6dbccb146" target="_blank" class="sub-card glass-sub-card">
+                    <div class="sub-card-shine"></div>
                     <div class="sub-card-icon"><i class="fa-solid fa-1"></i></div>
                     <h4>Class 10th</h4>
                     <p>Class 10th board prep materials & PYQs.</p>
                     <span class="sub-card-arrow"><i class="fa-solid fa-arrow-up-right-from-square"></i></span>
                 </a>
-                <a href="https://vidcloud.eu.org/#BatchDetails/batch/69734ce1b0c696dcee5c35a9" target="_blank" class="sub-card premium-glass-card">
+                <a href="https://vidcloud.eu.org/#BatchDetails/batch/69734ce1b0c696dcee5c35a9" target="_blank" class="sub-card glass-sub-card">
+                    <div class="sub-card-shine"></div>
                     <div class="sub-card-icon"><i class="fa-solid fa-server"></i></div>
                     <h4>Class 9th Rj1</h4>
                     <p>Primary server for Class 9th.</p>
                     <span class="sub-card-arrow"><i class="fa-solid fa-arrow-up-right-from-square"></i></span>
                 </a>
-                <a href="https://vidcloud.eu.org/#BatchDetails/batch/69737cfccbe58ca6dbccb146" target="_blank" class="sub-card premium-glass-card">
+                <a href="https://vidcloud.eu.org/#BatchDetails/batch/69737cfccbe58ca6dbccb146" target="_blank" class="sub-card glass-sub-card">
+                    <div class="sub-card-shine"></div>
                     <div class="sub-card-icon"><i class="fa-solid fa-server"></i></div>
                     <h4>Class 10th Rj1</h4>
                     <p>Primary server for Class 10th.</p>
@@ -257,85 +384,118 @@
                 </a>
             </div>
         </div>
-        <footer class="site-footer">
-            <p>© 2025 RJ Study Academy. Built with 💚 for Students.</p>
+        <footer class="site-footer glass-footer">
+            <p>© 2025 RJ Study Academy. All rights reserved. | Built with 💚 for Students</p>
         </footer>
     </div>
 
-    <!-- NOTIFICATIONS VIEW -->
+    <!-- ===================== NOTIFICATIONS VIEW ===================== -->
     <div id="notifications-view" class="page-view">
-        <div class="dashboard-topbar glass-header">
+        <div class="dashboard-topbar glass-topbar">
             <div class="logo" onclick="goHome()">
-                <div class="logo-icon"><i class="fa-solid fa-shield-halved"></i></div>
-                RJ <span>Study Academy</span>
+                <div class="logo-icon pulse-ring"><i class="fa-solid fa-shield-halved"></i></div>
+                <span class="logo-text">RJ <span class="accent">Study Academy</span></span>
             </div>
             <div class="topbar-right">
                 <div class="profile-menu-container">
-                    <div class="profile-circle" id="profileInitial4" onclick="toggleProfileMenu(event)">A</div>
+                    <div class="profile-circle glow-avatar" id="profileInitial4" onclick="toggleProfileMenu(event)">A</div>
+                    <div class="profile-dropdown glass-dropdown">
+                        <div class="dropdown-header">
+                            <div class="dropdown-avatar">A</div>
+                            <div>
+                                <div class="dropdown-username displayUsernameCopy">Student Name</div>
+                                <div class="dropdown-role"><span class="live-dot-sm"></span> Active Student</div>
+                            </div>
+                        </div>
+                        <div class="dropdown-divider"></div>
+                        <button class="dropdown-logout-btn" onclick="logout()"><i class="fa-solid fa-right-from-bracket"></i> Logout</button>
+                    </div>
                 </div>
             </div>
         </div>
         <div class="dashboard-container">
-            <button class="back-btn glass-btn" onclick="goHome()"><i class="fa-solid fa-arrow-left"></i> Back to Dashboard</button>
+            <button class="back-btn glass-back-btn" onclick="goHome()">
+                <i class="fa-solid fa-arrow-left"></i> Back to Dashboard
+            </button>
             <div class="section-header">
-                <h2><i class="fa-solid fa-bell"></i> Notifications And Updates</h2>
+                <div class="section-icon-wrap"><i class="fa-solid fa-bell"></i></div>
+                <h2>Notifications And Updates</h2>
                 <p>Latest announcements and schedule updates.</p>
             </div>
             <div class="notification-list">
-                <div class="notification-item premium-glass-card">
-                    <div class="notif-icon"><i class="fa-solid fa-circle-info"></i></div>
+                <div class="notification-item glass-notif">
+                    <div class="notif-icon pulse-notif"><i class="fa-solid fa-circle-info"></i></div>
                     <div class="notif-content">
                         <h4>Multi-Subject Test Engine Live</h4>
                         <p>English, Hindi, Math & Science secure tests are now available.</p>
                         <span class="notif-time"><i class="fa-regular fa-clock"></i> Updated: Today</span>
                     </div>
+                    <div class="notif-badge">NEW</div>
                 </div>
             </div>
         </div>
-        <footer class="site-footer">
-            <p>© 2025 RJ Study Academy. Built with 💚 for Students.</p>
+        <footer class="site-footer glass-footer">
+            <p>© 2025 RJ Study Academy. All rights reserved. | Built with 💚 for Students</p>
         </footer>
     </div>
 
-    <!-- SUBJECTS VIEW -->
+    <!-- ===================== SUBJECTS VIEW ===================== -->
     <div id="subjects-view" class="page-view">
-        <div class="dashboard-topbar glass-header">
+        <div class="dashboard-topbar glass-topbar">
             <div class="logo" onclick="goHome()">
-                <div class="logo-icon"><i class="fa-solid fa-shield-halved"></i></div>
-                RJ <span>Study Academy</span>
+                <div class="logo-icon pulse-ring"><i class="fa-solid fa-shield-halved"></i></div>
+                <span class="logo-text">RJ <span class="accent">Study Academy</span></span>
             </div>
             <div class="topbar-right">
                 <div class="profile-menu-container">
-                    <div class="profile-circle" id="profileInitial5" onclick="toggleProfileMenu(event)">A</div>
+                    <div class="profile-circle glow-avatar" id="profileInitial5" onclick="toggleProfileMenu(event)">A</div>
+                    <div class="profile-dropdown glass-dropdown">
+                        <div class="dropdown-header">
+                            <div class="dropdown-avatar">A</div>
+                            <div>
+                                <div class="dropdown-username displayUsernameCopy">Student Name</div>
+                                <div class="dropdown-role"><span class="live-dot-sm"></span> Active Student</div>
+                            </div>
+                        </div>
+                        <div class="dropdown-divider"></div>
+                        <button class="dropdown-logout-btn" onclick="logout()"><i class="fa-solid fa-right-from-bracket"></i> Logout</button>
+                    </div>
                 </div>
             </div>
         </div>
         <div class="dashboard-container">
-            <button class="back-btn glass-btn" onclick="goHome()"><i class="fa-solid fa-arrow-left"></i> Back to Dashboard</button>
+            <button class="back-btn glass-back-btn" onclick="goHome()">
+                <i class="fa-solid fa-arrow-left"></i> Back to Dashboard
+            </button>
             <div class="section-header">
-                <h2><i class="fa-solid fa-laptop-code"></i> Select Subject</h2>
+                <div class="section-icon-wrap"><i class="fa-solid fa-laptop-code"></i></div>
+                <h2>Select Subject</h2>
                 <p>Choose a subject below to start your secure live test.</p>
             </div>
             <div class="subject-grid">
-                <div class="subject-card premium-glass-card" onclick="launchTest('english')">
+                <div class="subject-card glass-subject" onclick="launchTest('english')">
+                    <div class="subject-glow glow-blue"></div>
                     <div class="subject-icon">📘</div>
                     <h3>English</h3>
                     <p class="subject-desc">Grammar & Vocabulary</p>
                     <div class="subject-start-btn">Start Test <i class="fa-solid fa-play"></i></div>
                 </div>
-                <div class="subject-card premium-glass-card" onclick="launchTest('hindi')">
+                <div class="subject-card glass-subject" onclick="launchTest('hindi')">
+                    <div class="subject-glow glow-orange"></div>
                     <div class="subject-icon">📙</div>
                     <h3>Hindi</h3>
                     <p class="subject-desc">Sahitya & Vyakaran</p>
                     <div class="subject-start-btn">Start Test <i class="fa-solid fa-play"></i></div>
                 </div>
-                <div class="subject-card premium-glass-card" onclick="launchTest('math')">
+                <div class="subject-card glass-subject" onclick="launchTest('math')">
+                    <div class="subject-glow glow-purple"></div>
                     <div class="subject-icon">📐</div>
                     <h3>Mathematics</h3>
                     <p class="subject-desc">Formulas & Reasoning</p>
                     <div class="subject-start-btn">Start Test <i class="fa-solid fa-play"></i></div>
                 </div>
-                <div class="subject-card premium-glass-card" onclick="launchTest('science')">
+                <div class="subject-card glass-subject" onclick="launchTest('science')">
+                    <div class="subject-glow glow-green"></div>
                     <div class="subject-icon">🔬</div>
                     <h3>Science</h3>
                     <p class="subject-desc">Physics, Chem & Bio</p>
@@ -343,24 +503,31 @@
                 </div>
             </div>
         </div>
-        <footer class="site-footer">
-            <p>© 2025 RJ Study Academy. Built with 💚 for Students.</p>
+        <footer class="site-footer glass-footer">
+            <p>© 2025 RJ Study Academy. All rights reserved. | Built with 💚 for Students</p>
         </footer>
     </div>
 
-    <!-- CHAT OVERLAY -->
-    <div class="chat-overlay premium-glass-card" id="chatOverlay">
+    <!-- ===================== CHAT OVERLAY ===================== -->
+    <div class="chat-overlay glass-chat" id="chatOverlay">
         <div class="chat-header">
             <div class="chat-heading">
                 <span class="chat-heading-icon"><i class="fa-solid fa-headset"></i></span>
-                <span><strong>Admin Support</strong><small id="chatStatus"></small></span>
+                <span>
+                    <strong>Admin Support</strong>
+                    <small id="chatStatus"></small>
+                </span>
             </div>
-            <button class="chat-close" type="button" onclick="toggleChat()"><i class="fa-solid fa-xmark"></i></button>
+            <button class="chat-close" type="button" onclick="toggleChat()">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
         </div>
         <div class="chat-body" id="chatBody"></div>
         <div class="chat-input-area">
             <input type="text" id="chatInput" placeholder="Type your doubt..." onkeypress="if(event.key==='Enter') sendChatMessage()">
-            <button type="button" onclick="sendChatMessage()"><i class="fa-solid fa-paper-plane"></i></button>
+            <button type="button" onclick="sendChatMessage()">
+                <i class="fa-solid fa-paper-plane"></i>
+            </button>
         </div>
     </div>
 
