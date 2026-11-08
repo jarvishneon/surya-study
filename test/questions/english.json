@@ -2,121 +2,13 @@
   {
     "id": "p1",
     "type": "text",
-    "question": "Translate to English: 'राम हर सुबह जल्दी उठता है।' (Type without full stop)",
-    "answer": "ram gets up early every morning"
+    "question": "Translate the following paragraph to English:\n\nराम हर सुबह जल्दी उठता है। उसकी माँ रसोई में खाना बनाती है। अभी वह चाय पी रहा है। राम मांस नहीं खाता है। उसके पिता अखबार नहीं पढ़ रहे हैं। क्या राम रोज़ स्कूल जाता है? हाँ, वह बस से स्कूल जाता है। अभी वह अपना बस्ता नहीं उठा रहा है। उसका भाई कहाँ रहता है? वह दिल्ली में रहता है और अभी फोन पर बात कर रहा है।",
+    "answer": "ram gets up early every morning. his mother cooks food in the kitchen. he is drinking tea right now. ram does not eat meat. his father is not reading the newspaper. does ram go to school daily? yes, he goes to school by bus. he is not picking up his bag right now. where does his brother live? he lives in delhi and is talking on the phone right now."
   },
   {
     "id": "p2",
     "type": "text",
-    "question": "Translate to English: 'उसकी माँ रसोई में खाना बनाती है।' (Type without full stop)",
-    "answer": "his mother cooks food in the kitchen"
-  },
-  {
-    "id": "p3",
-    "type": "text",
-    "question": "Translate to English: 'अभी वह चाय पी रहा है।' (Type without full stop)",
-    "answer": "he is drinking tea right now"
-  },
-  {
-    "id": "p4",
-    "type": "text",
-    "question": "Translate to English: 'राम मांस नहीं खाता है।' (Type without full stop)",
-    "answer": "ram does not eat meat"
-  },
-  {
-    "id": "p5",
-    "type": "text",
-    "question": "Translate to English: 'उसके पिता अखबार नहीं पढ़ रहे हैं।' (Type without full stop)",
-    "answer": "his father is not reading the newspaper"
-  },
-  {
-    "id": "p6",
-    "type": "text",
-    "question": "Translate to English: 'क्या राम रोज़ स्कूल जाता है?' (Type with question mark ?)",
-    "answer": "does ram go to school daily?"
-  },
-  {
-    "id": "p7",
-    "type": "text",
-    "question": "Translate to English: 'वह बस से स्कूल जाता है।' (Type without full stop)",
-    "answer": "he goes to school by bus"
-  },
-  {
-    "id": "p8",
-    "type": "text",
-    "question": "Translate to English: 'अभी वह अपना बस्ता नहीं उठा रहा है।' (Type without full stop)",
-    "answer": "he is not picking up his bag right now"
-  },
-  {
-    "id": "p9",
-    "type": "text",
-    "question": "Translate to English: 'उसका भाई कहाँ रहता है?' (Type with question mark ?)",
-    "answer": "where does his brother live?"
-  },
-  {
-    "id": "p10",
-    "type": "text",
-    "question": "Translate to English: 'वह दिल्ली में रहता है।' (Type without full stop)",
-    "answer": "he lives in delhi"
-  },
-  {
-    "id": "p11",
-    "type": "text",
-    "question": "Translate to English: 'दुकानदार हर दिन ताज़ी सब्जियाँ बेचता है।' (Type without full stop)",
-    "answer": "the shopkeeper sells fresh vegetables every day"
-  },
-  {
-    "id": "p12",
-    "type": "text",
-    "question": "Translate to English: 'माली बगीचे में फूल लगाता है।' (Type without full stop)",
-    "answer": "the gardener plants flowers in the garden"
-  },
-  {
-    "id": "p13",
-    "type": "text",
-    "question": "Translate to English: 'अभी दुकानदार सब्जियाँ नहीं बेच रहा है।' (Type without full stop)",
-    "answer": "the shopkeeper is not selling vegetables right now"
-  },
-  {
-    "id": "p14",
-    "type": "text",
-    "question": "Translate to English: 'क्या माली अभी पेड़ काट रहा है?' (Type with question mark ?)",
-    "answer": "is the gardener cutting the tree right now?"
-  },
-  {
-    "id": "p15",
-    "type": "text",
-    "question": "Translate to English: 'वह अभी फूलों को पानी दे रहा है।' (Type without full stop)",
-    "answer": "he is watering the flowers right now"
-  },
-  {
-    "id": "p16",
-    "type": "text",
-    "question": "Translate to English: 'दर्जी कपड़े सिलता है।' (Type without full stop)",
-    "answer": "the tailor stitches clothes"
-  },
-  {
-    "id": "p17",
-    "type": "text",
-    "question": "Translate to English: 'तुम बाज़ार क्यों जाते हो?' (Type with question mark ?)",
-    "answer": "why do you go to the market?"
-  },
-  {
-    "id": "p18",
-    "type": "text",
-    "question": "Translate to English: 'मैं अभी बाज़ार नहीं जा रहा हूँ।' (Type without full stop)",
-    "answer": "i am not going to the market right now"
-  },
-  {
-    "id": "p19",
-    "type": "text",
-    "question": "Translate to English: 'क्या तुम रोज़ दूध खरीदते हो?' (Type with question mark ?)",
-    "answer": "do you buy milk daily?"
-  },
-  {
-    "id": "p20",
-    "type": "text",
-    "question": "Translate to English: 'मैं अभी सब्ज़ी चुन रहा हूँ।' (Type without full stop)",
-    "answer": "i am choosing vegetables right now"
+    "question": "Translate the following paragraph to English:\n\nदुकानदार हर दिन ताज़ी सब्जियाँ बेचता है। माली बगीचे में फूल लगाता है। अभी दुकानदार सब्जियाँ नहीं बेच रहा है। क्या माली अभी पेड़ काट रहा है? नहीं, वह अभी फूलों को पानी दे रहा है। दर्जी कपड़े सिलता है लेकिन आज वह आराम कर रहा है। तुम बाज़ार क्यों जाते हो? मैं अभी बाज़ार नहीं जा रहा हूँ। क्या तुम रोज़ दूध खरीदते हो? हाँ, मैं दूध खरीदता हूँ और अभी मैं सब्ज़ी चुन रहा हूँ।",
+    "answer": "the shopkeeper sells fresh vegetables every day. the gardener plants flowers in the garden. the shopkeeper is not selling vegetables right now. is the gardener cutting the tree right now? no, he is watering the flowers right now. the tailor stitches clothes but today he is resting. why do you go to the market? i am not going to the market right now. do you buy milk daily? yes, i buy milk and i am choosing vegetables right now."
   }
 ]
