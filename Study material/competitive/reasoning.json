@@ -1,0 +1,102 @@
+[
+  {
+    "title": "Question 1",
+    "question": "Find the next number: 2, 6, 12, 20, 30, __.",
+    "answer": "42 (differences: 4, 6, 8, 10, 12)"
+  },
+  {
+    "title": "Question 2",
+    "question": "Find the odd one out: 8, 27, 64, 100, 125.",
+    "answer": "100 (the others are perfect cubes)"
+  },
+  {
+    "title": "Question 3",
+    "question": "If CAT is coded as DBU, how is DOG coded?",
+    "answer": "EPH (each letter moves one step forward)"
+  },
+  {
+    "title": "Question 4",
+    "question": "A is the brother of B. B is the sister of C. How is A related to C?",
+    "answer": "Brother"
+  },
+  {
+    "title": "Question 5",
+    "question": "Find the next letter: A, C, F, J, O, __.",
+    "answer": "U (+2, +3, +4, +5, +6)"
+  },
+  {
+    "title": "Question 6",
+    "question": "If 5 workers complete a job in 12 days, how many days will 10 equally efficient workers take?",
+    "answer": "6 days"
+  },
+  {
+    "title": "Question 7",
+    "question": "Arrange in dictionary order: Apple, Apply, Apt, Ape.",
+    "answer": "Ape, Apple, Apply, Apt"
+  },
+  {
+    "title": "Question 8",
+    "question": "A person faces north, turns right, then right again. Which direction is he facing?",
+    "answer": "South"
+  },
+  {
+    "title": "Question 9",
+    "question": "Complete the analogy: Book : Read :: Food : __.",
+    "answer": "Eat"
+  },
+  {
+    "title": "Question 10",
+    "question": "If yesterday was Monday, what day will it be the day after tomorrow?",
+    "answer": "Thursday"
+  },
+  {
+    "title": "Question 11",
+    "question": "Find the missing number: 3, 9, 27, 81, __.",
+    "answer": "243"
+  },
+  {
+    "title": "Question 12",
+    "question": "If 12 is 25% of a number, find the number.",
+    "answer": "48"
+  },
+  {
+    "title": "Question 13",
+    "question": "Which is different: January, March, May, June?",
+    "answer": "June (30 days; the others have 31)"
+  },
+  {
+    "title": "Question 14",
+    "question": "If all roses are flowers and some flowers fade quickly, can we conclude that some roses fade quickly?",
+    "answer": "No, the conclusion does not necessarily follow."
+  },
+  {
+    "title": "Question 15",
+    "question": "Find the angle between the hands of a clock at 3:00.",
+    "answer": "90°"
+  },
+  {
+    "title": "Question 16",
+    "question": "A is taller than B, and B is taller than C. Who is the shortest?",
+    "answer": "C"
+  },
+  {
+    "title": "Question 17",
+    "question": "If SOUTH is written as TPVUI, how is NORTH written in the same code?",
+    "answer": "OPSUI"
+  },
+  {
+    "title": "Question 18",
+    "question": "Complete the series: 1, 4, 9, 16, 25, __.",
+    "answer": "36"
+  },
+  {
+    "title": "Question 19",
+    "question": "A is 5th from the left and 8th from the right in a row. How many people are there?",
+    "answer": "12"
+  },
+  {
+    "title": "Question 20",
+    "question": "If 4 pencils cost ₹20, what is the cost of 7 pencils at the same rate?",
+    "answer": "₹35"
+  }
+]
