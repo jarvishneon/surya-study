@@ -1081,3 +1081,143 @@ body {
 #study-pdf-reader-view .pdf-book .stf__item {
     touch-action: none !important;
 }
+
+/* ===== PDF SCROLL READER: native vertical reading + selectable text ===== */
+#study-pdf-reader-view {
+    min-height: 100dvh !important;
+    height: auto !important;
+    overflow: visible !important;
+}
+#study-pdf-reader-view .pdf-reader-container {
+    width: 100%;
+    max-width: 1200px;
+    height: calc(100dvh - 88px);
+    min-height: 420px;
+    margin: 0 auto;
+    display: flex;
+    flex-direction: column;
+}
+.pdf-toolbar {
+    flex: 0 0 auto;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 9px;
+    min-height: 42px;
+    padding: 4px 8px;
+    color: var(--text-primary);
+}
+.pdf-toolbar button {
+    min-width: 36px;
+    height: 34px;
+    padding: 0 10px;
+    border: 1px solid rgba(100, 190, 220, .3);
+    border-radius: 8px;
+    color: #eaf6ff;
+    background: rgba(18, 43, 66, .88);
+    cursor: pointer;
+}
+.pdf-toolbar button:active { transform: scale(.96); }
+#studyPdfZoomLabel { min-width: 48px; text-align: center; font-size: 12px; font-weight: 800; }
+.pdf-copy-hint { margin-left: 8px; color: var(--text-secondary, #9fb3c8); font-size: 11px; }
+.pdf-scroll-stage {
+    display: block !important;
+    flex: 1 1 auto;
+    min-height: 0;
+    width: 100%;
+    overflow: auto !important;
+    padding: 14px 10px 32px !important;
+    border-radius: 12px;
+    perspective: none !important;
+    overscroll-behavior: contain;
+    -webkit-overflow-scrolling: touch;
+    touch-action: pan-x pan-y !important; /* Native vertical scroll; JS handles pinch zoom. */
+    background: rgba(8, 16, 34, .92) !important;
+}
+.pdf-scroll-document {
+    width: max-content;
+    min-width: 100%;
+    margin: 0 auto;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 14px;
+}
+.pdf-scroll-page {
+    position: relative;
+    flex: 0 0 auto;
+    overflow: hidden;
+    background: #fff;
+    border-radius: 0;
+    box-shadow: none;
+    isolation: isolate;
+}
+.pdf-scroll-canvas {
+    position: absolute;
+    inset: 0;
+    display: block;
+    max-width: none;
+    background: #fff;
+}
+.pdf-scroll-page .textLayer {
+    position: absolute;
+    inset: 0;
+    overflow: hidden;
+    line-height: 1;
+    opacity: 1;
+    z-index: 2;
+    text-align: initial;
+    transform-origin: 0 0;
+    -webkit-text-size-adjust: none;
+    text-size-adjust: none;
+    forced-color-adjust: none;
+    user-select: text !important;
+    -webkit-user-select: text !important;
+    cursor: text;
+}
+.pdf-scroll-page .textLayer span,
+.pdf-scroll-page .textLayer br {
+    position: absolute;
+    color: transparent;
+    white-space: pre;
+    transform-origin: 0 0;
+    cursor: text;
+}
+.pdf-scroll-page .textLayer ::selection { background: rgba(65, 145, 255, .35); }
+.pdf-book-loading { position: sticky; top: 0; min-height: 100%; }
+@media (max-width: 600px) {
+    #study-pdf-reader-view .pdf-reader-container {
+        height: calc(100dvh - 76px);
+        min-height: 360px;
+        padding: 6px 7px 8px;
+    }
+    .pdf-toolbar { gap: 6px; min-height: 40px; }
+    .pdf-toolbar button { min-width: 32px; height: 32px; padding: 0 8px; }
+    .pdf-copy-hint { font-size: 10px; margin-left: 2px; }
+    .pdf-scroll-stage { padding: 10px 5px 24px !important; }
+    .pdf-scroll-document { gap: 10px; }
+}
+
+
+/* Flat document presentation: no ebook paper texture, page shadow, or zoom buttons. */
+#study-pdf-reader-view .pdf-scroll-stage {
+    border: 0 !important;
+    border-radius: 0 !important;
+    box-shadow: none !important;
+    background: #343a40 !important;
+}
+#study-pdf-reader-view .pdf-scroll-page {
+    border: 0 !important;
+    border-radius: 0 !important;
+    box-shadow: none !important;
+    background: #fff !important;
+}
+#study-pdf-reader-view .pdf-scroll-canvas {
+    background: #fff !important;
+    opacity: 1 !important;
+    filter: none !important;
+}
+#study-pdf-reader-view .pdf-toolbar {
+    min-height: 26px;
+    padding: 0 4px;
+}

@@ -657,11 +657,13 @@
                 <button class="back-btn glass-back-btn" onclick="backFromStudyPdf()"><i class="fa-solid fa-arrow-left"></i> Back to Subjects</button>
                 <span class="pdf-reader-book-title" id="studyPdfTitle">Study PDF</span>
             </div>
-            <div class="pdf-book-stage" id="studyPdfBookStage">
+            <div class="pdf-toolbar" aria-label="PDF reading information">
+                <span class="pdf-copy-hint"><i class="fa-regular fa-copy"></i> Text select karke copy karein · Pinch to zoom</span>
+            </div>
+            <div class="pdf-book-stage pdf-scroll-stage" id="studyPdfBookStage">
                 <div class="pdf-book-loading" id="studyPdfLoading"><i class="fa-solid fa-spinner fa-spin"></i><span>Opening your book...</span></div>
-                <div class="pdf-book" id="studyPdfBook" aria-label="PDF book. Tap the right half or swipe right-to-left for next page; tap the left half or swipe left-to-right for previous page."></div>
+                <div class="pdf-scroll-document" id="studyPdfBook" aria-label="Scrollable PDF document"></div>
                 <div id="studyPdfError" class="pdf-error" hidden></div>
-                <div class="pdf-book-hint" id="studyPdfBookHint">Tap the right or left side, or swipe, to turn the page</div>
             </div>
         </div>
     </div>
@@ -690,7 +692,6 @@
     </div>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
-    <script src="https://cdn.jsdelivr.net/npm/page-flip@2.0.7/dist/js/page-flip.browser.min.js" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
     <script src="script.js"></script>
 </body>
 </html>

@@ -201,24 +201,18 @@ async function openStudyMaterial(folder, fileName, subjectTitle) {
     }
 }
 
-/* -------------- STUDY PDF BOOK READER (PDF.js + realistic page flip) -------------- */
+/* -------------- STUDY PDF SCROLL READER (PDF.js) -------------- */
 var currentStudyPdfParentView = "study-pdf-competitive-view";
 var studyPdfDocument = null;
 var studyPdfLoadToken = 0;
-var studyPdfBookInstance = null;
-var studyPdfRenderedPages = {};
-var studyPdfRenderingPages = {};
-var studyPdfRenderTasks = {};
 var studyPdfLoadingTask = null;
-var studyPdfCurrentPage = 1;
-var studyPdfTapStart = null;
 var studyPdfZoom = 1;
-var studyPdfPointers = {};
-var studyPdfPinchStart = null;
-var studyPdfZoomPan = { x: 0, y: 0 };
-var studyPdfPanPointer = null;
-var studyPdfGesturePointers = {};
-var studyPdfPinchGesture = null;
+var studyPdfPageInfo = [];
+var studyPdfObserver = null;
+var studyPdfActiveRenders = {};
+var studyPdfTouchStartDistance = 0;
+var studyPdfTouchStartZoom = 1;
+var studyPdfTouchPreviewZoom = 1;
 
 function openStudyPdf(pdfPath, title) {
     var titleEl = document.getElementById("studyPdfTitle");
@@ -226,362 +220,246 @@ function openStudyPdf(pdfPath, title) {
     var loadingEl = document.getElementById("studyPdfLoading");
     var errorEl = document.getElementById("studyPdfError");
     if (!titleEl || !bookEl || !loadingEl || !errorEl) return;
-
     var activeView = document.querySelector(".page-view.active");
     if (activeView && activeView.id !== "study-pdf-reader-view") currentStudyPdfParentView = activeView.id;
-
     var token = ++studyPdfLoadToken;
     cleanupStudyPdfResources();
-    resetStudyPdfZoom();
-    studyPdfCurrentPage = 1;
+    studyPdfZoom = 1;
+    updateStudyPdfZoomLabel();
     titleEl.textContent = title || "Study PDF";
     bookEl.innerHTML = "";
     errorEl.hidden = true;
     errorEl.textContent = "";
     loadingEl.hidden = false;
     switchSubView("study-pdf-reader-view");
-
     if (!window.pdfjsLib) {
         showStudyPdfError("PDF reading library could not be loaded. Please check your internet connection and refresh the page.");
+        loadingEl.hidden = true;
         return;
     }
     window.pdfjsLib.GlobalWorkerOptions.workerSrc = "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js";
-    var cleanPath = String(pdfPath || "").split("#")[0];
-    var task = window.pdfjsLib.getDocument({ url: cleanPath, withCredentials: false });
+    var task = window.pdfjsLib.getDocument({ url: String(pdfPath || "").split("#")[0], withCredentials: false });
     studyPdfLoadingTask = task;
     task.promise.then(function (pdf) {
         if (token !== studyPdfLoadToken) { try { pdf.destroy(); } catch (e) {} return; }
         studyPdfLoadingTask = null;
         studyPdfDocument = pdf;
-        buildStudyPdfBook(pdf, token);
+        buildStudyPdfScrollDocument(pdf, token);
     }).catch(function (error) {
         if (token !== studyPdfLoadToken) return;
         studyPdfLoadingTask = null;
         loadingEl.hidden = true;
-        var message = error && error.name === "InvalidPDFException" ? "This file is not a valid PDF." : "PDF could not be loaded. Check the GitHub folder path, file name, and whether the PDF is uploaded.";
-        showStudyPdfError(message);
+        showStudyPdfError(error && error.name === "InvalidPDFException" ? "This file is not a valid PDF." : "PDF could not be loaded. Check the GitHub folder path, file name, and whether the PDF is uploaded.");
         console.error("Study PDF load error:", error);
     });
 }
 
-function buildStudyPdfBook(pdf, token) {
-    var bookEl = document.getElementById("studyPdfBook");
+function buildStudyPdfScrollDocument(pdf, token) {
+    var container = document.getElementById("studyPdfBook");
     var stage = document.getElementById("studyPdfBookStage");
-    var loadingEl = document.getElementById("studyPdfLoading");
-    if (!bookEl || !stage || !window.St || !window.St.PageFlip) {
-        loadingEl.hidden = true;
-        showStudyPdfError("Book page-turn effect could not be loaded. Please refresh with an internet connection.");
-        return;
-    }
-
-    var stageWidth = Math.max(280, stage.clientWidth || window.innerWidth);
-    var stageHeight = Math.max(360, stage.clientHeight || window.innerHeight - 150);
-    var pageWidth = Math.min(620, Math.max(280, stageWidth));
-    var pageHeight = Math.min(1100, stageHeight);
-    var pages = document.createDocumentFragment();
+    var loading = document.getElementById("studyPdfLoading");
+    if (!container || !stage) return;
+    container.innerHTML = "";
+    studyPdfPageInfo = [];
+    var availableWidth = Math.max(280, stage.clientWidth - 28);
+    var fragment = document.createDocumentFragment();
+    var promises = [];
     for (var i = 1; i <= pdf.numPages; i++) {
-        var page = document.createElement("div");
-        page.className = "pdf-book-page";
-        page.setAttribute("data-density", i === 1 ? "hard" : "soft");
-        page.setAttribute("data-page-number", String(i));
-        var canvas = document.createElement("canvas");
-        canvas.className = "pdf-book-canvas";
-        canvas.setAttribute("aria-label", "PDF page " + i);
-        page.appendChild(canvas);
-        pages.appendChild(page);
+        (function(pageNumber) {
+            promises.push(pdf.getPage(pageNumber).then(function(page) {
+                if (token !== studyPdfLoadToken) { page.cleanup(); return; }
+                var base = page.getViewport({ scale: 1 });
+                var fitScale = availableWidth / base.width;
+                var info = { number: pageNumber, width: base.width, height: base.height, fitScale: fitScale, page: page };
+                studyPdfPageInfo[pageNumber] = info;
+                var wrapper = document.createElement("section");
+                wrapper.className = "pdf-scroll-page";
+                wrapper.dataset.pageNumber = String(pageNumber);
+                wrapper.style.width = Math.round(base.width * fitScale) + "px";
+                wrapper.style.height = Math.round(base.height * fitScale) + "px";
+                var canvas = document.createElement("canvas");
+                canvas.className = "pdf-scroll-canvas";
+                canvas.setAttribute("aria-label", "PDF page " + pageNumber);
+                var textLayer = document.createElement("div");
+                textLayer.className = "textLayer";
+                wrapper.appendChild(canvas);
+                wrapper.appendChild(textLayer);
+                fragment.appendChild(wrapper);
+            }));
+        })(i);
     }
-    bookEl.appendChild(pages);
-
-    try {
-        studyPdfBookInstance = new window.St.PageFlip(bookEl, {
-            width: pageWidth,
-            height: pageHeight,
-            size: "stretch",
-            minWidth: 280,
-            maxWidth: 900,
-            minHeight: 360,
-            maxHeight: 1400,
-            maxShadowOpacity: 0.75,
-            showCover: true,
-            mobileScrollSupport: true,
-            usePortrait: true,
-            startPage: 0,
-            drawShadow: true,
-            flippingTime: 720,
-            swipeDistance: 78,
-            clickEventForward: false,
-            useMouseEvents: true,
-            autoSize: true,
-            showPageCorners: true,
-            useCSS: true
-        });
-        studyPdfBookInstance.loadFromHTML(bookEl.querySelectorAll(".pdf-book-page"));
-        studyPdfBookInstance.on("flip", function (event) {
-            if (token !== studyPdfLoadToken) return;
-            studyPdfCurrentPage = Number(event.data) + 1;
-            renderStudyPdfNeighborhood(studyPdfCurrentPage, token);
-        });
-        studyPdfBookInstance.on("init", function () {
-            if (token !== studyPdfLoadToken) return;
-            renderStudyPdfNeighborhood(1, token);
-        });
-        bindStudyPdfTapNavigation(stage, token);
-        bindStudyPdfZoom(stage, token);
-        bindStudyPdfKeyboardNavigation();
-        loadingEl.hidden = true;
-        renderStudyPdfNeighborhood(1, token);
-        var hint = document.getElementById("studyPdfBookHint");
-        if (hint) { hint.classList.add("visible"); window.setTimeout(function () { hint.classList.remove("visible"); }, 4200); }
-    } catch (error) {
-        loadingEl.hidden = true;
-        showStudyPdfError("The book reader could not start. Please refresh the page and try again.");
-        console.error("Study PDF book init error:", error);
-    }
-}
-
-function renderStudyPdfNeighborhood(centerPage, token) {
-    if (!studyPdfDocument) return;
-    var total = studyPdfDocument.numPages;
-    [centerPage - 1, centerPage, centerPage + 1, centerPage + 2].forEach(function (pageNumber) {
-        if (pageNumber >= 1 && pageNumber <= total) renderStudyPdfBookPage(pageNumber, token);
+    Promise.all(promises).then(function() {
+        if (token !== studyPdfLoadToken) return;
+        container.appendChild(fragment);
+        loading.hidden = true;
+        setupStudyPdfPageObserver(token);
+        bindStudyPdfScrollZoom(stage, token);
+        // Render the first page immediately; remaining pages render as they enter view.
+        renderStudyPdfScrollPage(1, token);
+    }).catch(function(error) {
+        if (token !== studyPdfLoadToken) return;
+        loading.hidden = true;
+        showStudyPdfError("PDF pages could not be prepared. Please reload and try again.");
+        console.error("PDF page setup error:", error);
     });
 }
 
-function renderStudyPdfBookPage(pageNumber, token) {
-    if (!studyPdfDocument || studyPdfRenderedPages[pageNumber] || studyPdfRenderingPages[pageNumber]) return;
-    var pageElement = document.querySelector('.pdf-book-page[data-page-number="' + pageNumber + '"]');
-    var canvas = pageElement && pageElement.querySelector("canvas");
-    if (!canvas) return;
-    studyPdfRenderingPages[pageNumber] = true;
-    var pageRef = null;
-    studyPdfDocument.getPage(pageNumber).then(function (pdfPage) {
-        pageRef = pdfPage;
-        if (token !== studyPdfLoadToken || !canvas.isConnected) {
-            try { pdfPage.cleanup(); } catch (e) {}
-            return;
-        }
-        // Render against the actual PageFlip page box, not the whole reader stage.
-        // A higher backing-store resolution keeps small text sharp on high-DPI phones.
-        var pageBox = pageElement.getBoundingClientRect();
-        var cssWidth = Math.max(1, pageBox.width || pageElement.clientWidth || 300);
-        var cssHeight = Math.max(1, pageBox.height || pageElement.clientHeight || 420);
-        var base = pdfPage.getViewport({ scale: 1 });
-        var fit = Math.min(cssWidth / base.width, cssHeight / base.height);
-        var outputScale = Math.min(Math.max(1, window.devicePixelRatio || 1), 3);
-        // Keep very large scanned pages within a sensible mobile memory budget.
-        var pixelScale = Math.min(fit * outputScale, Math.sqrt(16000000 / (base.width * base.height)));
-        var viewport = pdfPage.getViewport({ scale: Math.max(0.1, pixelScale) });
-        canvas.width = Math.ceil(viewport.width);
-        canvas.height = Math.ceil(viewport.height);
-        canvas.style.width = "100%";
-        canvas.style.height = "100%";
-        var context = canvas.getContext("2d", { alpha: false });
-        var renderTask = pdfPage.render({ canvasContext: context, viewport: viewport });
-        studyPdfRenderTasks[pageNumber] = renderTask;
-        return renderTask.promise;
-    }).then(function () {
-        if (token === studyPdfLoadToken) studyPdfRenderedPages[pageNumber] = true;
-    }).catch(function (error) {
+function setupStudyPdfPageObserver(token) {
+    if (studyPdfObserver) studyPdfObserver.disconnect();
+    var stage = document.getElementById("studyPdfBookStage");
+    var pages = document.querySelectorAll("#studyPdfBook .pdf-scroll-page");
+    if ("IntersectionObserver" in window) {
+        studyPdfObserver = new IntersectionObserver(function(entries) {
+            entries.forEach(function(entry) {
+                if (entry.isIntersecting) renderStudyPdfScrollPage(Number(entry.target.dataset.pageNumber), token);
+            });
+        }, { root: stage, rootMargin: "900px 0px" });
+        pages.forEach(function(page) { studyPdfObserver.observe(page); });
+    } else {
+        pages.forEach(function(page) { renderStudyPdfScrollPage(Number(page.dataset.pageNumber), token); });
+    }
+}
+
+function renderStudyPdfScrollPage(pageNumber, token) {
+    var info = studyPdfPageInfo[pageNumber];
+    var wrapper = document.querySelector('#studyPdfBook .pdf-scroll-page[data-page-number="' + pageNumber + '"]');
+    if (!info || !wrapper || wrapper.dataset.rendered === "true" || studyPdfActiveRenders[pageNumber]) return;
+    studyPdfActiveRenders[pageNumber] = true;
+    var canvas = wrapper.querySelector("canvas");
+    var textLayer = wrapper.querySelector(".textLayer");
+    var cssScale = info.fitScale * studyPdfZoom;
+    var dpr = Math.min(Math.max(1, window.devicePixelRatio || 1), 3);
+    var renderScale = cssScale * dpr;
+    var maxCanvasPixels = 24000000;
+    renderScale = Math.min(renderScale, Math.sqrt(maxCanvasPixels / (info.width * info.height)));
+    var viewport = info.page.getViewport({ scale: renderScale });
+    var cssViewport = info.page.getViewport({ scale: cssScale });
+    wrapper.style.width = Math.ceil(cssViewport.width) + "px";
+    wrapper.style.height = Math.ceil(cssViewport.height) + "px";
+    canvas.width = Math.ceil(viewport.width);
+    canvas.height = Math.ceil(viewport.height);
+    canvas.style.width = cssViewport.width + "px";
+    canvas.style.height = cssViewport.height + "px";
+    textLayer.innerHTML = "";
+    textLayer.style.width = cssViewport.width + "px";
+    textLayer.style.height = cssViewport.height + "px";
+    var renderTask = info.page.render({ canvasContext: canvas.getContext("2d", { alpha: false }), viewport: viewport });
+    studyPdfActiveRenders[pageNumber] = renderTask;
+    renderTask.promise.then(function() {
+        if (token !== studyPdfLoadToken) return;
+        return info.page.getTextContent().then(function(textContent) {
+            if (token !== studyPdfLoadToken || !textLayer.isConnected) return;
+            if (window.pdfjsLib.renderTextLayer) {
+                var textTask = window.pdfjsLib.renderTextLayer({ textContent: textContent, container: textLayer, viewport: cssViewport, textDivs: [] });
+                return textTask.promise;
+            }
+        });
+    }).then(function() {
+        if (token === studyPdfLoadToken) wrapper.dataset.rendered = "true";
+    }).catch(function(error) {
         if (error && error.name !== "RenderingCancelledException" && error.name !== "AbortException") console.error("PDF page render error:", error);
-    }).finally(function () {
-        delete studyPdfRenderingPages[pageNumber];
-        delete studyPdfRenderTasks[pageNumber];
-        if (pageRef) { try { pageRef.cleanup(); } catch (e) {} }
-    });
+    }).finally(function() { delete studyPdfActiveRenders[pageNumber]; });
 }
 
-function destroyStudyPdfBook() {
-    if (studyPdfBookInstance) {
-        try { studyPdfBookInstance.destroy(); } catch (e) {}
-        studyPdfBookInstance = null;
-    }
-}
-
-// Release every PDF.js/PageFlip resource before another book is opened.
-function cleanupStudyPdfResources() {
-    studyPdfTapStart = null;
-    resetStudyPdfZoom();
-    destroyStudyPdfBook();
-    Object.keys(studyPdfRenderTasks).forEach(function (key) {
-        var task = studyPdfRenderTasks[key];
-        if (task && typeof task.cancel === "function") {
-            try { task.cancel(); } catch (e) {}
+function setStudyPdfZoom(value) {
+    var next = Math.max(0.75, Math.min(3, Math.round(value * 100) / 100));
+    if (Math.abs(next - studyPdfZoom) < 0.01 || !studyPdfDocument) return;
+    studyPdfZoom = next;
+    updateStudyPdfZoomLabel();
+    var stage = document.getElementById("studyPdfBookStage");
+    var pages = document.querySelectorAll("#studyPdfBook .pdf-scroll-page");
+    pages.forEach(function(wrapper) {
+        var n = Number(wrapper.dataset.pageNumber);
+        wrapper.dataset.rendered = "false";
+        var oldTask = studyPdfActiveRenders[n];
+        if (oldTask && oldTask.cancel) { try { oldTask.cancel(); } catch (e) {} }
+        var canvas = wrapper.querySelector("canvas");
+        var textLayer = wrapper.querySelector(".textLayer");
+        if (canvas) { canvas.width = 0; canvas.height = 0; }
+        if (textLayer) textLayer.innerHTML = "";
+        var info = studyPdfPageInfo[n];
+        if (info) {
+            wrapper.style.width = Math.round(info.width * info.fitScale * studyPdfZoom) + "px";
+            wrapper.style.height = Math.round(info.height * info.fitScale * studyPdfZoom) + "px";
         }
     });
-    studyPdfRenderTasks = {};
-    studyPdfRenderingPages = {};
-    studyPdfRenderedPages = {};
+    // Render visible/nearby pages again at the higher backing resolution, not by stretching a blurry bitmap.
+    pages.forEach(function(wrapper) {
+        var r = wrapper.getBoundingClientRect(), sr = stage.getBoundingClientRect();
+        if (r.bottom >= sr.top - 900 && r.top <= sr.bottom + 900) renderStudyPdfScrollPage(Number(wrapper.dataset.pageNumber), studyPdfLoadToken);
+    });
+}
 
+function updateStudyPdfZoomLabel() {
+    var label = document.getElementById("studyPdfZoomLabel");
+    if (label) label.textContent = Math.round(studyPdfZoom * 100) + "%";
+}
+
+function bindStudyPdfZoomButtons() {
+    var plus = document.getElementById("studyPdfZoomIn");
+    var minus = document.getElementById("studyPdfZoomOut");
+    var fit = document.getElementById("studyPdfFit");
+    if (plus && plus.dataset.bound !== "true") { plus.dataset.bound = "true"; plus.addEventListener("click", function() { setStudyPdfZoom(studyPdfZoom + 0.2); }); }
+    if (minus && minus.dataset.bound !== "true") { minus.dataset.bound = "true"; minus.addEventListener("click", function() { setStudyPdfZoom(studyPdfZoom - 0.2); }); }
+    if (fit && fit.dataset.bound !== "true") { fit.dataset.bound = "true"; fit.addEventListener("click", function() { setStudyPdfZoom(1); }); }
+}
+
+function bindStudyPdfScrollZoom(stage, token) {
+    if (!stage || stage.dataset.scrollZoomBound === "true") return;
+    stage.dataset.scrollZoomBound = "true";
+    stage.addEventListener("wheel", function(event) {
+        if (!event.ctrlKey && !event.metaKey) return;
+        event.preventDefault();
+        setStudyPdfZoom(studyPdfZoom * (event.deltaY < 0 ? 1.12 : 0.89));
+    }, { passive: false });
+    stage.addEventListener("touchstart", function(event) {
+        if (event.touches.length === 2) {
+            var dx = event.touches[0].clientX - event.touches[1].clientX;
+            var dy = event.touches[0].clientY - event.touches[1].clientY;
+            studyPdfTouchStartDistance = Math.hypot(dx, dy);
+            studyPdfTouchStartZoom = studyPdfZoom;
+            studyPdfTouchPreviewZoom = studyPdfZoom;
+        }
+    }, { passive: true });
+    stage.addEventListener("touchmove", function(event) {
+        if (event.touches.length !== 2 || !studyPdfTouchStartDistance) return;
+        event.preventDefault();
+        var dx = event.touches[0].clientX - event.touches[1].clientX;
+        var dy = event.touches[0].clientY - event.touches[1].clientY;
+        studyPdfTouchPreviewZoom = Math.max(0.75, Math.min(3, studyPdfTouchStartZoom * Math.hypot(dx, dy) / studyPdfTouchStartDistance));
+        var documentEl = document.getElementById("studyPdfBook");
+        if (documentEl) {
+            documentEl.style.transformOrigin = "top center";
+            documentEl.style.transform = "scale(" + (studyPdfTouchPreviewZoom / studyPdfZoom) + ")";
+        }
+    }, { passive: false });
+    stage.addEventListener("touchend", function(event) {
+        if (event.touches.length < 2 && studyPdfTouchStartDistance) {
+            var documentEl = document.getElementById("studyPdfBook");
+            if (documentEl) documentEl.style.transform = "";
+            var finalZoom = studyPdfTouchPreviewZoom;
+            studyPdfTouchStartDistance = 0;
+            setStudyPdfZoom(finalZoom);
+        }
+    }, { passive: true });
+}
+
+function cleanupStudyPdfResources() {
+    if (studyPdfObserver) { studyPdfObserver.disconnect(); studyPdfObserver = null; }
+    Object.keys(studyPdfActiveRenders).forEach(function(key) {
+        var task = studyPdfActiveRenders[key];
+        if (task && task.cancel) { try { task.cancel(); } catch (e) {} }
+    });
+    studyPdfActiveRenders = {};
     if (studyPdfLoadingTask) {
-        try {
-            var loadingDestroy = studyPdfLoadingTask.destroy();
-            if (loadingDestroy && typeof loadingDestroy.catch === "function") loadingDestroy.catch(function () {});
-        } catch (e) {}
+        try { var result = studyPdfLoadingTask.destroy(); if (result && result.catch) result.catch(function() {}); } catch (e) {}
         studyPdfLoadingTask = null;
     }
     if (studyPdfDocument) {
-        try {
-            var documentDestroy = studyPdfDocument.destroy();
-            if (documentDestroy && typeof documentDestroy.catch === "function") documentDestroy.catch(function () {});
-        } catch (e) {}
+        try { var destroyResult = studyPdfDocument.destroy(); if (destroyResult && destroyResult.catch) destroyResult.catch(function() {}); } catch (e) {}
         studyPdfDocument = null;
     }
-}
-
-// Only deliberate taps near the outer page edges turn pages. A normal tap
-// in the reading area no longer causes accidental page turns.
-function bindStudyPdfTapNavigation(stage, token) {
-    if (!stage || stage.dataset.tapNavigationBound === "true") return;
-    stage.dataset.tapNavigationBound = "true";
-    stage.addEventListener("pointerdown", function (event) {
-        if (event.pointerType === "mouse" && event.button !== 0) return;
-        studyPdfTapStart = { x: event.clientX, y: event.clientY, time: Date.now(), token: studyPdfLoadToken, pointerType: event.pointerType };
-    }, true);
-    stage.addEventListener("pointerup", function (event) {
-        var start = studyPdfTapStart;
-        studyPdfTapStart = null;
-        if (!start || start.token !== studyPdfLoadToken || studyPdfZoom > 1.02) return;
-        if (Date.now() - start.time > 260 || Math.hypot(event.clientX - start.x, event.clientY - start.y) > 7) return;
-        if (!studyPdfBookInstance || !studyPdfDocument) return;
-        if (event.target.closest(".pdf-book-hint, .pdf-book-loading, .pdf-error")) return;
-        var book = document.getElementById("studyPdfBook");
-        var rect = book && book.getBoundingClientRect();
-        if (!rect || event.clientX < rect.left || event.clientX > rect.right || event.clientY < rect.top || event.clientY > rect.bottom) return;
-        var edge = Math.min(76, rect.width * 0.13);
-        if (event.clientX >= rect.right - edge) {
-            event.preventDefault(); event.stopPropagation();
-            if (event.stopImmediatePropagation) event.stopImmediatePropagation();
-            studyPdfBookInstance.flipNext("top");
-        } else if (event.clientX <= rect.left + edge) {
-            event.preventDefault(); event.stopPropagation();
-            if (event.stopImmediatePropagation) event.stopImmediatePropagation();
-            studyPdfBookInstance.flipPrev("top");
-        }
-    }, true);
-}
-
-function resetStudyPdfZoom() {
-    studyPdfZoom = 1;
-    studyPdfPointers = {};
-    studyPdfPinchStart = null;
-    studyPdfZoomPan = { x: 0, y: 0 };
-    studyPdfPanPointer = null;
-    studyPdfGesturePointers = {};
-    studyPdfPinchGesture = null;
-    var book = document.getElementById("studyPdfBook");
-    var stage = document.getElementById("studyPdfBookStage");
-    if (book) book.style.transform = "";
-    if (stage) { stage.classList.remove("pdf-is-zoomed"); stage.style.setProperty("--pdf-zoom", "1"); }
-}
-
-function applyStudyPdfZoom(nextZoom, centerX, centerY) {
-    var stage = document.getElementById("studyPdfBookStage");
-    var book = document.getElementById("studyPdfBook");
-    if (!stage || !book) return;
-    studyPdfZoom = Math.max(1, Math.min(3, nextZoom));
-    if (studyPdfZoom <= 1.02) { resetStudyPdfZoom(); return; }
-    stage.classList.add("pdf-is-zoomed");
-    stage.style.setProperty("--pdf-zoom", String(studyPdfZoom));
-    book.style.transformOrigin = "center center";
-    book.style.transform = "translate3d(" + studyPdfZoomPan.x + "px," + studyPdfZoomPan.y + "px,0) scale(" + studyPdfZoom + ")";
-}
-
-// Pinch and Ctrl+wheel are captured only inside the PDF stage, so the website
-// viewport and surrounding page never zoom when the reader is being enlarged.
-function bindStudyPdfZoom(stage, token) {
-    if (!stage || stage.dataset.zoomBound === "true") return;
-    stage.dataset.zoomBound = "true";
-    studyPdfGesturePointers = {};
-    studyPdfPinchGesture = null;
-
-    function pointDistance(a, b) { return Math.hypot(b.x - a.x, b.y - a.y); }
-    function cancelPageFlipGesture(pointerId) {
-        // PageFlip may already have received the first finger's pointerdown.
-        // Cancel that gesture before taking ownership of a two-finger pinch.
-        var book = document.getElementById("studyPdfBook");
-        if (book && window.PointerEvent) {
-            try { book.dispatchEvent(new PointerEvent("pointercancel", { bubbles: true, pointerId: Number(pointerId), pointerType: "touch" })); } catch (e) {}
-        }
-    }
-
-    // Capture phase arbitrates gestures before PageFlip sees them: one finger
-    // remains a normal page-turn gesture; two fingers are reserved for zoom.
-    stage.addEventListener("pointerdown", function (event) {
-        if (event.pointerType !== "touch") {
-            if (studyPdfZoom > 1.02 && event.button === 0) {
-                event.preventDefault(); event.stopImmediatePropagation();
-                studyPdfPanPointer = { id: event.pointerId, x: event.clientX, y: event.clientY, panX: studyPdfZoomPan.x, panY: studyPdfZoomPan.y };
-                try { stage.setPointerCapture(event.pointerId); } catch (e) {}
-            }
-            return;
-        }
-        studyPdfGesturePointers[event.pointerId] = { x: event.clientX, y: event.clientY };
-        var ids = Object.keys(studyPdfGesturePointers);
-        if (ids.length >= 2) {
-            event.preventDefault(); event.stopImmediatePropagation();
-            studyPdfTapStart = null;
-            cancelPageFlipGesture(ids[0]);
-            var a = studyPdfGesturePointers[ids[0]], b = studyPdfGesturePointers[ids[1]];
-            studyPdfPinchGesture = { ids: [ids[0], ids[1]], distance: Math.max(1, pointDistance(a, b)), zoom: studyPdfZoom };
-            try { stage.setPointerCapture(event.pointerId); } catch (e) {}
-        } else if (studyPdfZoom > 1.02) {
-            event.preventDefault(); event.stopImmediatePropagation();
-            studyPdfPanPointer = { id: event.pointerId, x: event.clientX, y: event.clientY, panX: studyPdfZoomPan.x, panY: studyPdfZoomPan.y };
-            try { stage.setPointerCapture(event.pointerId); } catch (e) {}
-        }
-    }, true);
-
-    stage.addEventListener("pointermove", function (event) {
-        if (event.pointerType === "touch" && studyPdfGesturePointers[event.pointerId]) {
-            studyPdfGesturePointers[event.pointerId].x = event.clientX;
-            studyPdfGesturePointers[event.pointerId].y = event.clientY;
-        }
-        if (studyPdfPinchGesture) {
-            event.preventDefault(); event.stopImmediatePropagation();
-            var a = studyPdfGesturePointers[studyPdfPinchGesture.ids[0]];
-            var b = studyPdfGesturePointers[studyPdfPinchGesture.ids[1]];
-            if (a && b) {
-                var distance = Math.max(1, pointDistance(a, b));
-                applyStudyPdfZoom(studyPdfPinchGesture.zoom * distance / studyPdfPinchGesture.distance);
-            }
-            return;
-        }
-        if (studyPdfPanPointer && studyPdfPanPointer.id === event.pointerId) {
-            event.preventDefault(); event.stopImmediatePropagation();
-            studyPdfZoomPan.x = studyPdfPanPointer.panX + event.clientX - studyPdfPanPointer.x;
-            studyPdfZoomPan.y = studyPdfPanPointer.panY + event.clientY - studyPdfPanPointer.y;
-            applyStudyPdfZoom(studyPdfZoom);
-        }
-    }, true);
-
-    function finishPointer(event) {
-        if (studyPdfPinchGesture) {
-            event.preventDefault(); event.stopImmediatePropagation();
-        }
-        delete studyPdfGesturePointers[event.pointerId];
-        if (studyPdfPinchGesture && Object.keys(studyPdfGesturePointers).length < 2) studyPdfPinchGesture = null;
-        if (studyPdfPanPointer && studyPdfPanPointer.id === event.pointerId) studyPdfPanPointer = null;
-    }
-    stage.addEventListener("pointerup", finishPointer, true);
-    stage.addEventListener("pointercancel", finishPointer, true);
-
-    stage.addEventListener("wheel", function (event) {
-        if (!event.ctrlKey && !event.metaKey) return;
-        event.preventDefault();
-        applyStudyPdfZoom(studyPdfZoom * (event.deltaY < 0 ? 1.12 : 0.89));
-    }, { passive: false });
-}
-
-function bindStudyPdfKeyboardNavigation() {
-    if (window.studyPdfKeyboardBound) return;
-    window.studyPdfKeyboardBound = true;
-    document.addEventListener("keydown", function (event) {
-        var reader = document.getElementById("study-pdf-reader-view");
-        if (!reader || !reader.classList.contains("active") || !studyPdfBookInstance) return;
-        if (event.altKey || event.ctrlKey || event.metaKey || /INPUT|TEXTAREA|SELECT/.test((event.target && event.target.tagName) || "")) return;
-        if (event.key === "ArrowRight") { event.preventDefault(); studyPdfBookInstance.flipNext(); }
-        else if (event.key === "ArrowLeft") { event.preventDefault(); studyPdfBookInstance.flipPrev(); }
-    });
+    studyPdfPageInfo = [];
 }
 
 function showStudyPdfError(message) {
