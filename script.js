@@ -290,18 +290,19 @@ function buildStudyPdfBook(pdf, token) {
             maxWidth: 900,
             minHeight: 360,
             maxHeight: 1400,
-            maxShadowOpacity: 0.48,
+            maxShadowOpacity: 0.75,
             showCover: true,
-            mobileScrollSupport: false,
+            mobileScrollSupport: true,
             usePortrait: true,
             startPage: 0,
             drawShadow: true,
-            flippingTime: 850,
-            swipeDistance: 24,
+            flippingTime: 500,
+            swipeDistance: 50,
             clickEventForward: true,
             useMouseEvents: true,
             autoSize: true,
-            showPageCorners: true
+            showPageCorners: true,
+            useCSS: true
         });
         studyPdfBookInstance.loadFromHTML(bookEl.querySelectorAll(".pdf-book-page"));
         studyPdfBookInstance.on("flip", function (event) {
