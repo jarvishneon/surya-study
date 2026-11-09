@@ -969,3 +969,69 @@ body {
   .pdf-book-stage { padding: 2px; border-radius: 11px; }
   .pdf-book-hint { bottom: 8px; font-size: 10px; }
 }
+
+/* ============================================
+   SCROLL RESTORE + NATURAL TOUCH BEHAVIOUR
+   Keep document scrolling native on desktop and mobile.
+   ============================================ */
+html {
+    height: auto;
+    min-height: 100%;
+    overflow-x: clip;
+    overflow-y: auto;
+    scroll-behavior: auto;
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior-y: auto;
+}
+
+body {
+    height: auto;
+    min-height: 100vh;
+    min-height: 100dvh;
+    overflow-x: clip;
+    overflow-y: visible;
+    touch-action: pan-y pinch-zoom;
+    overscroll-behavior-y: auto;
+}
+
+.page-view {
+    height: auto;
+    min-height: 100vh;
+    min-height: 100dvh;
+    overflow: visible;
+}
+
+.page-view.active {
+    display: block;
+}
+
+.dashboard-container {
+    overflow: visible;
+    scroll-behavior: auto;
+    will-change: auto;
+    touch-action: pan-y pinch-zoom;
+}
+
+/* The book itself owns touch gestures while the rest of the site stays scrollable. */
+#study-pdf-reader-view {
+    min-height: 100dvh;
+    overflow: hidden;
+    touch-action: pan-y pinch-zoom;
+}
+
+.pdf-book-stage,
+.pdf-book,
+.pdf-book .stf__parent,
+.pdf-book .stf__item {
+    touch-action: pan-y pinch-zoom;
+}
+
+.pdf-book-stage {
+    -webkit-user-select: none;
+    user-select: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    html { scroll-behavior: auto; }
+    .page-view { animation-duration: 0.01ms; }
+}

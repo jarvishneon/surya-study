@@ -208,7 +208,10 @@ var studyPdfLoadToken = 0;
 var studyPdfBookInstance = null;
 var studyPdfRenderedPages = {};
 var studyPdfRenderingPages = {};
+var studyPdfRenderTasks = {};
+var studyPdfLoadingTask = null;
 var studyPdfCurrentPage = 1;
+var studyPdfTapStart = null;
 
 function openStudyPdf(pdfPath, title) {
     var titleEl = document.getElementById("studyPdfTitle");
@@ -221,11 +224,8 @@ function openStudyPdf(pdfPath, title) {
     if (activeView && activeView.id !== "study-pdf-reader-view") currentStudyPdfParentView = activeView.id;
 
     var token = ++studyPdfLoadToken;
-    destroyStudyPdfBook();
-    studyPdfDocument = null;
+    cleanupStudyPdfResources();
     studyPdfCurrentPage = 1;
-    studyPdfRenderedPages = {};
-    studyPdfRenderingPages = {};
     titleEl.textContent = title || "Study PDF";
     bookEl.innerHTML = "";
     errorEl.hidden = true;
@@ -240,12 +240,15 @@ function openStudyPdf(pdfPath, title) {
     window.pdfjsLib.GlobalWorkerOptions.workerSrc = "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js";
     var cleanPath = String(pdfPath || "").split("#")[0];
     var task = window.pdfjsLib.getDocument({ url: cleanPath, withCredentials: false });
+    studyPdfLoadingTask = task;
     task.promise.then(function (pdf) {
         if (token !== studyPdfLoadToken) { try { pdf.destroy(); } catch (e) {} return; }
+        studyPdfLoadingTask = null;
         studyPdfDocument = pdf;
         buildStudyPdfBook(pdf, token);
     }).catch(function (error) {
         if (token !== studyPdfLoadToken) return;
+        studyPdfLoadingTask = null;
         loadingEl.hidden = true;
         var message = error && error.name === "InvalidPDFException" ? "This file is not a valid PDF." : "PDF could not be loaded. Check the GitHub folder path, file name, and whether the PDF is uploaded.";
         showStudyPdfError(message);
@@ -298,7 +301,7 @@ function buildStudyPdfBook(pdf, token) {
             drawShadow: true,
             flippingTime: 500,
             swipeDistance: 50,
-            clickEventForward: true,
+            clickEventForward: false,
             useMouseEvents: true,
             autoSize: true,
             showPageCorners: true,
@@ -314,6 +317,7 @@ function buildStudyPdfBook(pdf, token) {
             if (token !== studyPdfLoadToken) return;
             renderStudyPdfNeighborhood(1, token);
         });
+        bindStudyPdfTapNavigation(stage, token);
         loadingEl.hidden = true;
         renderStudyPdfNeighborhood(1, token);
         var hint = document.getElementById("studyPdfBookHint");
@@ -339,8 +343,13 @@ function renderStudyPdfBookPage(pageNumber, token) {
     var canvas = pageElement && pageElement.querySelector("canvas");
     if (!canvas) return;
     studyPdfRenderingPages[pageNumber] = true;
+    var pageRef = null;
     studyPdfDocument.getPage(pageNumber).then(function (pdfPage) {
-        if (token !== studyPdfLoadToken || !canvas.isConnected) return;
+        pageRef = pdfPage;
+        if (token !== studyPdfLoadToken || !canvas.isConnected) {
+            try { pdfPage.cleanup(); } catch (e) {}
+            return;
+        }
         var stage = document.getElementById("studyPdfBookStage");
         var availableWidth = Math.max(260, (stage ? stage.clientWidth : window.innerWidth) - 8);
         var availableHeight = Math.max(340, (stage ? stage.clientHeight : window.innerHeight) - 8);
@@ -353,13 +362,17 @@ function renderStudyPdfBookPage(pageNumber, token) {
         canvas.style.width = "100%";
         canvas.style.height = "100%";
         var context = canvas.getContext("2d", { alpha: false });
-        return pdfPage.render({ canvasContext: context, viewport: viewport }).promise;
+        var renderTask = pdfPage.render({ canvasContext: context, viewport: viewport });
+        studyPdfRenderTasks[pageNumber] = renderTask;
+        return renderTask.promise;
     }).then(function () {
         if (token === studyPdfLoadToken) studyPdfRenderedPages[pageNumber] = true;
     }).catch(function (error) {
-        if (error && error.name !== "RenderingCancelledException") console.error("PDF page render error:", error);
+        if (error && error.name !== "RenderingCancelledException" && error.name !== "AbortException") console.error("PDF page render error:", error);
     }).finally(function () {
         delete studyPdfRenderingPages[pageNumber];
+        delete studyPdfRenderTasks[pageNumber];
+        if (pageRef) { try { pageRef.cleanup(); } catch (e) {} }
     });
 }
 
@@ -370,6 +383,62 @@ function destroyStudyPdfBook() {
     }
 }
 
+// Release every PDF.js/PageFlip resource before another book is opened.
+function cleanupStudyPdfResources() {
+    studyPdfTapStart = null;
+    destroyStudyPdfBook();
+    Object.keys(studyPdfRenderTasks).forEach(function (key) {
+        var task = studyPdfRenderTasks[key];
+        if (task && typeof task.cancel === "function") {
+            try { task.cancel(); } catch (e) {}
+        }
+    });
+    studyPdfRenderTasks = {};
+    studyPdfRenderingPages = {};
+    studyPdfRenderedPages = {};
+
+    if (studyPdfLoadingTask) {
+        try {
+            var loadingDestroy = studyPdfLoadingTask.destroy();
+            if (loadingDestroy && typeof loadingDestroy.catch === "function") loadingDestroy.catch(function () {});
+        } catch (e) {}
+        studyPdfLoadingTask = null;
+    }
+    if (studyPdfDocument) {
+        try {
+            var documentDestroy = studyPdfDocument.destroy();
+            if (documentDestroy && typeof documentDestroy.catch === "function") documentDestroy.catch(function () {});
+        } catch (e) {}
+        studyPdfDocument = null;
+    }
+}
+
+// A quick tap on either half of the open book turns the page; drags remain PageFlip gestures.
+function bindStudyPdfTapNavigation(stage, token) {
+    if (!stage || stage.dataset.tapNavigationBound === "true") return;
+    stage.dataset.tapNavigationBound = "true";
+    stage.addEventListener("pointerdown", function (event) {
+        if (event.pointerType === "mouse" && event.button !== 0) return;
+        studyPdfTapStart = { x: event.clientX, y: event.clientY, time: Date.now(), token: studyPdfLoadToken };
+    }, true);
+    stage.addEventListener("pointerup", function (event) {
+        var start = studyPdfTapStart;
+        studyPdfTapStart = null;
+        if (!start || start.token !== studyPdfLoadToken) return;
+        if (Date.now() - start.time > 420 || Math.hypot(event.clientX - start.x, event.clientY - start.y) > 12) return;
+        if (!studyPdfBookInstance || !studyPdfDocument) return;
+        if (event.target.closest(".pdf-book-hint, .pdf-book-loading, .pdf-error")) return;
+        var book = document.getElementById("studyPdfBook");
+        var rect = book && book.getBoundingClientRect();
+        if (!rect || event.clientX < rect.left || event.clientX > rect.right || event.clientY < rect.top || event.clientY > rect.bottom) return;
+        event.preventDefault();
+        event.stopPropagation();
+        if (event.stopImmediatePropagation) event.stopImmediatePropagation();
+        if (event.clientX >= rect.left + rect.width / 2) studyPdfBookInstance.flipNext();
+        else studyPdfBookInstance.flipPrev();
+    }, true);
+}
+
 function showStudyPdfError(message) {
     var errorEl = document.getElementById("studyPdfError");
     if (errorEl) { errorEl.textContent = message; errorEl.hidden = false; }
@@ -377,11 +446,7 @@ function showStudyPdfError(message) {
 
 function backFromStudyPdf() {
     studyPdfLoadToken++;
-    destroyStudyPdfBook();
-    if (studyPdfDocument) { try { studyPdfDocument.destroy(); } catch (e) {} }
-    studyPdfDocument = null;
-    studyPdfRenderedPages = {};
-    studyPdfRenderingPages = {};
+    cleanupStudyPdfResources();
     var bookEl = document.getElementById("studyPdfBook");
     var loadingEl = document.getElementById("studyPdfLoading");
     var errorEl = document.getElementById("studyPdfError");
