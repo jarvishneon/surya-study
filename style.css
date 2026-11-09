@@ -1221,3 +1221,32 @@ body {
     min-height: 26px;
     padding: 0 4px;
 }
+
+
+/* Final mobile scroll + selectable PDF text fixes */
+#study-pdf-reader-view { height: 100dvh !important; min-height: 100dvh !important; overflow: hidden !important; }
+#study-pdf-reader-view .pdf-reader-container { height: calc(100dvh - 88px) !important; min-height: 0 !important; overflow: hidden !important; flex: 1 1 auto; }
+#study-pdf-reader-view .pdf-scroll-stage {
+    display: block !important; flex: 1 1 0 !important; height: 1px !important; min-height: 0 !important;
+    max-height: 100% !important; overflow-y: auto !important; overflow-x: auto !important;
+    -webkit-overflow-scrolling: touch !important; overscroll-behavior: contain;
+    touch-action: pan-y pinch-zoom !important;
+    align-items: initial !important; justify-content: initial !important;
+}
+#study-pdf-reader-view .pdf-scroll-document { width: max-content; min-width: 100%; margin: 0 auto; }
+#study-pdf-reader-view .pdf-scroll-page { touch-action: pan-y pinch-zoom !important; user-select: text !important; -webkit-user-select: text !important; }
+#study-pdf-reader-view .pdf-scroll-page .textLayer {
+    pointer-events: auto !important; user-select: text !important; -webkit-user-select: text !important;
+    z-index: 5 !important; overflow: hidden;
+}
+#study-pdf-reader-view .pdf-scroll-page .textLayer span,
+#study-pdf-reader-view .pdf-scroll-page .textLayer br {
+    user-select: text !important; -webkit-user-select: text !important;
+    color: transparent !important; cursor: text;
+}
+#study-pdf-reader-view .pdf-scroll-canvas { pointer-events: none; }
+#study-pdf-reader-view .pdf-toolbar { flex: 0 0 auto; }
+@media (max-width: 600px) {
+  #study-pdf-reader-view .pdf-reader-container { height: calc(100dvh - 76px) !important; }
+  #study-pdf-reader-view .pdf-scroll-stage { touch-action: pan-y pinch-zoom !important; }
+}
