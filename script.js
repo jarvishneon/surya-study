@@ -212,6 +212,11 @@ var studyPdfRenderTasks = {};
 var studyPdfLoadingTask = null;
 var studyPdfCurrentPage = 1;
 var studyPdfTapStart = null;
+var studyPdfZoom = 1;
+var studyPdfPointers = {};
+var studyPdfPinchStart = null;
+var studyPdfZoomPan = { x: 0, y: 0 };
+var studyPdfPanPointer = null;
 
 function openStudyPdf(pdfPath, title) {
     var titleEl = document.getElementById("studyPdfTitle");
@@ -225,6 +230,7 @@ function openStudyPdf(pdfPath, title) {
 
     var token = ++studyPdfLoadToken;
     cleanupStudyPdfResources();
+    resetStudyPdfZoom();
     studyPdfCurrentPage = 1;
     titleEl.textContent = title || "Study PDF";
     bookEl.innerHTML = "";
@@ -299,8 +305,8 @@ function buildStudyPdfBook(pdf, token) {
             usePortrait: true,
             startPage: 0,
             drawShadow: true,
-            flippingTime: 500,
-            swipeDistance: 50,
+            flippingTime: 720,
+            swipeDistance: 78,
             clickEventForward: false,
             useMouseEvents: true,
             autoSize: true,
@@ -318,6 +324,8 @@ function buildStudyPdfBook(pdf, token) {
             renderStudyPdfNeighborhood(1, token);
         });
         bindStudyPdfTapNavigation(stage, token);
+        bindStudyPdfZoom(stage, token);
+        bindStudyPdfKeyboardNavigation();
         loadingEl.hidden = true;
         renderStudyPdfNeighborhood(1, token);
         var hint = document.getElementById("studyPdfBookHint");
@@ -386,6 +394,7 @@ function destroyStudyPdfBook() {
 // Release every PDF.js/PageFlip resource before another book is opened.
 function cleanupStudyPdfResources() {
     studyPdfTapStart = null;
+    resetStudyPdfZoom();
     destroyStudyPdfBook();
     Object.keys(studyPdfRenderTasks).forEach(function (key) {
         var task = studyPdfRenderTasks[key];
@@ -413,30 +422,119 @@ function cleanupStudyPdfResources() {
     }
 }
 
-// A quick tap on either half of the open book turns the page; drags remain PageFlip gestures.
+// Only deliberate taps near the outer page edges turn pages. A normal tap
+// in the reading area no longer causes accidental page turns.
 function bindStudyPdfTapNavigation(stage, token) {
     if (!stage || stage.dataset.tapNavigationBound === "true") return;
     stage.dataset.tapNavigationBound = "true";
     stage.addEventListener("pointerdown", function (event) {
         if (event.pointerType === "mouse" && event.button !== 0) return;
-        studyPdfTapStart = { x: event.clientX, y: event.clientY, time: Date.now(), token: studyPdfLoadToken };
+        studyPdfTapStart = { x: event.clientX, y: event.clientY, time: Date.now(), token: studyPdfLoadToken, pointerType: event.pointerType };
     }, true);
     stage.addEventListener("pointerup", function (event) {
         var start = studyPdfTapStart;
         studyPdfTapStart = null;
-        if (!start || start.token !== studyPdfLoadToken) return;
-        if (Date.now() - start.time > 420 || Math.hypot(event.clientX - start.x, event.clientY - start.y) > 12) return;
+        if (!start || start.token !== studyPdfLoadToken || studyPdfZoom > 1.02) return;
+        if (Date.now() - start.time > 260 || Math.hypot(event.clientX - start.x, event.clientY - start.y) > 7) return;
         if (!studyPdfBookInstance || !studyPdfDocument) return;
         if (event.target.closest(".pdf-book-hint, .pdf-book-loading, .pdf-error")) return;
         var book = document.getElementById("studyPdfBook");
         var rect = book && book.getBoundingClientRect();
         if (!rect || event.clientX < rect.left || event.clientX > rect.right || event.clientY < rect.top || event.clientY > rect.bottom) return;
-        event.preventDefault();
-        event.stopPropagation();
-        if (event.stopImmediatePropagation) event.stopImmediatePropagation();
-        if (event.clientX >= rect.left + rect.width / 2) studyPdfBookInstance.flipNext();
-        else studyPdfBookInstance.flipPrev();
+        var edge = Math.min(76, rect.width * 0.13);
+        if (event.clientX >= rect.right - edge) {
+            event.preventDefault(); event.stopPropagation();
+            if (event.stopImmediatePropagation) event.stopImmediatePropagation();
+            studyPdfBookInstance.flipNext("top");
+        } else if (event.clientX <= rect.left + edge) {
+            event.preventDefault(); event.stopPropagation();
+            if (event.stopImmediatePropagation) event.stopImmediatePropagation();
+            studyPdfBookInstance.flipPrev("top");
+        }
     }, true);
+}
+
+function resetStudyPdfZoom() {
+    studyPdfZoom = 1;
+    studyPdfPointers = {};
+    studyPdfPinchStart = null;
+    studyPdfZoomPan = { x: 0, y: 0 };
+    studyPdfPanPointer = null;
+    var book = document.getElementById("studyPdfBook");
+    var stage = document.getElementById("studyPdfBookStage");
+    if (book) book.style.transform = "";
+    if (stage) { stage.classList.remove("pdf-is-zoomed"); stage.style.setProperty("--pdf-zoom", "1"); }
+}
+
+function applyStudyPdfZoom(nextZoom, centerX, centerY) {
+    var stage = document.getElementById("studyPdfBookStage");
+    var book = document.getElementById("studyPdfBook");
+    if (!stage || !book) return;
+    studyPdfZoom = Math.max(1, Math.min(3, nextZoom));
+    if (studyPdfZoom <= 1.02) { resetStudyPdfZoom(); return; }
+    stage.classList.add("pdf-is-zoomed");
+    stage.style.setProperty("--pdf-zoom", String(studyPdfZoom));
+    book.style.transformOrigin = "center center";
+    book.style.transform = "translate3d(" + studyPdfZoomPan.x + "px," + studyPdfZoomPan.y + "px,0) scale(" + studyPdfZoom + ")";
+}
+
+// Pinch and Ctrl+wheel are captured only inside the PDF stage, so the website
+// viewport and surrounding page never zoom when the reader is being enlarged.
+function bindStudyPdfZoom(stage, token) {
+    if (!stage || stage.dataset.zoomBound === "true") return;
+    stage.dataset.zoomBound = "true";
+    stage.addEventListener("touchstart", function (event) {
+        if (event.touches.length === 2) {
+            event.preventDefault();
+            var a = event.touches[0], b = event.touches[1];
+            studyPdfPinchStart = { distance: Math.hypot(b.clientX-a.clientX, b.clientY-a.clientY), zoom: studyPdfZoom };
+        }
+    }, { passive: false });
+    stage.addEventListener("touchmove", function (event) {
+        if (event.touches.length === 2 && studyPdfPinchStart) {
+            event.preventDefault();
+            var a = event.touches[0], b = event.touches[1];
+            var distance = Math.hypot(b.clientX-a.clientX, b.clientY-a.clientY);
+            applyStudyPdfZoom(studyPdfPinchStart.zoom * distance / Math.max(1, studyPdfPinchStart.distance));
+        }
+    }, { passive: false });
+    stage.addEventListener("touchend", function (event) {
+        if (event.touches.length < 2) studyPdfPinchStart = null;
+    }, { passive: true });
+    stage.addEventListener("wheel", function (event) {
+        if (!event.ctrlKey && !event.metaKey) return;
+        event.preventDefault();
+        applyStudyPdfZoom(studyPdfZoom * (event.deltaY < 0 ? 1.12 : 0.89));
+    }, { passive: false });
+    stage.addEventListener("pointerdown", function (event) {
+        if (studyPdfZoom <= 1.02 || (event.pointerType === "mouse" && event.button !== 0)) return;
+        studyPdfPanPointer = { id: event.pointerId, x: event.clientX, y: event.clientY, panX: studyPdfZoomPan.x, panY: studyPdfZoomPan.y };
+        try { stage.setPointerCapture(event.pointerId); } catch (e) {}
+    });
+    stage.addEventListener("pointermove", function (event) {
+        if (!studyPdfPanPointer || studyPdfPanPointer.id !== event.pointerId || studyPdfZoom <= 1.02) return;
+        event.preventDefault();
+        studyPdfZoomPan.x = studyPdfPanPointer.panX + event.clientX - studyPdfPanPointer.x;
+        studyPdfZoomPan.y = studyPdfPanPointer.panY + event.clientY - studyPdfPanPointer.y;
+        applyStudyPdfZoom(studyPdfZoom);
+    }, { passive: false });
+    function endPan(event) {
+        if (studyPdfPanPointer && (!event || studyPdfPanPointer.id === event.pointerId)) studyPdfPanPointer = null;
+    }
+    stage.addEventListener("pointerup", endPan);
+    stage.addEventListener("pointercancel", endPan);
+}
+
+function bindStudyPdfKeyboardNavigation() {
+    if (window.studyPdfKeyboardBound) return;
+    window.studyPdfKeyboardBound = true;
+    document.addEventListener("keydown", function (event) {
+        var reader = document.getElementById("study-pdf-reader-view");
+        if (!reader || !reader.classList.contains("active") || !studyPdfBookInstance) return;
+        if (event.altKey || event.ctrlKey || event.metaKey || /INPUT|TEXTAREA|SELECT/.test((event.target && event.target.tagName) || "")) return;
+        if (event.key === "ArrowRight") { event.preventDefault(); studyPdfBookInstance.flipNext(); }
+        else if (event.key === "ArrowLeft") { event.preventDefault(); studyPdfBookInstance.flipPrev(); }
+    });
 }
 
 function showStudyPdfError(message) {

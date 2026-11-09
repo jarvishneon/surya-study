@@ -1035,3 +1035,27 @@ body {
     html { scroll-behavior: auto; }
     .page-view { animation-duration: 0.01ms; }
 }
+
+/* PDF-only zoom isolation: gestures inside the reader never zoom the website. */
+#study-pdf-reader-view .pdf-book-stage {
+    touch-action: none;
+    overscroll-behavior: contain;
+    -webkit-user-select: none;
+    user-select: none;
+}
+#study-pdf-reader-view .pdf-book {
+    transform: translateZ(0);
+    transform-origin: center center;
+    transition: transform 180ms cubic-bezier(.2,.75,.25,1);
+    will-change: transform;
+}
+#study-pdf-reader-view .pdf-book-stage.pdf-is-zoomed {
+    overflow: auto;
+    align-items: flex-start;
+    justify-content: flex-start;
+    cursor: zoom-in;
+}
+#study-pdf-reader-view .pdf-book-stage.pdf-is-zoomed .pdf-book {
+    flex: 0 0 auto;
+    margin: auto;
+}
