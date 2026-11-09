@@ -1,0 +1,102 @@
+[
+  {
+    "title": "Question 1",
+    "question": "Define the SI unit of length.",
+    "answer": "The metre (m) is the SI unit of length."
+  },
+  {
+    "title": "Question 2",
+    "question": "What is matter?",
+    "answer": "Anything that has mass and occupies space is called matter."
+  },
+  {
+    "title": "Question 3",
+    "question": "Name the three common states of matter.",
+    "answer": "Solid, liquid and gas."
+  },
+  {
+    "title": "Question 4",
+    "question": "What is diffusion?",
+    "answer": "The intermixing of particles of two substances on their own is called diffusion."
+  },
+  {
+    "title": "Question 5",
+    "question": "Define evaporation.",
+    "answer": "The change of a liquid into vapour from its surface at a temperature below its boiling point."
+  },
+  {
+    "title": "Question 6",
+    "question": "What is an atom?",
+    "answer": "The smallest particle of an element that takes part in a chemical reaction."
+  },
+  {
+    "title": "Question 7",
+    "question": "What is a molecule?",
+    "answer": "A group of two or more atoms chemically bonded together."
+  },
+  {
+    "title": "Question 8",
+    "question": "State the law of conservation of mass.",
+    "answer": "Mass can neither be created nor destroyed in a chemical reaction."
+  },
+  {
+    "title": "Question 9",
+    "question": "What are isotopes?",
+    "answer": "Atoms of the same element having the same atomic number but different mass numbers."
+  },
+  {
+    "title": "Question 10",
+    "question": "Name the three subatomic particles and their charges.",
+    "answer": "Proton: +1; electron: −1; neutron: 0."
+  },
+  {
+    "title": "Question 11",
+    "question": "What is a cell?",
+    "answer": "The basic structural and functional unit of life."
+  },
+  {
+    "title": "Question 12",
+    "question": "Who discovered the cell?",
+    "answer": "Robert Hooke."
+  },
+  {
+    "title": "Question 13",
+    "question": "What is the function of the cell membrane?",
+    "answer": "It regulates the movement of substances into and out of the cell."
+  },
+  {
+    "title": "Question 14",
+    "question": "Differentiate between plant and animal cells by one feature.",
+    "answer": "Plant cells usually have a cell wall and chloroplasts; animal cells do not."
+  },
+  {
+    "title": "Question 15",
+    "question": "What is a tissue?",
+    "answer": "A group of similar cells performing a specific function."
+  },
+  {
+    "title": "Question 16",
+    "question": "Define speed.",
+    "answer": "Distance travelled per unit time."
+  },
+  {
+    "title": "Question 17",
+    "question": "What is acceleration?",
+    "answer": "The rate of change of velocity with time."
+  },
+  {
+    "title": "Question 18",
+    "question": "State Newton’s first law of motion.",
+    "answer": "An object remains at rest or in uniform straight-line motion unless acted upon by an unbalanced external force."
+  },
+  {
+    "title": "Question 19",
+    "question": "What is the SI unit of force?",
+    "answer": "Newton (N)."
+  },
+  {
+    "title": "Question 20",
+    "question": "What is the function of the ozone layer?",
+    "answer": "It absorbs most of the Sun’s harmful ultraviolet radiation."
+  }
+]

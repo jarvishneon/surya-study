@@ -1,0 +1,102 @@
+[
+  {
+    "title": "Question 1",
+    "question": "Is √2 a rational or irrational number? Give a reason.",
+    "answer": "Irrational; it cannot be expressed as p/q for integers p and q (q ≠ 0)."
+  },
+  {
+    "title": "Question 2",
+    "question": "Represent 0.333… in the form p/q.",
+    "answer": "1/3"
+  },
+  {
+    "title": "Question 3",
+    "question": "Simplify: (2³ × 2⁴) ÷ 2².",
+    "answer": "2⁵ = 32"
+  },
+  {
+    "title": "Question 4",
+    "question": "Find the degree of the polynomial 5x⁴ − 3x² + 7.",
+    "answer": "4"
+  },
+  {
+    "title": "Question 5",
+    "question": "Find the zero of p(x) = x − 5.",
+    "answer": "x = 5"
+  },
+  {
+    "title": "Question 6",
+    "question": "Factorise: x² + 5x + 6.",
+    "answer": "(x + 2)(x + 3)"
+  },
+  {
+    "title": "Question 7",
+    "question": "Find the remainder when x² + 3x + 2 is divided by x + 1.",
+    "answer": "0"
+  },
+  {
+    "title": "Question 8",
+    "question": "Write the coordinates of the origin.",
+    "answer": "(0, 0)"
+  },
+  {
+    "title": "Question 9",
+    "question": "In which quadrant does the point (−3, 4) lie?",
+    "answer": "Second quadrant"
+  },
+  {
+    "title": "Question 10",
+    "question": "Find the distance of the point (0, −5) from the x-axis.",
+    "answer": "5 units"
+  },
+  {
+    "title": "Question 11",
+    "question": "If two angles form a linear pair and one is 65°, find the other.",
+    "answer": "115°"
+  },
+  {
+    "title": "Question 12",
+    "question": "If two parallel lines are cut by a transversal, what is the relation between corresponding angles?",
+    "answer": "Corresponding angles are equal."
+  },
+  {
+    "title": "Question 13",
+    "question": "The angles of a triangle are 50° and 60°. Find the third angle.",
+    "answer": "70°"
+  },
+  {
+    "title": "Question 14",
+    "question": "State the Pythagoras theorem.",
+    "answer": "In a right triangle, the square of the hypotenuse equals the sum of the squares of the other two sides."
+  },
+  {
+    "title": "Question 15",
+    "question": "Find the area of a triangle with base 12 cm and height 7 cm.",
+    "answer": "42 cm²"
+  },
+  {
+    "title": "Question 16",
+    "question": "Find the circumference of a circle of radius 7 cm (π = 22/7).",
+    "answer": "44 cm"
+  },
+  {
+    "title": "Question 17",
+    "question": "Find the volume of a cube of side 4 cm.",
+    "answer": "64 cm³"
+  },
+  {
+    "title": "Question 18",
+    "question": "Find the mean of 4, 6, 8, 10 and 12.",
+    "answer": "8"
+  },
+  {
+    "title": "Question 19",
+    "question": "A coin is tossed once. Find the probability of getting a head.",
+    "answer": "1/2"
+  },
+  {
+    "title": "Question 20",
+    "question": "State the SAS congruence criterion.",
+    "answer": "If two sides and the included angle of one triangle are equal to the corresponding two sides and included angle of another triangle, the triangles are congruent."
+  }
+]
