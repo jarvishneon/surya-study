@@ -1,0 +1,102 @@
+[
+  {
+    "title": "Question 1",
+    "question": "Use Euclid’s division algorithm to find the HCF of 135 and 225.",
+    "answer": "225 = 135 × 1 + 90; 135 = 90 × 1 + 45; 90 = 45 × 2. HCF = 45."
+  },
+  {
+    "title": "Question 2",
+    "question": "Find the zeroes of x² − 5x + 6.",
+    "answer": "2 and 3."
+  },
+  {
+    "title": "Question 3",
+    "question": "Form a quadratic polynomial whose zeroes are 4 and −2.",
+    "answer": "x² − 2x − 8."
+  },
+  {
+    "title": "Question 4",
+    "question": "Solve the pair: x + y = 7 and x − y = 1.",
+    "answer": "x = 4, y = 3."
+  },
+  {
+    "title": "Question 5",
+    "question": "Find the roots of x² − 7x + 12 = 0.",
+    "answer": "x = 3, 4."
+  },
+  {
+    "title": "Question 6",
+    "question": "Find the 10th term of the AP 3, 7, 11, 15, …",
+    "answer": "a₁₀ = 39."
+  },
+  {
+    "title": "Question 7",
+    "question": "Find the sum of the first 20 natural numbers.",
+    "answer": "210."
+  },
+  {
+    "title": "Question 8",
+    "question": "Find the distance between (2, 3) and (5, 7).",
+    "answer": "5 units."
+  },
+  {
+    "title": "Question 9",
+    "question": "Find the midpoint of the line segment joining (−2, 4) and (6, 8).",
+    "answer": "(2, 6)."
+  },
+  {
+    "title": "Question 10",
+    "question": "If sin θ = 3/5 for an acute angle, find cos θ.",
+    "answer": "4/5."
+  },
+  {
+    "title": "Question 11",
+    "question": "Prove/use the identity: sin²θ + cos²θ = ?",
+    "answer": "1."
+  },
+  {
+    "title": "Question 12",
+    "question": "A pole casts a 10 m shadow when the angle of elevation of the Sun is 45°. Find its height.",
+    "answer": "10 m."
+  },
+  {
+    "title": "Question 13",
+    "question": "Find the area of a sector of radius 7 cm and angle 90° (π = 22/7).",
+    "answer": "38.5 cm²."
+  },
+  {
+    "title": "Question 14",
+    "question": "Find the curved surface area of a cylinder of radius 3 cm and height 7 cm.",
+    "answer": "2πrh = 42π cm²."
+  },
+  {
+    "title": "Question 15",
+    "question": "Find the volume of a cone of radius 3 cm and height 4 cm.",
+    "answer": "12π cm³."
+  },
+  {
+    "title": "Question 16",
+    "question": "A die is thrown once. Find the probability of getting a prime number.",
+    "answer": "1/2 (2, 3 and 5 are prime)."
+  },
+  {
+    "title": "Question 17",
+    "question": "Find the mean of the data: 2, 4, 6, 8, 10.",
+    "answer": "6."
+  },
+  {
+    "title": "Question 18",
+    "question": "Find the mode of: 3, 4, 4, 5, 6, 4, 7.",
+    "answer": "4."
+  },
+  {
+    "title": "Question 19",
+    "question": "From an external point P, a tangent PA touches a circle at A. What is the relation between PA and the radius OA?",
+    "answer": "OA ⟂ PA; the radius is perpendicular to the tangent at the point of contact."
+  },
+  {
+    "title": "Question 20",
+    "question": "State the Basic Proportionality Theorem (Thales theorem).",
+    "answer": "A line drawn parallel to one side of a triangle divides the other two sides in the same ratio."
+  }
+]

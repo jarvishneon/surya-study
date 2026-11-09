@@ -1,0 +1,102 @@
+[
+  {
+    "title": "Question 1",
+    "question": "What is a chemical reaction? Give one example.",
+    "answer": "A process in which reactants form new substances; e.g. 2Mg + O₂ → 2MgO."
+  },
+  {
+    "title": "Question 2",
+    "question": "Balance: Fe + H₂O → Fe₃O₄ + H₂.",
+    "answer": "3Fe + 4H₂O → Fe₃O₄ + 4H₂."
+  },
+  {
+    "title": "Question 3",
+    "question": "What is oxidation?",
+    "answer": "Addition of oxygen or removal of hydrogen; in electron terms, loss of electrons."
+  },
+  {
+    "title": "Question 4",
+    "question": "Why should a magnesium ribbon be cleaned before burning?",
+    "answer": "To remove the magnesium oxide layer so it burns readily."
+  },
+  {
+    "title": "Question 5",
+    "question": "What is the pH of a neutral solution at 25°C?",
+    "answer": "7."
+  },
+  {
+    "title": "Question 6",
+    "question": "Name the acid present in the stomach.",
+    "answer": "Hydrochloric acid (HCl)."
+  },
+  {
+    "title": "Question 7",
+    "question": "What is the chemical formula of baking soda?",
+    "answer": "NaHCO₃."
+  },
+  {
+    "title": "Question 8",
+    "question": "What is a homologous series?",
+    "answer": "A family of organic compounds with the same functional group and a common general formula, with successive members differing by –CH₂–."
+  },
+  {
+    "title": "Question 9",
+    "question": "Why is carbon able to form a large number of compounds?",
+    "answer": "Because of tetravalency and catenation."
+  },
+  {
+    "title": "Question 10",
+    "question": "What is the function of stomata?",
+    "answer": "They allow exchange of gases and help in transpiration."
+  },
+  {
+    "title": "Question 11",
+    "question": "Name the functional unit of the kidney.",
+    "answer": "Nephron."
+  },
+  {
+    "title": "Question 12",
+    "question": "What is the role of bile in digestion?",
+    "answer": "It emulsifies fats and helps neutralise acidic food from the stomach."
+  },
+  {
+    "title": "Question 13",
+    "question": "What is a reflex action?",
+    "answer": "A quick, automatic response to a stimulus, usually coordinated through the spinal cord."
+  },
+  {
+    "title": "Question 14",
+    "question": "Which hormone regulates blood sugar level?",
+    "answer": "Insulin."
+  },
+  {
+    "title": "Question 15",
+    "question": "State the principle of an electric fuse.",
+    "answer": "It works on the heating effect of electric current; excess current melts the fuse wire and breaks the circuit."
+  },
+  {
+    "title": "Question 16",
+    "question": "State Ohm’s law.",
+    "answer": "At constant temperature, current through a conductor is directly proportional to the potential difference across it: V = IR."
+  },
+  {
+    "title": "Question 17",
+    "question": "What is the SI unit of electric power?",
+    "answer": "Watt (W)."
+  },
+  {
+    "title": "Question 18",
+    "question": "What is the function of the magnetic field around a current-carrying wire?",
+    "answer": "It exerts magnetic effects and can deflect a compass needle; its direction is given by the right-hand thumb rule."
+  },
+  {
+    "title": "Question 19",
+    "question": "What is the ozone layer and why is it important?",
+    "answer": "A region of the stratosphere rich in ozone that absorbs much of the Sun’s harmful ultraviolet radiation."
+  },
+  {
+    "title": "Question 20",
+    "question": "What is sustainable development?",
+    "answer": "Development that meets present needs without compromising the ability of future generations to meet their own needs."
+  }
+]
