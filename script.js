@@ -201,27 +201,143 @@ async function openStudyMaterial(folder, fileName, subjectTitle) {
     }
 }
 
-/* -------------- STUDY PDF VIEWER -------------- */
+/* -------------- STUDY PDF VIEWER (PDF.js - stays inside this website) -------------- */
 var currentStudyPdfParentView = "study-pdf-competitive-view";
+var studyPdfDocument = null;
+var studyPdfCurrentPage = 1;
+var studyPdfScale = 1;
+var studyPdfRenderTask = null;
+var studyPdfLoadToken = 0;
 
 function openStudyPdf(pdfPath, title) {
-    var frame = document.getElementById("studyPdfFrame");
     var titleEl = document.getElementById("studyPdfTitle");
-    if (!frame || !titleEl) return;
+    var pagesEl = document.getElementById("studyPdfPages");
+    var loadingEl = document.getElementById("studyPdfLoading");
+    var errorEl = document.getElementById("studyPdfError");
+    if (!titleEl || !pagesEl || !loadingEl || !errorEl) return;
 
     var activeView = document.querySelector(".page-view.active");
-    if (activeView && activeView.id !== "study-pdf-reader-view") {
-        currentStudyPdfParentView = activeView.id;
-    }
+    if (activeView && activeView.id !== "study-pdf-reader-view") currentStudyPdfParentView = activeView.id;
 
+    var token = ++studyPdfLoadToken;
+    studyPdfDocument = null;
+    studyPdfCurrentPage = 1;
+    studyPdfScale = 1;
+    if (studyPdfRenderTask) { try { studyPdfRenderTask.cancel(); } catch (e) {} studyPdfRenderTask = null; }
     titleEl.textContent = title || "Study PDF";
-    frame.src = pdfPath;
+    pagesEl.innerHTML = "";
+    errorEl.hidden = true;
+    errorEl.textContent = "";
+    loadingEl.hidden = false;
+    updateStudyPdfControls();
     switchSubView("study-pdf-reader-view");
+
+    if (!window.pdfjsLib) {
+        showStudyPdfError("PDF viewer library could not be loaded. Please check your internet connection and refresh the page.");
+        return;
+    }
+    window.pdfjsLib.GlobalWorkerOptions.workerSrc = "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js";
+    var cleanPath = String(pdfPath || "").split("#")[0];
+    var task = window.pdfjsLib.getDocument({ url: cleanPath, withCredentials: false });
+    task.promise.then(function (pdf) {
+        if (token !== studyPdfLoadToken) return;
+        studyPdfDocument = pdf;
+        document.getElementById("studyPdfPageCount").textContent = pdf.numPages;
+        document.getElementById("studyPdfPageInput").max = pdf.numPages;
+        loadingEl.hidden = true;
+        renderStudyPdfPage(1);
+    }).catch(function (error) {
+        if (token !== studyPdfLoadToken) return;
+        loadingEl.hidden = true;
+        var message = error && error.name === "InvalidPDFException" ? "This file is not a valid PDF." : "PDF could not be loaded. Check the GitHub folder path, file name, and whether the PDF is uploaded.";
+        showStudyPdfError(message);
+        console.error("Study PDF load error:", error);
+    });
 }
 
+function renderStudyPdfPage(pageNumber) {
+    if (!studyPdfDocument) return;
+    studyPdfCurrentPage = Math.max(1, Math.min(Number(pageNumber) || 1, studyPdfDocument.numPages));
+    var pagesEl = document.getElementById("studyPdfPages");
+    var area = document.getElementById("studyPdfDocumentArea");
+    var loadingEl = document.getElementById("studyPdfLoading");
+    if (!pagesEl || !area) return;
+    if (studyPdfRenderTask) { try { studyPdfRenderTask.cancel(); } catch (e) {} }
+    pagesEl.innerHTML = "";
+    loadingEl.hidden = false;
+    studyPdfDocument.getPage(studyPdfCurrentPage).then(function (page) {
+        var baseViewport = page.getViewport({ scale: 1 });
+        var availableWidth = Math.max(240, area.clientWidth - 28);
+        var fitScale = Math.min(1.5, availableWidth / baseViewport.width);
+        var viewport = page.getViewport({ scale: fitScale * studyPdfScale });
+        var canvas = document.createElement("canvas");
+        var context = canvas.getContext("2d", { alpha: false });
+        var outputScale = Math.min(window.devicePixelRatio || 1, 2);
+        canvas.width = Math.floor(viewport.width * outputScale);
+        canvas.height = Math.floor(viewport.height * outputScale);
+        canvas.style.width = Math.floor(viewport.width) + "px";
+        canvas.style.height = Math.floor(viewport.height) + "px";
+        canvas.className = "pdf-page-canvas";
+        pagesEl.appendChild(canvas);
+        var transform = outputScale !== 1 ? [outputScale, 0, 0, outputScale, 0, 0] : null;
+        studyPdfRenderTask = page.render({ canvasContext: context, viewport: viewport, transform: transform });
+        return studyPdfRenderTask.promise;
+    }).then(function () {
+        loadingEl.hidden = true;
+        updateStudyPdfControls();
+        area.scrollTop = 0;
+    }).catch(function (error) {
+        if (error && error.name !== "RenderingCancelledException") console.error("PDF page render error:", error);
+    });
+}
+
+function updateStudyPdfControls() {
+    var pageInput = document.getElementById("studyPdfPageInput");
+    var count = document.getElementById("studyPdfPageCount");
+    var zoom = document.getElementById("studyPdfZoomLabel");
+    if (pageInput) pageInput.value = studyPdfCurrentPage;
+    if (count) count.textContent = studyPdfDocument ? studyPdfDocument.numPages : "—";
+    if (zoom) zoom.textContent = Math.round(studyPdfScale * 100) + "%";
+}
+
+function changeStudyPdfPage(delta) {
+    if (studyPdfDocument) renderStudyPdfPage(studyPdfCurrentPage + Number(delta || 0));
+}
+function goToStudyPdfPage(value) {
+    if (studyPdfDocument) renderStudyPdfPage(parseInt(value, 10) || 1);
+}
+function changeStudyPdfZoom(delta) {
+    if (!studyPdfDocument) return;
+    studyPdfScale = Math.max(0.5, Math.min(2.5, studyPdfScale + Number(delta || 0)));
+    updateStudyPdfControls();
+    renderStudyPdfPage(studyPdfCurrentPage);
+}
+function fitStudyPdfWidth() {
+    if (!studyPdfDocument) return;
+    studyPdfScale = 1;
+    updateStudyPdfControls();
+    renderStudyPdfPage(studyPdfCurrentPage);
+}
+function toggleStudyPdfFullscreen() {
+    var shell = document.getElementById("studyPdfViewerShell");
+    if (!shell) return;
+    if (document.fullscreenElement) document.exitFullscreen();
+    else if (shell.requestFullscreen) shell.requestFullscreen();
+}
+function showStudyPdfError(message) {
+    var errorEl = document.getElementById("studyPdfError");
+    if (errorEl) { errorEl.textContent = message; errorEl.hidden = false; }
+}
 function backFromStudyPdf() {
-    var frame = document.getElementById("studyPdfFrame");
-    if (frame) frame.src = "about:blank";
+    studyPdfLoadToken++;
+    studyPdfDocument = null;
+    if (studyPdfRenderTask) { try { studyPdfRenderTask.cancel(); } catch (e) {} studyPdfRenderTask = null; }
+    var pagesEl = document.getElementById("studyPdfPages");
+    var loadingEl = document.getElementById("studyPdfLoading");
+    var errorEl = document.getElementById("studyPdfError");
+    if (pagesEl) pagesEl.innerHTML = "";
+    if (loadingEl) loadingEl.hidden = true;
+    if (errorEl) errorEl.hidden = true;
     switchSubView(currentStudyPdfParentView || "study-pdf-home-view");
 }
 
@@ -478,6 +594,11 @@ window.launchTest = launchTest;
 window.openStudyMaterial = openStudyMaterial;
 window.openStudyPdf = openStudyPdf;
 window.backFromStudyPdf = backFromStudyPdf;
+window.changeStudyPdfPage = changeStudyPdfPage;
+window.goToStudyPdfPage = goToStudyPdfPage;
+window.changeStudyPdfZoom = changeStudyPdfZoom;
+window.fitStudyPdfWidth = fitStudyPdfWidth;
+window.toggleStudyPdfFullscreen = toggleStudyPdfFullscreen;
 window.goBackFromStudyContent = goBackFromStudyContent;
 window.toggleChat = toggleChat;
 window.sendChatMessage = sendChatMessage;

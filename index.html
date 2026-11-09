@@ -653,7 +653,27 @@
         <div class="dashboard-container pdf-reader-container">
             <button class="back-btn glass-back-btn" onclick="backFromStudyPdf()"><i class="fa-solid fa-arrow-left"></i> Back to Subjects</button>
             <div class="pdf-reader-heading"><div><h2 id="studyPdfTitle">Study PDF</h2><p>Reading inside Surya Academy</p></div><span class="pdf-reader-mark"><i class="fa-solid fa-file-pdf"></i> PDF VIEWER</span></div>
-            <div class="pdf-frame-wrap"><iframe id="studyPdfFrame" title="Study PDF Viewer" loading="lazy" allow="fullscreen" src="about:blank"><p>Your browser does not support embedded PDF viewing.</p></iframe></div>
+            <div class="pdf-viewer-shell" id="studyPdfViewerShell">
+                <div class="pdf-toolbar" aria-label="PDF controls">
+                    <div class="pdf-toolbar-group">
+                        <button type="button" class="pdf-tool-btn" onclick="changeStudyPdfPage(-1)" aria-label="Previous page"><i class="fa-solid fa-chevron-left"></i></button>
+                        <span class="pdf-page-indicator"><input id="studyPdfPageInput" type="number" min="1" value="1" aria-label="Current page" onchange="goToStudyPdfPage(this.value)"> <span>/</span> <span id="studyPdfPageCount">—</span></span>
+                        <button type="button" class="pdf-tool-btn" onclick="changeStudyPdfPage(1)" aria-label="Next page"><i class="fa-solid fa-chevron-right"></i></button>
+                    </div>
+                    <div class="pdf-toolbar-group">
+                        <button type="button" class="pdf-tool-btn" onclick="changeStudyPdfZoom(-0.15)" aria-label="Zoom out"><i class="fa-solid fa-minus"></i></button>
+                        <span id="studyPdfZoomLabel" class="pdf-zoom-label">100%</span>
+                        <button type="button" class="pdf-tool-btn" onclick="changeStudyPdfZoom(0.15)" aria-label="Zoom in"><i class="fa-solid fa-plus"></i></button>
+                        <button type="button" class="pdf-tool-btn" onclick="fitStudyPdfWidth()" aria-label="Fit width"><i class="fa-solid fa-arrows-left-right"></i></button>
+                        <button type="button" class="pdf-tool-btn" onclick="toggleStudyPdfFullscreen()" aria-label="Fullscreen"><i class="fa-solid fa-expand"></i></button>
+                    </div>
+                </div>
+                <div class="pdf-document-area" id="studyPdfDocumentArea">
+                    <div id="studyPdfLoading" class="pdf-loading"><i class="fa-solid fa-spinner fa-spin"></i><span>Loading PDF...</span></div>
+                    <div id="studyPdfPages" class="pdf-pages" aria-live="polite"></div>
+                </div>
+                <div id="studyPdfError" class="pdf-error" hidden></div>
+            </div>
         </div>
         <footer class="site-footer glass-footer"><p>© 2025 RJ Study Academy. All rights reserved. | Built with 💚 for Students</p></footer>
     </div>
@@ -681,6 +701,7 @@
         </div>
     </div>
 
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
     <script src="script.js"></script>
 </body>
 </html>
