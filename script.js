@@ -217,6 +217,8 @@ var studyPdfPointers = {};
 var studyPdfPinchStart = null;
 var studyPdfZoomPan = { x: 0, y: 0 };
 var studyPdfPanPointer = null;
+var studyPdfGesturePointers = {};
+var studyPdfPinchGesture = null;
 
 function openStudyPdf(pdfPath, title) {
     var titleEl = document.getElementById("studyPdfTitle");
@@ -358,13 +360,17 @@ function renderStudyPdfBookPage(pageNumber, token) {
             try { pdfPage.cleanup(); } catch (e) {}
             return;
         }
-        var stage = document.getElementById("studyPdfBookStage");
-        var availableWidth = Math.max(260, (stage ? stage.clientWidth : window.innerWidth) - 8);
-        var availableHeight = Math.max(340, (stage ? stage.clientHeight : window.innerHeight) - 8);
+        // Render against the actual PageFlip page box, not the whole reader stage.
+        // A higher backing-store resolution keeps small text sharp on high-DPI phones.
+        var pageBox = pageElement.getBoundingClientRect();
+        var cssWidth = Math.max(1, pageBox.width || pageElement.clientWidth || 300);
+        var cssHeight = Math.max(1, pageBox.height || pageElement.clientHeight || 420);
         var base = pdfPage.getViewport({ scale: 1 });
-        var fit = Math.min(availableWidth / base.width, availableHeight / base.height);
-        var outputScale = Math.min(window.devicePixelRatio || 1, 1.6);
-        var viewport = pdfPage.getViewport({ scale: fit * outputScale });
+        var fit = Math.min(cssWidth / base.width, cssHeight / base.height);
+        var outputScale = Math.min(Math.max(1, window.devicePixelRatio || 1), 3);
+        // Keep very large scanned pages within a sensible mobile memory budget.
+        var pixelScale = Math.min(fit * outputScale, Math.sqrt(16000000 / (base.width * base.height)));
+        var viewport = pdfPage.getViewport({ scale: Math.max(0.1, pixelScale) });
         canvas.width = Math.ceil(viewport.width);
         canvas.height = Math.ceil(viewport.height);
         canvas.style.width = "100%";
@@ -460,6 +466,8 @@ function resetStudyPdfZoom() {
     studyPdfPinchStart = null;
     studyPdfZoomPan = { x: 0, y: 0 };
     studyPdfPanPointer = null;
+    studyPdfGesturePointers = {};
+    studyPdfPinchGesture = null;
     var book = document.getElementById("studyPdfBook");
     var stage = document.getElementById("studyPdfBookStage");
     if (book) book.style.transform = "";
@@ -483,46 +491,85 @@ function applyStudyPdfZoom(nextZoom, centerX, centerY) {
 function bindStudyPdfZoom(stage, token) {
     if (!stage || stage.dataset.zoomBound === "true") return;
     stage.dataset.zoomBound = "true";
-    stage.addEventListener("touchstart", function (event) {
-        if (event.touches.length === 2) {
-            event.preventDefault();
-            var a = event.touches[0], b = event.touches[1];
-            studyPdfPinchStart = { distance: Math.hypot(b.clientX-a.clientX, b.clientY-a.clientY), zoom: studyPdfZoom };
+    studyPdfGesturePointers = {};
+    studyPdfPinchGesture = null;
+
+    function pointDistance(a, b) { return Math.hypot(b.x - a.x, b.y - a.y); }
+    function cancelPageFlipGesture(pointerId) {
+        // PageFlip may already have received the first finger's pointerdown.
+        // Cancel that gesture before taking ownership of a two-finger pinch.
+        var book = document.getElementById("studyPdfBook");
+        if (book && window.PointerEvent) {
+            try { book.dispatchEvent(new PointerEvent("pointercancel", { bubbles: true, pointerId: Number(pointerId), pointerType: "touch" })); } catch (e) {}
         }
-    }, { passive: false });
-    stage.addEventListener("touchmove", function (event) {
-        if (event.touches.length === 2 && studyPdfPinchStart) {
-            event.preventDefault();
-            var a = event.touches[0], b = event.touches[1];
-            var distance = Math.hypot(b.clientX-a.clientX, b.clientY-a.clientY);
-            applyStudyPdfZoom(studyPdfPinchStart.zoom * distance / Math.max(1, studyPdfPinchStart.distance));
+    }
+
+    // Capture phase arbitrates gestures before PageFlip sees them: one finger
+    // remains a normal page-turn gesture; two fingers are reserved for zoom.
+    stage.addEventListener("pointerdown", function (event) {
+        if (event.pointerType !== "touch") {
+            if (studyPdfZoom > 1.02 && event.button === 0) {
+                event.preventDefault(); event.stopImmediatePropagation();
+                studyPdfPanPointer = { id: event.pointerId, x: event.clientX, y: event.clientY, panX: studyPdfZoomPan.x, panY: studyPdfZoomPan.y };
+                try { stage.setPointerCapture(event.pointerId); } catch (e) {}
+            }
+            return;
         }
-    }, { passive: false });
-    stage.addEventListener("touchend", function (event) {
-        if (event.touches.length < 2) studyPdfPinchStart = null;
-    }, { passive: true });
+        studyPdfGesturePointers[event.pointerId] = { x: event.clientX, y: event.clientY };
+        var ids = Object.keys(studyPdfGesturePointers);
+        if (ids.length >= 2) {
+            event.preventDefault(); event.stopImmediatePropagation();
+            studyPdfTapStart = null;
+            cancelPageFlipGesture(ids[0]);
+            var a = studyPdfGesturePointers[ids[0]], b = studyPdfGesturePointers[ids[1]];
+            studyPdfPinchGesture = { ids: [ids[0], ids[1]], distance: Math.max(1, pointDistance(a, b)), zoom: studyPdfZoom };
+            try { stage.setPointerCapture(event.pointerId); } catch (e) {}
+        } else if (studyPdfZoom > 1.02) {
+            event.preventDefault(); event.stopImmediatePropagation();
+            studyPdfPanPointer = { id: event.pointerId, x: event.clientX, y: event.clientY, panX: studyPdfZoomPan.x, panY: studyPdfZoomPan.y };
+            try { stage.setPointerCapture(event.pointerId); } catch (e) {}
+        }
+    }, true);
+
+    stage.addEventListener("pointermove", function (event) {
+        if (event.pointerType === "touch" && studyPdfGesturePointers[event.pointerId]) {
+            studyPdfGesturePointers[event.pointerId].x = event.clientX;
+            studyPdfGesturePointers[event.pointerId].y = event.clientY;
+        }
+        if (studyPdfPinchGesture) {
+            event.preventDefault(); event.stopImmediatePropagation();
+            var a = studyPdfGesturePointers[studyPdfPinchGesture.ids[0]];
+            var b = studyPdfGesturePointers[studyPdfPinchGesture.ids[1]];
+            if (a && b) {
+                var distance = Math.max(1, pointDistance(a, b));
+                applyStudyPdfZoom(studyPdfPinchGesture.zoom * distance / studyPdfPinchGesture.distance);
+            }
+            return;
+        }
+        if (studyPdfPanPointer && studyPdfPanPointer.id === event.pointerId) {
+            event.preventDefault(); event.stopImmediatePropagation();
+            studyPdfZoomPan.x = studyPdfPanPointer.panX + event.clientX - studyPdfPanPointer.x;
+            studyPdfZoomPan.y = studyPdfPanPointer.panY + event.clientY - studyPdfPanPointer.y;
+            applyStudyPdfZoom(studyPdfZoom);
+        }
+    }, true);
+
+    function finishPointer(event) {
+        if (studyPdfPinchGesture) {
+            event.preventDefault(); event.stopImmediatePropagation();
+        }
+        delete studyPdfGesturePointers[event.pointerId];
+        if (studyPdfPinchGesture && Object.keys(studyPdfGesturePointers).length < 2) studyPdfPinchGesture = null;
+        if (studyPdfPanPointer && studyPdfPanPointer.id === event.pointerId) studyPdfPanPointer = null;
+    }
+    stage.addEventListener("pointerup", finishPointer, true);
+    stage.addEventListener("pointercancel", finishPointer, true);
+
     stage.addEventListener("wheel", function (event) {
         if (!event.ctrlKey && !event.metaKey) return;
         event.preventDefault();
         applyStudyPdfZoom(studyPdfZoom * (event.deltaY < 0 ? 1.12 : 0.89));
     }, { passive: false });
-    stage.addEventListener("pointerdown", function (event) {
-        if (studyPdfZoom <= 1.02 || (event.pointerType === "mouse" && event.button !== 0)) return;
-        studyPdfPanPointer = { id: event.pointerId, x: event.clientX, y: event.clientY, panX: studyPdfZoomPan.x, panY: studyPdfZoomPan.y };
-        try { stage.setPointerCapture(event.pointerId); } catch (e) {}
-    });
-    stage.addEventListener("pointermove", function (event) {
-        if (!studyPdfPanPointer || studyPdfPanPointer.id !== event.pointerId || studyPdfZoom <= 1.02) return;
-        event.preventDefault();
-        studyPdfZoomPan.x = studyPdfPanPointer.panX + event.clientX - studyPdfPanPointer.x;
-        studyPdfZoomPan.y = studyPdfPanPointer.panY + event.clientY - studyPdfPanPointer.y;
-        applyStudyPdfZoom(studyPdfZoom);
-    }, { passive: false });
-    function endPan(event) {
-        if (studyPdfPanPointer && (!event || studyPdfPanPointer.id === event.pointerId)) studyPdfPanPointer = null;
-    }
-    stage.addEventListener("pointerup", endPan);
-    stage.addEventListener("pointercancel", endPan);
 }
 
 function bindStudyPdfKeyboardNavigation() {

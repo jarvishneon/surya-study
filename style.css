@@ -1059,3 +1059,25 @@ body {
     flex: 0 0 auto;
     margin: auto;
 }
+
+
+/* PDF fidelity + touch gesture isolation */
+#study-pdf-reader-view .pdf-book-page::before,
+#study-pdf-reader-view .pdf-book-page::after {
+    display: none !important; /* Do not tint or wash out the source PDF. */
+}
+#study-pdf-reader-view .pdf-book-page canvas {
+    opacity: 1 !important;
+    filter: none !important;
+    image-rendering: auto;
+    object-fit: fill;
+}
+#study-pdf-reader-view .pdf-book {
+    transition: none !important; /* Avoid delayed, temporarily soft zoom frames. */
+}
+#study-pdf-reader-view .pdf-book-stage,
+#study-pdf-reader-view .pdf-book,
+#study-pdf-reader-view .pdf-book .stf__parent,
+#study-pdf-reader-view .pdf-book .stf__item {
+    touch-action: none !important;
+}
