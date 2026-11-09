@@ -2,546 +2,546 @@
   {
     "id": "e1",
     "type": "mcq",
-    "question": "Translate to English: 'वह गाना गाता है।'",
+    "question": "Translate to English: 'वह एक पत्र लिखता है।'",
     "options": [
-      "He is singing a song.",
-      "He sing a song.",
-      "He sings a song.",
-      "He sang a song."
+      "He is writing a letter.",
+      "He write a letter.",
+      "He writes a letter.",
+      "He wrote a letter."
     ],
     "answer": 2
   },
   {
     "id": "e2",
     "type": "mcq",
-    "question": "Translate to English: 'वह गाना नहीं गा रहा है।'",
+    "question": "Translate to English: 'वह एक पत्र नहीं लिख रहा है।'",
     "options": [
-      "He does not sing a song.",
-      "He is not singing a song.",
-      "He not singing a song.",
-      "He is not sing a song."
+      "He does not write a letter.",
+      "He is not writing a letter.",
+      "He not writing a letter.",
+      "He is not write a letter."
     ],
     "answer": 1
   },
   {
     "id": "e3",
     "type": "mcq",
-    "question": "Fill in the blank: ___ they play football?",
-    "options": ["Does", "Is", "Are", "Do"],
+    "question": "Fill in the blank: ___ Ram go to school daily?",
+    "options": ["Do", "Is", "Are", "Does"],
     "answer": 3
   },
   {
     "id": "e4",
     "type": "mcq",
-    "question": "Translate to English: 'क्या वे फुटबॉल नहीं खेल रहे हैं?'",
+    "question": "Translate to English: 'क्या लड़कियाँ नाच नहीं रही हैं?'",
     "options": [
-      "Don't they play football?",
-      "Are they not playing football?",
-      "Is they not playing football?",
-      "Do they not playing football?"
+      "Don't the girls dance?",
+      "Are the girls not dancing?",
+      "Is the girls not dancing?",
+      "Do the girls not dancing?"
     ],
     "answer": 1
   },
   {
     "id": "e5",
     "type": "mcq",
-    "question": "Translate to English: 'वह कब आता है?'",
+    "question": "Translate to English: 'तुम स्कूल कब जाते हो?'",
     "options": [
-      "When is he coming?",
-      "When he comes?",
-      "When does he come?",
-      "When do he come?"
+      "When are you going to school?",
+      "When you go to school?",
+      "When do you go to school?",
+      "When does you go to school?"
     ],
     "answer": 2
   },
   {
     "id": "e6",
     "type": "mcq",
-    "question": "Translate to English: 'मैं दूध नहीं पीता हूँ।'",
+    "question": "Translate to English: 'मैं चाय नहीं बनाता हूँ।'",
     "options": [
-      "I am not drinking milk.",
-      "I does not drink milk.",
-      "I not drink milk.",
-      "I do not drink milk."
+      "I am not making tea.",
+      "I does not make tea.",
+      "I not make tea.",
+      "I do not make tea."
     ],
     "answer": 3
   },
   {
     "id": "e7",
     "type": "mcq",
-    "question": "Fill in the blank: The children ___ sleeping.",
-    "options": ["is", "am", "are", "was"],
+    "question": "Fill in the blank: The birds ___ flying in the sky.",
+    "options": ["is", "am", "are", "does"],
     "answer": 2
   },
   {
     "id": "e8",
     "type": "mcq",
-    "question": "Translate to English: 'क्या वह गाना नहीं गाता है?'",
+    "question": "Translate to English: 'क्या वह सच नहीं बोलता है?'",
     "options": [
-      "Is he not singing a song?",
-      "Doesn't he sing a song?",
-      "Don't he sing a song?",
-      "He doesn't sing a song?"
+      "Is he not speaking the truth?",
+      "Doesn't he speak the truth?",
+      "Don't he speak the truth?",
+      "He doesn't speak the truth?"
     ],
     "answer": 1
   },
   {
     "id": "e9",
     "type": "mcq",
-    "question": "Translate to English: 'क्या तुम दूध पी रहे हो?'",
+    "question": "Translate to English: 'क्या वे टीवी देख रहे हैं?'",
     "options": [
-      "Do you drink milk?",
-      "Is you drinking milk?",
-      "Are you drinking milk?",
-      "You are drinking milk?"
+      "Do they watch TV?",
+      "Is they watching TV?",
+      "Are they watching TV?",
+      "They are watching TV?"
     ],
     "answer": 2
   },
   {
     "id": "e10",
     "type": "mcq",
-    "question": "Translate to English: 'तुम कहाँ नहीं रहते हो?'",
+    "question": "Translate to English: 'वह वहाँ क्यों नहीं जाता है?'",
     "options": [
-      "Where are you not living?",
-      "Where you do not live?",
-      "Where do you not live?",
-      "Where does you not live?"
+      "Why is he not going there?",
+      "Why he does not go there?",
+      "Why does he not go there?",
+      "Why do he not go there?"
     ],
     "answer": 2
   },
   {
     "id": "e11",
     "type": "mcq",
-    "question": "Translate to Hindi: 'They play football.'",
+    "question": "Translate to Hindi: 'Sita reads a book.'",
     "options": [
-      "वे फुटबॉल खेल रहे हैं।",
-      "वे फुटबॉल खेलते हैं।",
-      "वे फुटबॉल नहीं खेलते हैं।",
-      "क्या वे फुटबॉल खेलते हैं?"
+      "सीता किताब पढ़ रही है।",
+      "सीता किताब पढ़ती है।",
+      "सीता किताब नहीं पढ़ती है।",
+      "क्या सीता किताब पढ़ती है?"
     ],
     "answer": 1
   },
   {
     "id": "e12",
     "type": "mcq",
-    "question": "Translate to Hindi: 'Mother is not cooking food.'",
+    "question": "Translate to Hindi: 'Father is not going to the market.'",
     "options": [
-      "माँ खाना बनाती है।",
-      "माँ खाना नहीं बनाती है।",
-      "माँ खाना नहीं बना रही है।",
-      "क्या माँ खाना नहीं बना रही है?"
+      "पिताजी बाज़ार जाते हैं।",
+      "पिताजी बाज़ार नहीं जाते हैं।",
+      "पिताजी बाज़ार नहीं जा रहे हैं।",
+      "क्या पिताजी बाज़ार नहीं जा रहे हैं?"
     ],
     "answer": 2
   },
   {
     "id": "e13",
     "type": "mcq",
-    "question": "Translate to English: 'क्या बिल्ली दूध पीती है?'",
+    "question": "Translate to English: 'क्या कुत्ता भौंकता है?'",
     "options": [
-      "Is the cat drinking milk?",
-      "Does the cat drink milk?",
-      "Do the cat drink milk?",
-      "The cat drinks milk?"
+      "Is the dog barking?",
+      "Does the dog bark?",
+      "Do the dog bark?",
+      "The dog barks?"
     ],
     "answer": 1
   },
   {
     "id": "e14",
     "type": "mcq",
-    "question": "Translate to Hindi: \"Aren't the children sleeping?\"",
+    "question": "Translate to Hindi: \"Isn't it raining?\"",
     "options": [
-      "क्या बच्चे सोते हैं?",
-      "बच्चे नहीं सो रहे हैं।",
-      "क्या बच्चे नहीं सो रहे हैं?",
-      "क्या बच्चे नहीं सोते हैं?"
+      "क्या बारिश होती है?",
+      "बारिश नहीं हो रही है।",
+      "क्या बारिश नहीं हो रही है?",
+      "क्या बारिश नहीं होती है?"
     ],
     "answer": 2
   },
   {
     "id": "e15",
     "type": "mcq",
-    "question": "Translate to Hindi: 'Where do you live?'",
+    "question": "Translate to Hindi: 'Where are you going?'",
     "options": [
-      "तुम कहाँ रह रहे हो?",
-      "तुम कहाँ रहते हो?",
-      "तुम कहाँ नहीं रहते हो?",
-      "क्या तुम कहाँ रहते हो?"
+      "तुम कहाँ जाते हो?",
+      "तुम कहाँ जा रहे हो?",
+      "तुम कहाँ नहीं जा रहे हो?",
+      "क्या तुम कहीं जा रहे हो?"
     ],
     "answer": 1
   },
   {
     "id": "e16",
     "type": "mcq",
-    "question": "Fill in the blank: He ___ not speak English.",
+    "question": "Fill in the blank: She ___ not drive a car.",
     "options": ["do", "is", "does", "are"],
     "answer": 2
   },
   {
     "id": "e17",
     "type": "mcq",
-    "question": "Translate to English: 'माँ खाना बना रही है।'",
+    "question": "Translate to English: 'बच्चा रो रहा है।'",
     "options": [
-      "Mother cooks food.",
-      "Mother is cook food.",
-      "Mother is cooking food.",
-      "Mother are cooking food."
+      "The baby cries.",
+      "The baby is cry.",
+      "The baby is crying.",
+      "The baby are crying."
     ],
     "answer": 2
   },
   {
     "id": "e18",
     "type": "mcq",
-    "question": "Translate to Hindi: \"Don't they play football?\"",
+    "question": "Translate to Hindi: \"Don't you watch TV?\"",
     "options": [
-      "क्या वे फुटबॉल खेलते हैं?",
-      "वे फुटबॉल नहीं खेलते हैं।",
-      "क्या वे फुटबॉल नहीं खेल रहे हैं?",
-      "क्या वे फुटबॉल नहीं खेलते हैं?"
+      "क्या तुम टीवी देखते हो?",
+      "तुम टीवी नहीं देखते हो।",
+      "क्या तुम टीवी नहीं देख रहे हो?",
+      "क्या तुम टीवी नहीं देखते हो?"
     ],
     "answer": 3
   },
   {
     "id": "e19",
     "type": "mcq",
-    "question": "Fill in the blank: ___ mother cooking food?",
-    "options": ["Does", "Do", "Are", "Is"],
+    "question": "Fill in the blank: ___ the boys swimming in the river?",
+    "options": ["Does", "Do", "Is", "Are"],
     "answer": 3
   },
   {
     "id": "e20",
     "type": "mcq",
-    "question": "Translate to English: 'वह क्या नहीं पढ़ता है?'",
+    "question": "Translate to English: 'तुम क्या नहीं खा रहे हो?'",
     "options": [
-      "What is he not reading?",
-      "What he does not read?",
-      "What does he not read?",
-      "What do he not read?"
+      "What do you not eat?",
+      "What you are not eating?",
+      "What are you not eating?",
+      "What is you not eating?"
     ],
     "answer": 2
   },
   {
     "id": "e21",
     "type": "mcq",
-    "question": "Translate to English: 'सूरज पश्चिम में अस्त होता है।'",
+    "question": "Translate to English: 'सूरज पूर्व में उगता है।'",
     "options": [
-      "The sun is setting in the west.",
-      "The sun sets in the west.",
-      "The sun set in the west.",
-      "The sun setting in the west."
+      "The sun is rising in the east.",
+      "The sun rises in the east.",
+      "The sun rise in the east.",
+      "The sun rising in the east."
     ],
     "answer": 1
   },
   {
     "id": "e22",
     "type": "mcq",
-    "question": "Translate to English: 'बच्चे नहीं सो रहे हैं।'",
+    "question": "Translate to English: 'छात्र शोर नहीं मचा रहे हैं।'",
     "options": [
-      "The children do not sleep.",
-      "The children is not sleeping.",
-      "The children are not sleeping.",
-      "The children not sleeping."
+      "The students do not make a noise.",
+      "The students is not making a noise.",
+      "The students are not making a noise.",
+      "The students not making a noise."
     ],
     "answer": 2
   },
   {
     "id": "e23",
     "type": "mcq",
-    "question": "Translate to Hindi: 'Do you drink milk?'",
+    "question": "Translate to Hindi: 'Does she make tea?'",
     "options": [
-      "क्या तुम दूध पी रहे हो?",
-      "तुम दूध पीते हो।",
-      "क्या तुम दूध पीते हो?",
-      "क्या तुम दूध नहीं पीते हो?"
+      "क्या वह चाय बना रही है?",
+      "वह चाय बनाती है।",
+      "क्या वह चाय बनाती है?",
+      "क्या वह चाय नहीं बनाती है?"
     ],
     "answer": 2
   },
   {
     "id": "e24",
     "type": "mcq",
-    "question": "Translate to English: 'क्या वह गाना नहीं गा रहा है?'",
+    "question": "Translate to English: 'क्या कुत्ता नहीं भौंक रहा है?'",
     "options": [
-      "Does he not sing a song?",
-      "Is he not singing a song?",
-      "Are he not singing a song?",
-      "He is not singing a song?"
+      "Does the dog not bark?",
+      "Is the dog not barking?",
+      "Are the dog not barking?",
+      "The dog is not barking?"
     ],
     "answer": 1
   },
   {
     "id": "e25",
     "type": "mcq",
-    "question": "Translate to English: 'तुम कौन सा खेल खेलते हो?'",
+    "question": "Translate to English: 'तुम किसकी किताब पढ़ते हो?'",
     "options": [
-      "Which game are you playing?",
-      "Which game you play?",
-      "Which game does you play?",
-      "Which game do you play?"
+      "Whose book are you reading?",
+      "Whose book you read?",
+      "Whose book does you read?",
+      "Whose book do you read?"
     ],
     "answer": 3
   },
   {
     "id": "e26",
     "type": "mcq",
-    "question": "Translate to Hindi: 'The cat does not drink milk.'",
+    "question": "Translate to Hindi: 'The horse does not run fast.'",
     "options": [
-      "बिल्ली दूध नहीं पी रही है।",
-      "बिल्ली दूध नहीं पीती है।",
-      "क्या बिल्ली दूध नहीं पीती है?",
-      "बिल्ली दूध पीती है।"
+      "घोड़ा तेज़ नहीं दौड़ रहा है।",
+      "घोड़ा तेज़ नहीं दौड़ता है।",
+      "क्या घोड़ा तेज़ नहीं दौड़ता है?",
+      "घोड़ा तेज़ दौड़ता है।"
     ],
     "answer": 1
   },
   {
     "id": "e27",
     "type": "mcq",
-    "question": "Translate to Hindi: 'I am drinking milk.'",
+    "question": "Translate to Hindi: 'I am listening to music.'",
     "options": [
-      "मैं दूध पीता हूँ।",
-      "मैं दूध पी रहा हूँ।",
-      "मैं दूध नहीं पी रहा हूँ।",
-      "क्या मैं दूध पी रहा हूँ?"
+      "मैं गाना सुनता हूँ।",
+      "मैं गाना सुन रहा हूँ।",
+      "मैं गाना नहीं सुन रहा हूँ।",
+      "क्या मैं गाना सुन रहा हूँ?"
     ],
     "answer": 1
   },
   {
     "id": "e28",
     "type": "mcq",
-    "question": "Fill in the blank: ___ he not sing a song?",
+    "question": "Fill in the blank: ___ she not write a letter?",
     "options": ["Do", "Is", "Does", "Are"],
     "answer": 2
   },
   {
     "id": "e29",
     "type": "mcq",
-    "question": "Translate to Hindi: 'Is he singing a song?'",
+    "question": "Translate to Hindi: 'Is she drinking water?'",
     "options": [
-      "क्या वह गाना गाता है?",
-      "वह गाना गा रहा है।",
-      "क्या वह गाना गा रहा है?",
-      "क्या वह गाना नहीं गा रहा है?"
+      "क्या वह पानी पीती है?",
+      "वह पानी पी रही है।",
+      "क्या वह पानी पी रही है?",
+      "क्या वह पानी नहीं पी रही है?"
     ],
     "answer": 2
   },
   {
     "id": "e30",
     "type": "mcq",
-    "question": "Translate to Hindi: \"Why don't you laugh?\"",
+    "question": "Translate to Hindi: \"Why aren't you working hard?\"",
     "options": [
-      "तुम क्यों हँसते हो?",
-      "तुम क्यों नहीं हँसते हो?",
-      "क्या तुम क्यों नहीं हँसते हो?",
-      "तुम क्यों नहीं हँस रहे हो?"
+      "तुम कठिन मेहनत क्यों करते हो?",
+      "तुम कठिन मेहनत क्यों नहीं कर रहे हो?",
+      "क्या तुम कठिन मेहनत नहीं कर रहे हो?",
+      "तुम कठिन मेहनत क्यों नहीं करते हो?"
     ],
     "answer": 1
   },
   {
     "id": "e31",
     "type": "mcq",
-    "question": "Fill in the blank: The cat ___ milk.",
-    "options": ["drink", "drinks", "drinking", "is drinking"],
+    "question": "Fill in the blank: The farmer ___ in the field.",
+    "options": ["work", "works", "working", "are working"],
     "answer": 1
   },
   {
     "id": "e32",
     "type": "mcq",
-    "question": "Translate to Hindi: 'They are not playing football.'",
+    "question": "Translate to Hindi: 'We are not helping him.'",
     "options": [
-      "वे फुटबॉल नहीं खेलते हैं।",
-      "वे फुटबॉल नहीं खेल रहे हैं।",
-      "क्या वे फुटबॉल नहीं खेल रहे हैं?",
-      "वे फुटबॉल खेल रहे हैं।"
+      "हम उसकी मदद नहीं करते हैं।",
+      "हम उसकी मदद नहीं कर रहे हैं।",
+      "क्या हम उसकी मदद नहीं कर रहे हैं?",
+      "हम उसकी मदद कर रहे हैं।"
     ],
     "answer": 1
   },
   {
     "id": "e33",
     "type": "mcq",
-    "question": "Translate to English: 'क्या वह अंग्रेजी बोलता है?'",
+    "question": "Translate to English: 'क्या तुम सुबह जल्दी उठते हो?'",
     "options": [
-      "Is he speaking English?",
-      "Does he speak English?",
-      "Do he speak English?",
-      "He speaks English?"
+      "Are you waking up early in the morning?",
+      "Do you wake up early in the morning?",
+      "Does you wake up early in the morning?",
+      "You wake up early in the morning?"
     ],
     "answer": 1
   },
   {
     "id": "e34",
     "type": "mcq",
-    "question": "Fill in the blank: ___ you not drinking milk?",
-    "options": ["Is", "Does", "Do", "Are"],
+    "question": "Fill in the blank: ___ I not telling the truth?",
+    "options": ["Is", "Does", "Do", "Am"],
     "answer": 3
   },
   {
     "id": "e35",
     "type": "mcq",
-    "question": "Translate to English: 'वे कैसे आते हैं?'",
+    "question": "Translate to English: 'वह यह काम कैसे करता है?'",
     "options": [
-      "How are they coming?",
-      "How they come?",
-      "How does they come?",
-      "How do they come?"
+      "How is he doing this work?",
+      "How he does this work?",
+      "How do he do this work?",
+      "How does he do this work?"
     ],
     "answer": 3
   },
   {
     "id": "e36",
     "type": "mcq",
-    "question": "Translate to English: 'वह अंग्रेजी नहीं बोलता है।'",
+    "question": "Translate to English: 'राम मेरी मदद नहीं करता है।'",
     "options": [
-      "He is not speaking English.",
-      "He do not speak English.",
-      "He not speak English.",
-      "He does not speak English."
+      "Ram is not helping me.",
+      "Ram do not help me.",
+      "Ram not help me.",
+      "Ram does not help me."
     ],
     "answer": 3
   },
   {
     "id": "e37",
     "type": "mcq",
-    "question": "Translate to English: 'बच्चे सो रहे हैं।'",
+    "question": "Translate to English: 'लड़के नदी में तैर रहे हैं।'",
     "options": [
-      "The children sleep.",
-      "The children is sleeping.",
-      "The children are sleeping.",
-      "The children are sleep."
+      "The boys swim in the river.",
+      "The boys is swimming in the river.",
+      "The boys are swimming in the river.",
+      "The boys are swim in the river."
     ],
     "answer": 2
   },
   {
     "id": "e38",
     "type": "mcq",
-    "question": "Translate to English: 'क्या तुम दूध नहीं पीते हो?'",
+    "question": "Translate to English: 'क्या वे किताब नहीं पढ़ते हैं?'",
     "options": [
-      "Are you not drinking milk?",
-      "Does you not drink milk?",
-      "Don't you drink milk?",
-      "You do not drink milk?"
+      "Are they not reading a book?",
+      "Doesn't they read a book?",
+      "Don't they read a book?",
+      "They do not read a book?"
     ],
     "answer": 2
   },
   {
     "id": "e39",
     "type": "mcq",
-    "question": "Translate to English: 'क्या बच्चे सो रहे हैं?'",
+    "question": "Translate to English: 'क्या बारिश हो रही है?'",
     "options": [
-      "Do the children sleep?",
-      "Is the children sleeping?",
-      "Are the children sleeping?",
-      "The children are sleeping?"
+      "Does it rain?",
+      "Are it raining?",
+      "Is it raining?",
+      "It is raining?"
     ],
     "answer": 2
   },
   {
     "id": "e40",
     "type": "mcq",
-    "question": "Translate to English: 'तुम क्यों नहीं हँसते हो?'",
+    "question": "Translate to English: 'तुम वहाँ क्यों नहीं जा रहे हो?'",
     "options": [
-      "Why are you not laughing?",
-      "Why you do not laugh?",
-      "Why don't you laugh?",
-      "Why does you not laugh?"
+      "Why do you not go there?",
+      "Why you are not going there?",
+      "Why aren't you going there?",
+      "Why isn't you going there?"
     ],
     "answer": 2
   },
   {
     "id": "e41",
     "type": "mcq",
-    "question": "Translate to Hindi: 'I drink milk.'",
+    "question": "Translate to Hindi: 'Stars shine at night.'",
     "options": [
-      "मैं दूध पी रहा हूँ।",
-      "मैं दूध पीता हूँ।",
-      "मैं दूध नहीं पीता हूँ।",
-      "क्या मैं दूध पीता हूँ?"
+      "तारे रात में चमक रहे हैं।",
+      "तारे रात में चमकते हैं।",
+      "तारे रात में नहीं चमकते हैं।",
+      "क्या तारे रात में चमकते हैं?"
     ],
     "answer": 1
   },
   {
     "id": "e42",
     "type": "mcq",
-    "question": "Fill in the blank: He is not ___ a song.",
-    "options": ["sing", "sings", "singing", "sang"],
+    "question": "Fill in the blank: She is not ___ the car.",
+    "options": ["drive", "drives", "driving", "drove"],
     "answer": 2
   },
   {
     "id": "e43",
     "type": "mcq",
-    "question": "Fill in the blank: ___ the cat drink milk?",
+    "question": "Fill in the blank: ___ the train arrive on time?",
     "options": ["Do", "Is", "Does", "Are"],
     "answer": 2
   },
   {
     "id": "e44",
     "type": "mcq",
-    "question": "Translate to Hindi: \"Isn't mother cooking food?\"",
+    "question": "Translate to Hindi: \"Aren't the girls dancing?\"",
     "options": [
-      "क्या माँ खाना बनाती है?",
-      "माँ खाना नहीं बना रही है।",
-      "क्या माँ खाना नहीं बना रही है?",
-      "क्या माँ खाना नहीं बनाती है?"
+      "क्या लड़कियाँ नाचती हैं?",
+      "लड़कियाँ नहीं नाच रही हैं।",
+      "क्या लड़कियाँ नहीं नाच रही हैं?",
+      "क्या लड़कियाँ नहीं नाचती हैं?"
     ],
     "answer": 2
   },
   {
     "id": "e45",
     "type": "mcq",
-    "question": "Fill in the blank: What ___ he read?",
-    "options": ["do", "is", "does", "are"],
+    "question": "Fill in the blank: Whom ___ she calling?",
+    "options": ["do", "does", "is", "are"],
     "answer": 2
   },
   {
     "id": "e46",
     "type": "mcq",
-    "question": "Translate to English: 'वे फुटबॉल नहीं खेलते हैं।'",
+    "question": "Translate to English: 'पक्षी रात में नहीं उड़ते हैं।'",
     "options": [
-      "They are not playing football.",
-      "They does not play football.",
-      "They not play football.",
-      "They do not play football."
+      "Birds are not flying at night.",
+      "Birds does not fly at night.",
+      "Birds not fly at night.",
+      "Birds do not fly at night."
     ],
     "answer": 3
   },
   {
     "id": "e47",
     "type": "mcq",
-    "question": "Translate to English: 'वे फुटबॉल खेल रहे हैं।'",
+    "question": "Translate to English: 'मैं बाज़ार जा रहा हूँ।'",
     "options": [
-      "They play football.",
-      "They is playing football.",
-      "They are playing football.",
-      "They are play football."
+      "I go to the market.",
+      "I is going to the market.",
+      "I am going to the market.",
+      "I am go to the market."
     ],
     "answer": 2
   },
   {
     "id": "e48",
     "type": "mcq",
-    "question": "Translate to Hindi: \"Doesn't the cat drink milk?\"",
+    "question": "Translate to Hindi: \"Doesn't he know you?\"",
     "options": [
-      "क्या बिल्ली दूध पीती है?",
-      "बिल्ली दूध नहीं पीती है।",
-      "क्या बिल्ली दूध नहीं पी रही है?",
-      "क्या बिल्ली दूध नहीं पीती है?"
+      "क्या वह तुम्हें जानता है?",
+      "वह तुम्हें नहीं जानता है।",
+      "क्या वह तुम्हें नहीं जान रहा है?",
+      "क्या वह तुम्हें नहीं जानता है?"
     ],
     "answer": 3
   },
   {
     "id": "e49",
     "type": "mcq",
-    "question": "Translate to English: 'क्या माँ खाना बना रही है?'",
+    "question": "Translate to English: 'क्या वह पानी पी रहा है?'",
     "options": [
-      "Does mother cook food?",
-      "Is mother cooking food?",
-      "Are mother cooking food?",
-      "Mother is cooking food?"
+      "Does he drink water?",
+      "Is he drinking water?",
+      "Are he drinking water?",
+      "He is drinking water?"
     ],
     "answer": 1
   },
   {
     "id": "e50",
     "type": "mcq",
-    "question": "Fill in the blank: When ___ he not come?",
-    "options": ["do", "is", "does", "are"],
+    "question": "Fill in the blank: Why ___ you not listening to me?",
+    "options": ["do", "is", "are", "does"],
     "answer": 2
   }
 ]
