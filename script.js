@@ -1,496 +1,413 @@
-// =========================
-// RJ STUDY ACADEMY - PORTAL
-// =========================
+// RJ STUDY ACADEMY - script.js v29.0 (Pro Design Update)
+// Chat: poll sync + max 3 msgs + 2 min auto wipe (server)
 
-// ===== VALID PASSWORDS =====
-var VALID_PASSWORDS = ["04783", "padhlo", "4181723"];
+const VALID_PASSWORDS = ["04783", "padhlo", "4181723"];
+const WORKER_URL = "https://rj-test-backen.internationalbgi.workers.dev";
 
-// ===== BACKEND WORKER URL =====
-var WORKER_URL = "https://rj-test-backen.internationalbgi.workers.dev";
-
-// ===== GLOBAL STATE =====
-var currentStudent = null;
-var chatHistory = [];
-var isChatLoading = false;
-var chatInitialized = false;
-
-// ===== PDF STATE =====
-var studyPdfDocument = null;
-var studyPdfZoom = 1;
-var studyPdfBaseScale = 1;
-var studyPdfPageInfo = {};
-var studyPdfLoadToken = 0;
-var studyPdfRenderDebounce = null;
-var studyPdfIsPinching = false;
-
-// ===== INITIALIZATION =====
-document.addEventListener("DOMContentLoaded", function() {
-    initPortal();
-});
-
-function initPortal() {
-    checkExistingSession();
-    setupEventListeners();
-    setupChatSystem();
-}
-
-function setupEventListeners() {
-    var loginForm = document.getElementById("loginForm");
-    if (loginForm) {
-        loginForm.addEventListener("submit", handleLogin);
-    }
-
-    var logoutBtn = document.getElementById("logoutBtn");
-    if (logoutBtn) {
-        logoutBtn.addEventListener("click", logout);
-    }
-
-    var profileBtn = document.getElementById("profileBtn");
-    if (profileBtn) {
-        profileBtn.addEventListener("click", toggleProfileMenu);
-    }
-
-    document.addEventListener("click", function(e) {
-        var profileMenu = document.getElementById("profileMenu");
-        var profileBtn = document.getElementById("profileBtn");
-        if (profileMenu && profileMenu.classList.contains("active")) {
-            if (!profileMenu.contains(e.target) && !profileBtn.contains(e.target)) {
-                profileMenu.classList.remove("active");
-            }
-        }
-    });
-
-    var closeChatBtn = document.getElementById("closeChatBtn");
-    if (closeChatBtn) {
-        closeChatBtn.addEventListener("click", closeChat);
-    }
-
-    var sendChatBtn = document.getElementById("sendChatBtn");
-    if (sendChatBtn) {
-        sendChatBtn.addEventListener("click", sendChatMessage);
-    }
-
-    var chatInput = document.getElementById("chatInput");
-    if (chatInput) {
-        chatInput.addEventListener("keypress", function(e) {
-            if (e.key === "Enter") {
-                sendChatMessage();
-            }
-        });
-    }
-}
-
-// ===== AUTHENTICATION =====
+/* -------------- LOGIN SYSTEM -------------- */
 function handleLogin(e) {
-    e.preventDefault();
-
-    var studentId = document.getElementById("studentId").value.trim();
-    var password = document.getElementById("password").value.trim();
-    var errorMsg = document.getElementById("loginError");
-
-    if (!studentId || !password) {
-        showError(errorMsg, "Please fill in all fields");
-        return;
+    if (e) {
+        e.preventDefault();
+        e.stopPropagation();
     }
 
-    if (!VALID_PASSWORDS.includes(password)) {
-        showError(errorMsg, "Invalid password. Please try again.");
-        return;
+    const nameInput = document.getElementById("usernameInput");
+    const passInput = document.getElementById("passwordInput");
+    const errorMsg = document.getElementById("errorMsg");
+
+    if (!nameInput || !passInput) return false;
+
+    const enteredName = nameInput.value.trim();
+    const enteredPass = passInput.value.trim().toLowerCase();
+
+    if (!enteredName) {
+        if (errorMsg) {
+            errorMsg.innerText = "Please enter your name!";
+            errorMsg.style.display = "block";
+        }
+        return false;
     }
 
-    currentStudent = {
-        id: studentId,
-        name: getStudentName(studentId)
-    };
+    if (VALID_PASSWORDS.includes(enteredPass)) {
+        if (errorMsg) errorMsg.style.display = "none";
 
-    sessionStorage.setItem("rjStudySession", JSON.stringify(currentStudent));
+        localStorage.setItem("rj_student_name", enteredName);
+        localStorage.setItem("rj_login_time", Date.now().toString());
+        localStorage.setItem("rjStudyUsername", enteredName);
+        sessionStorage.setItem("student_name", enteredName);
 
-    showDashboard();
+        activateDashboard(enteredName);
+    } else {
+        if (errorMsg) {
+            errorMsg.innerText = "Incorrect password!";
+            errorMsg.style.display = "block";
+        }
+        passInput.value = "";
+        passInput.focus();
+    }
+    return false;
 }
 
 function checkExistingSession() {
-    var session = sessionStorage.getItem("rjStudySession");
-    if (session) {
-        try {
-            currentStudent = JSON.parse(session);
-            showDashboard();
-        } catch (e) {
-            sessionStorage.removeItem("rjStudySession");
+    const savedName = localStorage.getItem("rj_student_name");
+    const loginTime = localStorage.getItem("rj_login_time");
+
+    if (savedName && loginTime) {
+        const hoursPassed = (Date.now() - Number(loginTime)) / (1000 * 60 * 60);
+        if (hoursPassed < 24) {
+            activateDashboard(savedName);
+            return true;
         }
+        localStorage.removeItem("rj_student_name");
+        localStorage.removeItem("rj_login_time");
     }
+    return false;
 }
 
-function getStudentName(studentId) {
-    var names = {
-        "RJ001": "Rahul Sharma",
-        "RJ002": "Priya Patel",
-        "RJ003": "Amit Kumar",
-        "RJ004": "Sneha Gupta",
-        "RJ005": "Vikram Singh"
-    };
-    return names[studentId] || "Student " + studentId;
-}
-
-function showError(element, message) {
-    if (element) {
-        element.textContent = message;
-        element.style.display = "block";
-        setTimeout(function() {
-            element.style.display = "none";
-        }, 3000);
-    }
-}
-
-function logout() {
-    currentStudent = null;
-    chatHistory = [];
-    chatInitialized = false;
-    sessionStorage.removeItem("rjStudySession");
-
-    document.getElementById("loginView").classList.add("active");
-    document.getElementById("dashboardView").classList.remove("active");
-
-    document.getElementById("studentId").value = "";
-    document.getElementById("password").value = "";
-}
-
-// ===== DASHBOARD =====
-function showDashboard() {
-    document.getElementById("loginView").classList.remove("active");
-    document.getElementById("dashboardView").classList.add("active");
-
-    updateGreeting();
-    updateProfileInfo();
-    activateDashboard();
-}
-
-function updateGreeting() {
-    var greetingEl = document.getElementById("greetingText");
-    if (greetingEl && currentStudent) {
-        var greeting = getGreeting();
-        greetingEl.textContent = greeting + ", " + currentStudent.name + "!";
-    }
-}
-
+/* -------------- GREETING HELPER -------------- */
 function getGreeting() {
-    var hour = new Date().getHours();
-    if (hour < 12) return "Good Morning";
-    if (hour < 17) return "Good Afternoon";
-    return "Good Evening";
+    var h = new Date().getHours();
+    if (h < 12) return "Good Morning ☀️";
+    if (h < 17) return "Good Afternoon 🌤️";
+    if (h < 21) return "Good Evening 🌙";
+    return "Good Night 🌑";
 }
 
-function updateProfileInfo() {
-    if (!currentStudent) return;
+/* -------------- DASHBOARD NAVIGATION -------------- */
+function activateDashboard(studentName) {
+    var displayUsername = document.getElementById("displayUsername");
+    if (displayUsername) displayUsername.innerText = studentName;
 
-    var profileName = document.getElementById("profileName");
-    var profileId = document.getElementById("profileId");
-
-    if (profileName) profileName.textContent = currentStudent.name;
-    if (profileId) profileId.textContent = "ID: " + currentStudent.id;
-}
-
-function toggleProfileMenu() {
-    var menu = document.getElementById("profileMenu");
-    if (menu) {
-        menu.classList.toggle("active");
-    }
-}
-
-// ===== NAVIGATION =====
-function activateDashboard() {
-    hideAllViews();
-    document.getElementById("dashboardHome").classList.add("active");
-
-    var navItems = document.querySelectorAll(".nav-item");
-    navItems.forEach(function(item) {
-        item.classList.remove("active");
+    document.querySelectorAll(".displayUsernameCopy").forEach(function (el) {
+        el.innerText = studentName;
     });
-    var homeNav = document.querySelector('[data-view="dashboardHome"]');
-    if (homeNav) homeNav.classList.add("active");
+
+    var initial = studentName.charAt(0).toUpperCase();
+
+    // Update profile circles
+    ["profileInitial", "profileInitial2", "profileInitial3", "profileInitial4", "profileInitial5"].forEach(function (id) {
+        var el = document.getElementById(id);
+        if (el) el.innerText = initial;
+    });
+
+    // Update dropdown avatars
+    document.querySelectorAll(".dropdown-avatar").forEach(function (el) {
+        el.innerText = initial;
+    });
+
+    // Update greeting
+    var greetEl = document.getElementById("greetingText");
+    if (greetEl) greetEl.innerText = getGreeting();
+
+    hideAllViews();
+    var dash = document.getElementById("dashboard-view");
+    if (dash) dash.classList.add("active");
 }
 
 function hideAllViews() {
-    var views = document.querySelectorAll(".dashboard-content > div");
-    views.forEach(function(view) {
-        view.classList.remove("active");
+    ["login-view", "dashboard-view", "competitive-view", "boards-view", "notifications-view", "subjects-view", "study-material-view", "study-competitive-view", "study-board-view", "study-class-9-view", "study-class-10-view", "study-content-view", "study-pdf-home-view", "study-pdf-competitive-view", "study-pdf-board-view", "study-pdf-class-9-view", "study-pdf-class-10-view", "study-pdf-reader-view"].forEach(function (id) {
+        var v = document.getElementById(id);
+        if (v) v.classList.remove("active");
     });
 }
 
-function switchView(viewId) {
-    hideAllViews();
-    var target = document.getElementById(viewId);
-    if (target) {
-        target.classList.add("active");
-    }
+function toggleProfileMenu(event) {
+    event.stopPropagation();
+    var container = event.currentTarget.closest(".profile-menu-container");
+    var dropdown = container ? container.querySelector(".profile-dropdown") : null;
+    closeAllDropdowns();
+    if (dropdown) dropdown.classList.toggle("active");
+}
 
-    var navItems = document.querySelectorAll(".nav-item");
-    navItems.forEach(function(item) {
-        item.classList.remove("active");
-        if (item.getAttribute("data-view") === viewId) {
-            item.classList.add("active");
-        }
+function closeAllDropdowns() {
+    document.querySelectorAll(".profile-dropdown").forEach(function (d) {
+        d.classList.remove("active");
     });
+}
+
+function logout() {
+    localStorage.removeItem("rj_student_name");
+    localStorage.removeItem("rj_login_time");
+    localStorage.removeItem("rjStudyUsername");
+    sessionStorage.removeItem("student_name");
+
+    var u = document.getElementById("usernameInput");
+    var p = document.getElementById("passwordInput");
+    if (u) u.value = "";
+    if (p) p.value = "";
+
+    closeAllDropdowns();
+    if (isChatOpen) toggleChat(false);
+    hideAllViews();
+    var loginView = document.getElementById("login-view");
+    if (loginView) loginView.classList.add("active");
 }
 
 function switchSubView(viewId) {
-    var studyViews = document.querySelectorAll(".study-sub-view");
-    studyViews.forEach(function(v) {
-        v.classList.remove("active");
-    });
+    closeAllDropdowns();
+    hideAllViews();
     var target = document.getElementById(viewId);
-    if (target) {
-        target.classList.add("active");
-    }
+    if (target) target.classList.add("active");
+    window.scrollTo({ top: 0, behavior: "smooth" });
 }
 
 function goHome() {
-    activateDashboard();
+    closeAllDropdowns();
+    hideAllViews();
+    var dash = document.getElementById("dashboard-view");
+    if (dash) dash.classList.add("active");
+    window.scrollTo({ top: 0, behavior: "smooth" });
 }
 
-// ===== STUDY MATERIAL SYSTEM =====
-var studyMaterials = {
-    "competitive-jee": [
-        { id: "jee-phy-ch1", title: "Physics - Mechanics", type: "pdf", url: "https://rj-test-backen.internationalbgi.workers.dev/api/pdf/jee-physics-ch1", icon: "fa-atom" },
-        { id: "jee-chem-ch1", title: "Chemistry - Organic", type: "pdf", url: "https://rj-test-backen.internationalbgi.workers.dev/api/pdf/jee-chemistry-ch1", icon: "fa-flask" },
-        { id: "jee-math-ch1", title: "Mathematics - Calculus", type: "pdf", url: "https://rj-test-backen.internationalbgi.workers.dev/api/pdf/jee-maths-ch1", icon: "fa-square-root-variable" }
-    ],
-    "competitive-neet": [
-        { id: "neet-bio-ch1", title: "Biology - Cell Structure", type: "pdf", url: "https://rj-test-backen.internationalbgi.workers.dev/api/pdf/neet-biology-ch1", icon: "fa-dna" },
-        { id: "neet-phy-ch1", title: "Physics - Optics", type: "pdf", url: "https://rj-test-backen.internationalbgi.workers.dev/api/pdf/neet-physics-ch1", icon: "fa-atom" },
-        { id: "neet-chem-ch1", title: "Chemistry - Inorganic", type: "pdf", url: "https://rj-test-backen.internationalbgi.workers.dev/api/pdf/neet-chemistry-ch1", icon: "fa-flask" }
-    ],
-    "boards-10th": [
-        { id: "10th-math-ch1", title: "Mathematics - Real Numbers", type: "pdf", url: "https://rj-test-backen.internationalbgi.workers.dev/api/pdf/10th-maths-ch1", icon: "fa-calculator" },
-        { id: "10th-sci-ch1", title: "Science - Chemical Reactions", type: "pdf", url: "https://rj-test-backen.internationalbgi.workers.dev/api/pdf/10th-science-ch1", icon: "fa-microscope" },
-        { id: "10th-eng-ch1", title: "English - First Flight", type: "pdf", url: "https://rj-test-backen.internationalbgi.workers.dev/api/pdf/10th-english-ch1", icon: "fa-book-open" }
-    ],
-    "boards-12th": [
-        { id: "12th-phy-ch1", title: "Physics - Electrostatics", type: "pdf", url: "https://rj-test-backen.internationalbgi.workers.dev/api/pdf/12th-physics-ch1", icon: "fa-bolt" },
-        { id: "12th-chem-ch1", title: "Chemistry - Solid State", type: "pdf", url: "https://rj-test-backen.internationalbgi.workers.dev/api/pdf/12th-chemistry-ch1", icon: "fa-flask" },
-        { id: "12th-math-ch1", title: "Mathematics - Relations", type: "pdf", url: "https://rj-test-backen.internationalbgi.workers.dev/api/pdf/12th-maths-ch1", icon: "fa-square-root-variable" }
-    ]
-};
-
-function loadStudyMaterials(category) {
-    var container = document.getElementById("studyMaterialList");
-    if (!container) return;
-
-    var materials = studyMaterials[category] || [];
-    container.innerHTML = "";
-
-    if (materials.length === 0) {
-        container.innerHTML = '<div class="empty-state"><i class="fa-solid fa-folder-open"></i><p>No materials available yet</p></div>';
-        return;
-    }
-
-    materials.forEach(function(material) {
-        var card = document.createElement("div");
-        card.className = "material-card";
-        card.innerHTML =
-            '<div class="material-icon"><i class="fa-solid ' + material.icon + '"></i></div>' +
-            '<div class="material-info">' +
-                '<h4>' + material.title + '</h4>' +
-                '<span class="material-type">' + material.type.toUpperCase() + '</span>' +
-            '</div>' +
-            '<button class="material-open-btn" onclick="openMaterial(\'' + material.id + '\', \'' + category + '\')">' +
-                '<i class="fa-solid fa-eye"></i> Open' +
-            '</button>';
-        container.appendChild(card);
-    });
+function getStudentName() {
+    return (
+        localStorage.getItem("rj_student_name") ||
+        sessionStorage.getItem("student_name") ||
+        localStorage.getItem("rjStudyUsername") ||
+        ""
+    ).trim();
 }
 
-function openMaterial(materialId, category) {
-    var materials = studyMaterials[category] || [];
-    var material = materials.find(function(m) { return m.id === materialId; });
+/* -------------- STUDY MATERIAL SYSTEM -------------- */
+var currentStudyParentView = "study-material-view";
 
-    if (!material) {
-        alert("Material not found!");
-        return;
-    }
+function goBackFromStudyContent() {
+    switchSubView(currentStudyParentView);
+}
 
-    if (material.type === "pdf") {
-        openStudyPdf(material.id);
+async function openStudyMaterial(folder, fileName, subjectTitle) {
+    currentStudyParentView = folder === "Competitive" ? "study-competitive-view" :
+        (folder === "Board/9th class" ? "study-class-9-view" : "study-class-10-view");
+
+    var title = document.getElementById("studyContentTitle");
+    var subtitle = document.getElementById("studyContentSubtitle");
+    var list = document.getElementById("studyContentList");
+    if (!title || !subtitle || !list) return;
+
+    title.textContent = subjectTitle + " Study Material";
+    subtitle.textContent = "Loading material...";
+    list.innerHTML = '<div class="study-loading"><i class="fa-solid fa-spinner fa-spin"></i> Loading study material...</div>';
+    switchSubView("study-content-view");
+
+    var filePath = "Study%20material/" + folder.split("/").map(encodeURIComponent).join("/") + "/" + encodeURIComponent(fileName) + ".json";
+    try {
+        var response = await fetch(filePath, { cache: "no-store" });
+        if (!response.ok) throw new Error("HTTP " + response.status);
+        var data = await response.json();
+        renderStudyMaterial(data, subjectTitle, list, subtitle);
+    } catch (error) {
+        subtitle.textContent = "Study material could not be loaded.";
+        list.innerHTML = '<div class="study-empty"><i class="fa-solid fa-folder-open"></i><h3>Material not available</h3><p>Check that the JSON file exists at:<br><code>' + escapeStudyHtml("Study material/" + folder + "/" + fileName + ".json") + '</code></p></div>';
     }
 }
 
-// ===== PDF READER =====
-function loadStudyPdfFromUrl(url, title) {
-    var loadToken = ++studyPdfLoadToken;
-    var book = document.getElementById("studyPdfBook");
-    var loader = document.getElementById("studyPdfLoader");
+/* -------------- STUDY PDF SCROLL READER (PDF.js) -------------- */
+var currentStudyPdfParentView = "study-pdf-competitive-view";
+var studyPdfDocument = null;
+var studyPdfLoadToken = 0;
+var studyPdfLoadingTask = null;
+var studyPdfZoom = 1;
+var studyPdfPageInfo = [];
+var studyPdfObserver = null;
+var studyPdfActiveRenders = {};
+var studyPdfTouchStartDistance = 0;
+var studyPdfTouchStartZoom = 1;
+var studyPdfTouchPreviewZoom = 1;
+var studyPdfRenderDebounce = null;
+var studyPdfIsPinching = false;
+
+function openStudyPdf(pdfPath, title) {
     var titleEl = document.getElementById("studyPdfTitle");
-
-    if (titleEl) titleEl.textContent = title || "Study Material";
-    if (book) book.innerHTML = "";
-    if (loader) loader.style.display = "flex";
-
-    studyPdfDocument = null;
-    studyPdfPageInfo = {};
+    var bookEl = document.getElementById("studyPdfBook");
+    var loadingEl = document.getElementById("studyPdfLoading");
+    var errorEl = document.getElementById("studyPdfError");
+    if (!titleEl || !bookEl || !loadingEl || !errorEl) return;
+    var activeView = document.querySelector(".page-view.active");
+    if (activeView && activeView.id !== "study-pdf-reader-view") currentStudyPdfParentView = activeView.id;
+    var token = ++studyPdfLoadToken;
+    cleanupStudyPdfResources();
     studyPdfZoom = 1;
     updateStudyPdfZoomLabel();
-
-    if (typeof pdfjsLib === "undefined") {
-        if (loader) loader.innerHTML = '<p style="color:#ff6b6b;">PDF.js library nahi load hui. Page refresh karein.</p>';
-        return;
-    }
-
-    pdfjsLib.GlobalWorkerOptions.workerSrc = "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js";
-
-    pdfjsLib.getDocument(url).promise.then(function(pdf) {
-        if (loadToken !== studyPdfLoadToken) return;
-        studyPdfDocument = pdf;
-        if (loader) loader.style.display = "none";
-
-        var totalPages = pdf.numPages;
-        if (book) {
-            book.innerHTML = "";
-            for (var i = 1; i <= totalPages; i++) {
-                var pageWrapper = document.createElement("div");
-                pageWrapper.className = "pdf-scroll-page";
-                pageWrapper.dataset.pageNumber = i;
-                pageWrapper.dataset.rendered = "false";
-
-                var canvas = document.createElement("canvas");
-                canvas.className = "pdf-scroll-canvas";
-                pageWrapper.appendChild(canvas);
-
-                var textLayerDiv = document.createElement("div");
-                textLayerDiv.className = "textLayer";
-                pageWrapper.appendChild(textLayerDiv);
-
-                book.appendChild(pageWrapper);
-            }
-        }
-
-        var firstPagePromise = pdf.getPage(1);
-        firstPagePromise.then(function(firstPage) {
-            if (loadToken !== studyPdfLoadToken) return;
-            var viewport = firstPage.getViewport({ scale: 1 });
-            var stage = document.getElementById("studyPdfBookStage");
-            var stageWidth = stage ? stage.clientWidth : 800;
-            var fitScale = (stageWidth * 0.92) / viewport.width;
-            studyPdfBaseScale = fitScale;
-
-            for (var p = 1; p <= totalPages; p++) {
-                studyPdfPageInfo[p] = {
-                    width: viewport.width,
-                    height: viewport.height,
-                    fitScale: fitScale
-                };
-                var wrapper = book.querySelector('[data-page-number="' + p + '"]');
-                if (wrapper) {
-                    var w = Math.ceil(viewport.width * fitScale);
-                    var h = Math.ceil(viewport.height * fitScale);
-                    wrapper.style.width = w + "px";
-                    wrapper.style.height = h + "px";
-                }
-            }
-
-            bindStudyPdfScrollEvents();
-            bindStudyPdfScrollZoom();
-            bindStudyPdfZoomButtons();
-
-            for (var r = 1; r <= Math.min(3, totalPages); r++) {
-                renderStudyPdfScrollPage(r, loadToken);
-            }
-        });
-    }).catch(function(err) {
-        console.error("PDF load error:", err);
-        if (loader) {
-            loader.innerHTML = '<p style="color:#ff6b6b;">PDF load nahi hua. URL check karein.</p>';
-        }
-    });
-}
-
-function openStudyPdf(pdfId) {
-    var allMaterials = [];
-    Object.keys(studyMaterials).forEach(function(cat) {
-        studyMaterials[cat].forEach(function(m) { allMaterials.push(m); });
-    });
-    var material = allMaterials.find(function(m) { return m.id === pdfId; });
-    if (!material) return;
-
+    titleEl.textContent = title || "Study PDF";
+    bookEl.innerHTML = "";
+    errorEl.hidden = true;
+    errorEl.textContent = "";
+    loadingEl.hidden = false;
     switchSubView("study-pdf-reader-view");
     bindStudyPdfZoomButtons();
-    loadStudyPdfFromUrl(material.url, material.title);
+    if (!window.pdfjsLib) {
+        showStudyPdfError("PDF reading library could not be loaded. Please check your internet connection and refresh the page.");
+        loadingEl.hidden = true;
+        return;
+    }
+    window.pdfjsLib.GlobalWorkerOptions.workerSrc = "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js";
+    var task = window.pdfjsLib.getDocument({ url: String(pdfPath || "").split("#")[0], withCredentials: false });
+    studyPdfLoadingTask = task;
+    task.promise.then(function (pdf) {
+        if (token !== studyPdfLoadToken) { try { pdf.destroy(); } catch (e) {} return; }
+        studyPdfLoadingTask = null;
+        studyPdfDocument = pdf;
+        buildStudyPdfScrollDocument(pdf, token);
+    }).catch(function (error) {
+        if (token !== studyPdfLoadToken) return;
+        studyPdfLoadingTask = null;
+        loadingEl.hidden = true;
+        showStudyPdfError(error && error.name === "InvalidPDFException" ? "This file is not a valid PDF." : "PDF could not be loaded. Check the GitHub folder path, file name, and whether the PDF is uploaded.");
+        console.error("Study PDF load error:", error);
+    });
 }
 
-function renderStudyPdfScrollPage(pageNumber, loadToken) {
-    if (!studyPdfDocument) return;
-    if (loadToken !== studyPdfLoadToken) return;
+function buildStudyPdfScrollDocument(pdf, token) {
+    var container = document.getElementById("studyPdfBook");
+    var stage = document.getElementById("studyPdfBookStage");
+    var loading = document.getElementById("studyPdfLoading");
+    if (!container || !stage) return;
+    container.innerHTML = "";
+    studyPdfPageInfo = [];
+    var availableWidth = Math.max(280, stage.clientWidth - 28);
+    var fragment = document.createDocumentFragment();
+    var promises = [];
+    for (var i = 1; i <= pdf.numPages; i++) {
+        (function(pageNumber) {
+            promises.push(pdf.getPage(pageNumber).then(function(page) {
+                if (token !== studyPdfLoadToken) { page.cleanup(); return; }
+                var base = page.getViewport({ scale: 1 });
+                var fitScale = availableWidth / base.width;
+                var info = { number: pageNumber, width: base.width, height: base.height, fitScale: fitScale, page: page };
+                studyPdfPageInfo[pageNumber] = info;
+                var wrapper = document.createElement("section");
+                wrapper.className = "pdf-scroll-page";
+                wrapper.dataset.pageNumber = String(pageNumber);
+                wrapper.style.width = Math.round(base.width * fitScale) + "px";
+                wrapper.style.height = Math.round(base.height * fitScale) + "px";
+                var canvas = document.createElement("canvas");
+                canvas.className = "pdf-scroll-canvas";
+                canvas.setAttribute("aria-label", "PDF page " + pageNumber);
+                var textLayer = document.createElement("div");
+                textLayer.className = "textLayer";
+                wrapper.appendChild(canvas);
+                wrapper.appendChild(textLayer);
+                fragment.appendChild(wrapper);
+            }));
+        })(i);
+    }
+    Promise.all(promises).then(function() {
+        if (token !== studyPdfLoadToken) return;
+        container.appendChild(fragment);
+        loading.hidden = true;
+        setupStudyPdfPageObserver(token);
+        bindStudyPdfScrollZoom(stage, token);
+        // Render the first page immediately; remaining pages render as they enter view.
+        renderStudyPdfScrollPage(1, token);
+    }).catch(function(error) {
+        if (token !== studyPdfLoadToken) return;
+        loading.hidden = true;
+        showStudyPdfError("PDF pages could not be prepared. Please reload and try again.");
+        console.error("PDF page setup error:", error);
+    });
+}
 
-    var wrapper = document.querySelector('#studyPdfBook .pdf-scroll-page[data-page-number="' + pageNumber + '"]');
-    if (!wrapper) return;
+function setupStudyPdfPageObserver(token) {
+    if (studyPdfObserver) studyPdfObserver.disconnect();
+    var stage = document.getElementById("studyPdfBookStage");
+    var pages = document.querySelectorAll("#studyPdfBook .pdf-scroll-page");
+    if ("IntersectionObserver" in window) {
+        studyPdfObserver = new IntersectionObserver(function(entries) {
+            entries.forEach(function(entry) {
+                if (entry.isIntersecting) renderStudyPdfScrollPage(Number(entry.target.dataset.pageNumber), token);
+            });
+        }, { root: stage, rootMargin: "900px 0px" });
+        pages.forEach(function(page) { studyPdfObserver.observe(page); });
+    } else {
+        pages.forEach(function(page) { renderStudyPdfScrollPage(Number(page.dataset.pageNumber), token); });
+    }
+}
 
-    var canvas = wrapper.querySelector("canvas");
-    var textLayerDiv = wrapper.querySelector(".textLayer");
-    if (!canvas) return;
-
+function renderStudyPdfScrollPage(pageNumber, token) {
     var info = studyPdfPageInfo[pageNumber];
-    if (!info) return;
-
-    var effectiveScale = info.fitScale * studyPdfZoom;
-
-    studyPdfDocument.getPage(pageNumber).then(function(page) {
-        if (loadToken !== studyPdfLoadToken) return;
-
-        var viewport = page.getViewport({ scale: effectiveScale });
-        var dpr = window.devicePixelRatio || 1;
-
-        canvas.width = Math.ceil(viewport.width * dpr);
-        canvas.height = Math.ceil(viewport.height * dpr);
-
-        if (!studyPdfIsPinching && !studyPdfRenderDebounce) {
-            canvas.style.width = Math.ceil(viewport.width) + "px";
-            canvas.style.height = Math.ceil(viewport.height) + "px";
-            if (textLayerDiv) {
-                textLayerDiv.style.width = Math.ceil(viewport.width) + "px";
-                textLayerDiv.style.height = Math.ceil(viewport.height) + "px";
-            }
-        }
-
-        var ctx = canvas.getContext("2d");
-        ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-
-        var renderContext = {
-            canvasContext: ctx,
-            viewport: viewport
-        };
-
-        page.render(renderContext).promise.then(function() {
-            if (loadToken !== studyPdfLoadToken) return;
-            wrapper.dataset.rendered = "true";
-
-            if (textLayerDiv && typeof pdfjsLib !== "undefined" && pdfjsLib.renderTextLayer) {
-                textLayerDiv.innerHTML = "";
-                pdfjsLib.renderTextLayer({
-                    textContentSource: page.streamTextContent ? page.streamTextContent() : page.getTextContent(),
-                    container: textLayerDiv,
-                    viewport: viewport,
-                    textDivs: []
+    var wrapper = document.querySelector('#studyPdfBook .pdf-scroll-page[data-page-number="' + pageNumber + '"]');
+    if (!info || !wrapper || wrapper.dataset.rendered === "true") return;
+    if (studyPdfIsPinching) {
+        wrapper.dataset.renderPending = "true";
+        return;
+    }
+    if (studyPdfActiveRenders[pageNumber]) {
+        wrapper.dataset.renderPending = "true";
+        return;
+    }
+    wrapper.dataset.renderPending = "false";
+    studyPdfActiveRenders[pageNumber] = true;
+    var canvas = wrapper.querySelector("canvas");
+    var textLayer = wrapper.querySelector(".textLayer");
+    var cssScale = info.fitScale * studyPdfZoom;
+    var dpr = Math.min(Math.max(1, window.devicePixelRatio || 1), 3);
+    var renderScale = cssScale * dpr;
+    var maxCanvasPixels = 16000000;
+    renderScale = Math.min(renderScale, Math.sqrt(maxCanvasPixels / (info.width * info.height)));
+    var viewport = info.page.getViewport({ scale: renderScale });
+    var cssViewport = info.page.getViewport({ scale: cssScale });
+    wrapper.style.width = Math.ceil(cssViewport.width) + "px";
+    wrapper.style.height = Math.ceil(cssViewport.height) + "px";
+    // Render off-screen first. Keep the previous bitmap visible until the new
+    // high-resolution render completes, avoiding the black flash during zoom.
+    var stagingCanvas = document.createElement("canvas");
+    stagingCanvas.width = Math.ceil(viewport.width);
+    stagingCanvas.height = Math.ceil(viewport.height);
+    var renderTask = info.page.render({
+        canvasContext: stagingCanvas.getContext("2d", { alpha: false }),
+        viewport: viewport
+    });
+    studyPdfActiveRenders[pageNumber] = renderTask;
+    renderTask.promise.then(function() {
+        if (token !== studyPdfLoadToken || !canvas.isConnected) return;
+        canvas.width = stagingCanvas.width;
+        canvas.height = stagingCanvas.height;
+        canvas.style.width = cssViewport.width + "px";
+        canvas.style.height = cssViewport.height + "px";
+        canvas.getContext("2d", { alpha: false }).drawImage(stagingCanvas, 0, 0);
+        textLayer.innerHTML = "";
+        textLayer.style.width = cssViewport.width + "px";
+        textLayer.style.height = cssViewport.height + "px";
+        if (window.pdfjsLib.renderTextLayer) {
+            return info.page.getTextContent().then(function(textContent) {
+                if (token !== studyPdfLoadToken || !textLayer.isConnected) return;
+                var textTask = window.pdfjsLib.renderTextLayer({
+                    textContent: textContent, container: textLayer,
+                    viewport: cssViewport, textDivs: []
                 });
-            }
-        });
+                return textTask.promise;
+            });
+        }
+    }).then(function() {
+        if (token === studyPdfLoadToken) wrapper.dataset.rendered = "true";
+    }).catch(function(error) {
+        if (error && error.name !== "RenderingCancelledException" && error.name !== "AbortException") {
+            console.error("PDF page render error:", error);
+        }
+    }).finally(function() {
+        delete studyPdfActiveRenders[pageNumber];
+        if (token === studyPdfLoadToken && wrapper.dataset.renderPending === "true") {
+            wrapper.dataset.renderPending = "false";
+            renderStudyPdfScrollPage(pageNumber, token);
+        }
     });
 }
 
 function setStudyPdfZoom(value, focalX, focalY, instant) {
     var next = Math.max(0.5, Math.min(4, Math.round(value * 100) / 100));
     if (Math.abs(next - studyPdfZoom) < 0.01 || !studyPdfDocument) return;
-
     var oldZoom = studyPdfZoom;
     var stage = document.getElementById("studyPdfBookStage");
     var stageRect = stage ? stage.getBoundingClientRect() : null;
-
     var localX = stageRect ? (focalX == null ? stageRect.width / 2 : focalX - stageRect.left) : 0;
     var localY = stageRect ? (focalY == null ? stageRect.height / 2 : focalY - stageRect.top) : 0;
     var contentX = stage ? stage.scrollLeft + localX : 0;
     var contentY = stage ? stage.scrollTop + localY : 0;
     var ratio = next / oldZoom;
-
     studyPdfZoom = next;
     updateStudyPdfZoomLabel();
 
+    // Update CSS sizes — CSS transition on .pdf-scroll-page handles smooth animation
     var pages = document.querySelectorAll("#studyPdfBook .pdf-scroll-page");
     pages.forEach(function(wrapper) {
         var n = Number(wrapper.dataset.pageNumber);
@@ -513,6 +430,7 @@ function setStudyPdfZoom(value, focalX, focalY, instant) {
         }
     });
 
+    // Keep the exact point under the user's fingers stationary while zooming.
     if (stage) {
         requestAnimationFrame(function() {
             stage.scrollLeft = Math.max(0, contentX * ratio - localX);
@@ -520,18 +438,24 @@ function setStudyPdfZoom(value, focalX, focalY, instant) {
         });
     }
 
+    // Debounced re-render: wait for CSS transition to finish, then render sharp pages
     if (studyPdfRenderDebounce) clearTimeout(studyPdfRenderDebounce);
-    var delay = instant ? 50 : 280;
+    var delay = instant ? 80 : 280;
     studyPdfRenderDebounce = setTimeout(function() {
         studyPdfRenderDebounce = null;
-        var loadToken = studyPdfLoadToken;
+        var tk = studyPdfLoadToken;
         pages.forEach(function(wrapper) {
             var n = Number(wrapper.dataset.pageNumber);
             wrapper.dataset.rendered = "false";
+            var oldTask = studyPdfActiveRenders[n];
+            if (oldTask && oldTask.cancel) {
+                wrapper.dataset.renderPending = "true";
+                try { oldTask.cancel(); } catch (e) {}
+            }
             var r = wrapper.getBoundingClientRect();
             var sr = stage ? stage.getBoundingClientRect() : null;
-            if (sr && r.bottom >= sr.top - 500 && r.top <= sr.bottom + 500) {
-                renderStudyPdfScrollPage(n, loadToken);
+            if (sr && r.bottom >= sr.top - 700 && r.top <= sr.bottom + 700) {
+                renderStudyPdfScrollPage(n, tk);
             }
         });
     }, delay);
@@ -539,69 +463,64 @@ function setStudyPdfZoom(value, focalX, focalY, instant) {
 
 function updateStudyPdfZoomLabel() {
     var label = document.getElementById("studyPdfZoomLabel");
-    if (label) {
-        label.textContent = Math.round(studyPdfZoom * 100) + "%";
-    }
+    if (label) label.textContent = Math.round(studyPdfZoom * 100) + "%";
 }
 
-function bindStudyPdfScrollZoom() {
-    var stage = document.getElementById("studyPdfBookStage");
-    if (!stage) return;
+function bindStudyPdfZoomButtons() {
+    var plus = document.getElementById("studyPdfZoomIn");
+    var minus = document.getElementById("studyPdfZoomOut");
+    var fit = document.getElementById("studyPdfFit");
+    if (plus && plus.dataset.bound !== "true") { plus.dataset.bound = "true"; plus.addEventListener("click", function() { setStudyPdfZoom(studyPdfZoom + 0.15); }); }
+    if (minus && minus.dataset.bound !== "true") { minus.dataset.bound = "true"; minus.addEventListener("click", function() { setStudyPdfZoom(studyPdfZoom - 0.15); }); }
+    if (fit && fit.dataset.bound !== "true") { fit.dataset.bound = "true"; fit.addEventListener("click", function() { setStudyPdfZoom(1); }); }
+}
 
-    stage._pdfZoomBound = true;
+function bindStudyPdfScrollZoom(stage, token) {
+    if (!stage || stage.dataset.scrollZoomBound === "true") return;
+    stage.dataset.scrollZoomBound = "true";
+    var pinchCenterX = 0, pinchCenterY = 0;
 
-    stage.addEventListener("wheel", function(e) {
-        if (!e.ctrlKey && !e.metaKey) return;
-        e.preventDefault();
-        e.stopPropagation();
-
-        var delta = e.deltaY > 0 ? 0.94 : 1.06;
-        var newZoom = studyPdfZoom * delta;
-        setStudyPdfZoom(newZoom, e.clientX, e.clientY, false);
+    // Ctrl+Wheel zoom — finer steps for smoothness
+    stage.addEventListener("wheel", function(event) {
+        if (!event.ctrlKey && !event.metaKey) return;
+        event.preventDefault();
+        var factor = event.deltaY < 0 ? 1.06 : 0.94;
+        setStudyPdfZoom(studyPdfZoom * factor, event.clientX, event.clientY, false);
     }, { passive: false });
 
-    var pinchStartDist = 0;
-    var pinchStartZoom = 1;
-    var pinchCenterX = 0;
-    var pinchCenterY = 0;
-
-    function getTouchDist(t1, t2) {
-        var dx = t1.clientX - t2.clientX;
-        var dy = t1.clientY - t2.clientY;
-        return Math.sqrt(dx * dx + dy * dy);
-    }
-
-    stage.addEventListener("touchstart", function(e) {
-        if (e.touches.length === 2) {
-            e.preventDefault();
+    // Pinch-to-zoom — direct zoom during touchmove (no transform preview hack)
+    stage.addEventListener("touchstart", function(event) {
+        if (event.touches.length === 2) {
+            var a = event.touches[0], b = event.touches[1];
+            studyPdfTouchStartDistance = Math.hypot(a.clientX - b.clientX, a.clientY - b.clientY);
+            studyPdfTouchStartZoom = studyPdfZoom;
             studyPdfIsPinching = true;
-            pinchStartDist = getTouchDist(e.touches[0], e.touches[1]);
-            pinchStartZoom = studyPdfZoom;
-            pinchCenterX = (e.touches[0].clientX + e.touches[1].clientX) / 2;
-            pinchCenterY = (e.touches[0].clientY + e.touches[1].clientY) / 2;
+            pinchCenterX = (a.clientX + b.clientX) / 2;
+            pinchCenterY = (a.clientY + b.clientY) / 2;
         }
-    }, { passive: false });
+    }, { passive: true });
 
-    stage.addEventListener("touchmove", function(e) {
-        if (e.touches.length === 2 && studyPdfIsPinching) {
-            e.preventDefault();
-            var dist = getTouchDist(e.touches[0], e.touches[1]);
-            if (pinchStartDist < 1) return;
-            var scale = dist / pinchStartDist;
-            var newZoom = pinchStartZoom * scale;
-            pinchCenterX = (e.touches[0].clientX + e.touches[1].clientX) / 2;
-            pinchCenterY = (e.touches[0].clientY + e.touches[1].clientY) / 2;
-            setStudyPdfZoom(newZoom, pinchCenterX, pinchCenterY, true);
-        }
+    stage.addEventListener("touchmove", function(event) {
+        if (event.touches.length !== 2 || !studyPdfTouchStartDistance) return;
+        event.preventDefault();
+        var a = event.touches[0], b = event.touches[1];
+        var distance = Math.hypot(a.clientX - b.clientX, a.clientY - b.clientY);
+        var newZoom = Math.max(0.5, Math.min(4,
+            studyPdfTouchStartZoom * distance / studyPdfTouchStartDistance));
+        pinchCenterX = (a.clientX + b.clientX) / 2;
+        pinchCenterY = (a.clientY + b.clientY) / 2;
+        setStudyPdfZoom(newZoom, pinchCenterX, pinchCenterY, true);
     }, { passive: false });
 
     function finishPinch() {
-        if (!studyPdfIsPinching) return;
+        if (!studyPdfTouchStartDistance) return;
+        studyPdfTouchStartDistance = 0;
         studyPdfIsPinching = false;
+        // Trigger final re-render at the settled zoom level
         if (studyPdfRenderDebounce) clearTimeout(studyPdfRenderDebounce);
         studyPdfRenderDebounce = setTimeout(function() {
             studyPdfRenderDebounce = null;
-            var loadToken = studyPdfLoadToken;
+            var tk = studyPdfLoadToken;
             var pages = document.querySelectorAll("#studyPdfBook .pdf-scroll-page");
             var stg = document.getElementById("studyPdfBookStage");
             pages.forEach(function(wrapper) {
@@ -609,195 +528,350 @@ function bindStudyPdfScrollZoom() {
                 wrapper.dataset.rendered = "false";
                 var r = wrapper.getBoundingClientRect();
                 var sr = stg ? stg.getBoundingClientRect() : null;
-                if (sr && r.bottom >= sr.top - 500 && r.top <= sr.bottom + 500) {
-                    renderStudyPdfScrollPage(n, loadToken);
+                if (sr && r.bottom >= sr.top - 700 && r.top <= sr.bottom + 700) {
+                    renderStudyPdfScrollPage(n, tk);
                 }
             });
-        }, 150);
+        }, 100);
     }
 
-    stage.addEventListener("touchend", function(e) {
-        if (e.touches.length < 2) finishPinch();
+    stage.addEventListener("touchend", function(event) {
+        if (event.touches.length < 2) finishPinch();
     }, { passive: true });
-
-    stage.addEventListener("touchcancel", function() {
-        finishPinch();
-    }, { passive: true });
+    stage.addEventListener("touchcancel", finishPinch, { passive: true });
 }
 
-function bindStudyPdfZoomButtons() {
-    var btnIn = document.getElementById("studyPdfZoomIn");
-    var btnOut = document.getElementById("studyPdfZoomOut");
-    var btnFit = document.getElementById("studyPdfFit");
-
-    if (btnIn) {
-        btnIn.onclick = function() {
-            setStudyPdfZoom(studyPdfZoom + 0.15, null, null, false);
-        };
+function cleanupStudyPdfResources() {
+    if (studyPdfRenderDebounce) { clearTimeout(studyPdfRenderDebounce); studyPdfRenderDebounce = null; }
+    studyPdfIsPinching = false;
+    if (studyPdfObserver) { studyPdfObserver.disconnect(); studyPdfObserver = null; }
+    Object.keys(studyPdfActiveRenders).forEach(function(key) {
+        var task = studyPdfActiveRenders[key];
+        if (task && task.cancel) { try { task.cancel(); } catch (e) {} }
+    });
+    studyPdfActiveRenders = {};
+    if (studyPdfLoadingTask) {
+        try { var result = studyPdfLoadingTask.destroy(); if (result && result.catch) result.catch(function() {}); } catch (e) {}
+        studyPdfLoadingTask = null;
     }
-    if (btnOut) {
-        btnOut.onclick = function() {
-            setStudyPdfZoom(studyPdfZoom - 0.15, null, null, false);
-        };
+    if (studyPdfDocument) {
+        try { var destroyResult = studyPdfDocument.destroy(); if (destroyResult && destroyResult.catch) destroyResult.catch(function() {}); } catch (e) {}
+        studyPdfDocument = null;
     }
-    if (btnFit) {
-        btnFit.onclick = function() {
-            setStudyPdfZoom(1, null, null, false);
-        };
+    studyPdfPageInfo = [];
+}
+
+function showStudyPdfError(message) {
+    var errorEl = document.getElementById("studyPdfError");
+    if (errorEl) { errorEl.textContent = message; errorEl.hidden = false; }
+}
+
+function backFromStudyPdf() {
+    studyPdfLoadToken++;
+    cleanupStudyPdfResources();
+    var bookEl = document.getElementById("studyPdfBook");
+    var loadingEl = document.getElementById("studyPdfLoading");
+    var errorEl = document.getElementById("studyPdfError");
+    if (bookEl) bookEl.innerHTML = "";
+    if (loadingEl) loadingEl.hidden = true;
+    if (errorEl) errorEl.hidden = true;
+    switchSubView(currentStudyPdfParentView || "study-pdf-home-view");
+}
+
+function escapeStudyHtml(value) {
+    return String(value == null ? "" : value).replace(/[&<>"']/g, function (ch) {
+        return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[ch];
+    });
+}
+
+function renderStudyMaterial(data, subjectTitle, container, subtitle) {
+    var entries = Array.isArray(data) ? data : null;
+    if (!entries && data && typeof data === "object") {
+        var candidateKeys = ["chapters", "units", "topics", "materials", "notes", "lessons", "data", "content"];
+        for (var i = 0; i < candidateKeys.length; i++) {
+            if (Array.isArray(data[candidateKeys[i]])) { entries = data[candidateKeys[i]]; break; }
+        }
+        if (!entries) entries = [data];
     }
-}
-
-function bindStudyPdfScrollEvents() {
-    var stage = document.getElementById("studyPdfBookStage");
-    if (!stage) return;
-
-    stage.addEventListener("scroll", function() {
-        if (!studyPdfDocument) return;
-        var loadToken = studyPdfLoadToken;
-        var pages = document.querySelectorAll("#studyPdfBook .pdf-scroll-page");
-        var stageRect = stage.getBoundingClientRect();
-
-        pages.forEach(function(wrapper) {
-            if (wrapper.dataset.rendered === "true") return;
-            var rect = wrapper.getBoundingClientRect();
-            if (rect.bottom >= stageRect.top - 400 && rect.top <= stageRect.bottom + 400) {
-                var n = Number(wrapper.dataset.pageNumber);
-                renderStudyPdfScrollPage(n, loadToken);
-            }
-        });
-    }, { passive: true });
-}
-
-// ===== TEST SYSTEM =====
-function launchTest(testType) {
-    alert(testType + " test module coming soon!");
-}
-
-// ===== CHAT SYSTEM =====
-function setupChatSystem() {
-    var chatFab = document.getElementById("chatFab");
-    if (chatFab) {
-        chatFab.addEventListener("click", openChat);
+    if (!entries || entries.length === 0) {
+        subtitle.textContent = "No study material has been added yet.";
+        container.innerHTML = '<div class="study-empty"><i class="fa-solid fa-book-open"></i><h3>Coming Soon</h3><p>Study material will appear here when it is added.</p></div>';
+        return;
     }
+
+    subtitle.textContent = entries.length + " material item(s) available in " + subjectTitle + ".";
+    container.innerHTML = "";
+    entries.forEach(function (entry, index) {
+        var card = document.createElement("article");
+        card.className = "study-material-item";
+        var heading = typeof entry === "string" ? entry : (entry.title || entry.name || entry.chapter || entry.topic || (subjectTitle + " Material " + (index + 1)));
+        var body = typeof entry === "string" ? "" : (entry.description || entry.summary || entry.text || entry.content || entry.notes || "");
+        var headingEl = document.createElement("h3");
+        headingEl.textContent = heading;
+        card.appendChild(headingEl);
+        if (body && typeof body === "string") {
+            var bodyEl = document.createElement("p");
+            bodyEl.textContent = body;
+            card.appendChild(bodyEl);
+        }
+        if (entry && typeof entry === "object") {
+            Object.keys(entry).forEach(function (key) {
+                if (["title", "name", "chapter", "topic", "description", "summary", "text", "content", "notes"].indexOf(key) !== -1) return;
+                var value = entry[key];
+                if (value == null || typeof value === "object") return;
+                var detail = document.createElement("p");
+                detail.className = "study-detail-line";
+                var label = document.createElement("strong");
+                label.textContent = key.replace(/[_-]/g, " ") + ": ";
+                detail.appendChild(label);
+                detail.appendChild(document.createTextNode(String(value)));
+                card.appendChild(detail);
+            });
+        }
+        container.appendChild(card);
+    });
 }
 
-function openChat() {
+/* -------------- LAUNCH TEST -------------- */
+function launchTest(subject) {
+    var studentName = getStudentName();
+
+    if (!studentName) {
+        alert("Session expired! Please login again.");
+        logout();
+        return;
+    }
+
+    sessionStorage.setItem("student_name", studentName);
+    localStorage.setItem("rjStudyUsername", studentName);
+    window.open("test/index.html?subject=" + subject, "_blank");
+}
+
+/* -------------- CHAT SYSTEM -------------- */
+var chatInterval = null;
+var isChatOpen = false;
+var lastChatHash = "";
+var chatPollInFlight = false;
+
+function setChatStatus(text) {
+    var el = document.getElementById("chatStatus");
+    if (el) el.textContent = text || "";
+}
+
+function toggleChat(forceState) {
     var overlay = document.getElementById("chatOverlay");
-    if (overlay) {
+    if (!overlay) return;
+
+    if (typeof forceState === "boolean") {
+        isChatOpen = forceState;
+    } else {
+        isChatOpen = !isChatOpen;
+    }
+
+    if (chatInterval) {
+        clearInterval(chatInterval);
+        chatInterval = null;
+    }
+
+    if (isChatOpen) {
         overlay.classList.add("active");
-    }
-
-    if (!chatInitialized) {
-        chatInitialized = true;
-        addBotMessage("Hello! Main RJ Study Academy ka AI assistant hoon. Aap mujhse koi bhi study-related question pooch sakte hain. Bataiye, kaise madad kar sakta hoon?");
-    }
-}
-
-function closeChat() {
-    var overlay = document.getElementById("chatOverlay");
-    if (overlay) {
+        lastChatHash = "";
+        setChatStatus("Syncing...");
+        pollChat(true);
+        chatInterval = setInterval(function () {
+            if (!document.hidden) pollChat(false);
+        }, 3000);
+        setTimeout(function () {
+            var input = document.getElementById("chatInput");
+            if (input) input.focus();
+        }, 150);
+    } else {
         overlay.classList.remove("active");
+        setChatStatus("");
     }
 }
 
-function addBotMessage(text) {
-    var messagesDiv = document.getElementById("chatMessages");
-    if (!messagesDiv) return;
+async function pollChat(forceRender) {
+    var studentName = getStudentName();
+    if (!studentName || !isChatOpen) return;
+    if (chatPollInFlight) return;
 
-    var msgDiv = document.createElement("div");
-    msgDiv.className = "chat-message bot";
-    msgDiv.innerHTML = '<div class="message-bubble">' + text + '</div>';
-    messagesDiv.appendChild(msgDiv);
-    messagesDiv.scrollTop = messagesDiv.scrollHeight;
+    chatPollInFlight = true;
+    try {
+        var res = await fetch(WORKER_URL + "/api/chat?ts=" + Date.now(), {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            cache: "no-store",
+            body: JSON.stringify({ action: "get", studentName: studentName })
+        });
+        var data = await res.json();
+        if (data && data.success) {
+            var history = data.history || [];
+            var hash = JSON.stringify(history);
+            if (forceRender || hash !== lastChatHash) {
+                lastChatHash = hash;
+                renderChat(history);
+            }
+            setChatStatus("Live • " + history.length + "/3 • auto-clear 2 min");
+        } else {
+            setChatStatus("Sync failed");
+        }
+    } catch (e) {
+        setChatStatus("Network error");
+    } finally {
+        chatPollInFlight = false;
+    }
 }
 
-function addUserMessage(text) {
-    var messagesDiv = document.getElementById("chatMessages");
-    if (!messagesDiv) return;
-
-    var msgDiv = document.createElement("div");
-    msgDiv.className = "chat-message user";
-    msgDiv.innerHTML = '<div class="message-bubble">' + text + '</div>';
-    messagesDiv.appendChild(msgDiv);
-    messagesDiv.scrollTop = messagesDiv.scrollHeight;
-}
-
-function addTypingIndicator() {
-    var messagesDiv = document.getElementById("chatMessages");
-    if (!messagesDiv) return;
-
-    var typingDiv = document.createElement("div");
-    typingDiv.className = "chat-message bot typing-indicator";
-    typingDiv.id = "typingIndicator";
-    typingDiv.innerHTML = '<div class="message-bubble"><span></span><span></span><span></span></div>';
-    messagesDiv.appendChild(typingDiv);
-    messagesDiv.scrollTop = messagesDiv.scrollHeight;
-}
-
-function removeTypingIndicator() {
-    var typing = document.getElementById("typingIndicator");
-    if (typing) typing.remove();
-}
-
-function sendChatMessage() {
+async function sendChatMessage() {
     var input = document.getElementById("chatInput");
     if (!input) return;
 
-    var message = input.value.trim();
-    if (!message || isChatLoading) return;
+    var msg = input.value.trim();
+    var studentName = getStudentName();
+    if (!msg || !studentName) return;
 
-    addUserMessage(message);
     input.value = "";
+    input.disabled = true;
+    setChatStatus("Sending...");
 
-    chatHistory.push({ role: "user", content: message });
-
-    isChatLoading = true;
-    addTypingIndicator();
-
-    fetch(WORKER_URL, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-            messages: chatHistory,
-            studentId: currentStudent ? currentStudent.id : "guest"
-        })
-    })
-    .then(function(response) {
-        return response.json();
-    })
-    .then(function(data) {
-        removeTypingIndicator();
-        isChatLoading = false;
-
-        var reply = data.reply || data.message || "Sorry, koi error aa gaya. Dobara try karein.";
-        addBotMessage(reply);
-        chatHistory.push({ role: "assistant", content: reply });
-    })
-    .catch(function(err) {
-        removeTypingIndicator();
-        isChatLoading = false;
-        console.error("Chat error:", err);
-        addBotMessage("Network error aa gaya. Apna internet check karein aur dobara try karein.");
-    });
+    try {
+        var res = await fetch(WORKER_URL + "/api/chat?ts=" + Date.now(), {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            cache: "no-store",
+            body: JSON.stringify({ studentName: studentName, message: msg })
+        });
+        var data = await res.json();
+        if (data && data.success) {
+            lastChatHash = JSON.stringify(data.history || []);
+            renderChat(data.history || []);
+            setChatStatus("Sent • " + (data.history || []).length + "/3");
+        } else {
+            input.value = msg;
+            setChatStatus((data && data.error) || "Send failed");
+        }
+    } catch (e) {
+        input.value = msg;
+        setChatStatus("Network error");
+    } finally {
+        input.disabled = false;
+        input.focus();
+        setTimeout(function () {
+            pollChat(true);
+        }, 400);
+    }
 }
 
-// ===== CLOSE DROPDOWNS =====
-function closeAllDropdowns() {
-    var menus = document.querySelectorAll(".dropdown-menu");
-    menus.forEach(function(menu) {
-        menu.classList.remove("active");
+function renderChat(history) {
+    var body = document.getElementById("chatBody");
+    if (!body) return;
+
+    body.innerHTML = "";
+    if (!history || history.length === 0) {
+        body.innerHTML =
+            '<div style="text-align:center; color:' + "var(--text-dim)" + '; font-size:0.84rem; margin-top:30px; line-height:1.7;">' +
+            '<i class="fa-solid fa-message" style="font-size:2rem; color:rgba(32,232,137,0.15); display:block; margin-bottom:12px;"></i>' +
+            "Max 3 messages. Chat clears after 2 min idle.</div>";
+        return;
+    }
+
+    history.forEach(function (msg) {
+        var div = document.createElement("div");
+        var sender = (msg.sender || "student").toLowerCase();
+        div.className = "chat-message " + (sender === "admin" ? "admin" : "student");
+        div.innerText = msg.text || "";
+        body.appendChild(div);
     });
+
+    body.scrollTop = body.scrollHeight;
 }
 
-// ===== EXPORT FOR HTML ONCLICK =====
-window.switchView = switchView;
+/* -------------- INIT PORTAL -------------- */
+function initPortal() {
+    checkExistingSession();
+
+    var form = document.getElementById("loginForm");
+    if (form) {
+        form.addEventListener("submit", handleLogin);
+    }
+
+    window.addEventListener("click", function (e) {
+        if (!e.target.closest(".profile-menu-container")) closeAllDropdowns();
+    });
+
+    document.addEventListener("visibilitychange", function () {
+        if (!document.hidden && isChatOpen) pollChat(true);
+    });
+    window.addEventListener("focus", function () {
+        if (isChatOpen) pollChat(true);
+    });
+
+    // Update greeting every minute
+    setInterval(function () {
+        var greetEl = document.getElementById("greetingText");
+        if (greetEl && document.getElementById("dashboard-view").classList.contains("active")) {
+            greetEl.innerText = getGreeting();
+        }
+    }, 60000);
+}
+
+if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", initPortal);
+} else {
+    initPortal();
+}
+
+window.handleLogin = handleLogin;
+window.toggleProfileMenu = toggleProfileMenu;
+window.logout = logout;
 window.switchSubView = switchSubView;
 window.goHome = goHome;
-window.logout = logout;
-window.toggleProfileMenu = toggleProfileMenu;
-window.openMaterial = openMaterial;
-window.openStudyPdf = openStudyPdf;
 window.launchTest = launchTest;
-window.loadStudyMaterials = loadStudyMaterials;
-window.closeChat = closeChat;
+window.openStudyMaterial = openStudyMaterial;
+window.openStudyPdf = openStudyPdf;
+window.backFromStudyPdf = backFromStudyPdf;
+window.goBackFromStudyContent = goBackFromStudyContent;
+window.toggleChat = toggleChat;
 window.sendChatMessage = sendChatMessage;
+
+/* -------------- TERMINAL ANIMATION -------------- */
+(function () {
+    var terminal = document.getElementById("terminal-bg");
+    if (!terminal) return;
+    var logs = [
+        "Initializing secure hypervisor environment...",
+        "Loading root credentials for RJ_STUDY_ACADEMY_PORTAL...",
+        "Establishing encrypted handshake... [SECURE]",
+        "Injecting pathways: [ENGLISH, HINDI, MATH, SCIENCE]",
+        "Status: Multi-Subject Test Engine v29.0 ONLINE."
+    ];
+    var li = 0,
+        ci = 0,
+        text = "";
+    function type() {
+        if (li < logs.length) {
+            if (ci < logs[li].length) {
+                text += logs[li].charAt(ci);
+                terminal.innerText = text + "█";
+                ci++;
+                setTimeout(type, 18);
+            } else {
+                text += "\n\n";
+                li++;
+                ci = 0;
+                setTimeout(type, 300);
+            }
+        } else {
+            text += "> root@rj-academy:~$ ";
+            terminal.innerText = text;
+            setTimeout(function () {
+                text = "";
+                li = 0;
+                ci = 0;
+                type();
+            }, 4000);
+        }
+    }
+    type();
+})();
