@@ -657,8 +657,13 @@
                 <button class="back-btn glass-back-btn" onclick="backFromStudyPdf()"><i class="fa-solid fa-arrow-left"></i> Back to Subjects</button>
                 <span class="pdf-reader-book-title" id="studyPdfTitle">Study PDF</span>
             </div>
-            <div class="pdf-toolbar" aria-label="PDF reading information">
-                <span class="pdf-copy-hint"><i class="fa-regular fa-copy"></i> Text select karke copy karein · Pinch to zoom</span>
+            <!-- UPDATED: Zoom controls added -->
+            <div class="pdf-toolbar" aria-label="PDF reading controls">
+                <button id="studyPdfZoomOut" type="button" title="Zoom Out"><i class="fa-solid fa-minus"></i></button>
+                <span id="studyPdfZoomLabel">100%</span>
+                <button id="studyPdfZoomIn" type="button" title="Zoom In"><i class="fa-solid fa-plus"></i></button>
+                <button id="studyPdfFit" type="button" title="Fit to Width"><i class="fa-solid fa-down-left-and-up-right-to-center"></i></button>
+                <span class="pdf-copy-hint"><i class="fa-regular fa-copy"></i> Select karke copy karein</span>
             </div>
             <div class="pdf-book-stage pdf-scroll-stage" id="studyPdfBookStage">
                 <div class="pdf-book-loading" id="studyPdfLoading"><i class="fa-solid fa-spinner fa-spin"></i><span>Opening your book...</span></div>
@@ -695,3 +700,4 @@
     <script src="script.js"></script>
 </body>
 </html>
+Ab bol — **FILE 2 (`style.css`) ka full updated version** chahiye? 🚀
