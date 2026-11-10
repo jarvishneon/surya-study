@@ -999,7 +999,7 @@ body {
     gap: 14px;
 }
 
-/* SMOOTH ZOOM: Transition on resize for Google-Drive feel */
+/* ===== BUTTER-SMOOTH ZOOM: cubic-bezier easing + GPU transform origin ===== */
 .pdf-scroll-page {
     position: relative;
     flex: 0 0 auto;
@@ -1008,7 +1008,8 @@ body {
     border-radius: 0 !important;
     box-shadow: none !important;
     isolation: isolate;
-    transition: width 0.18s ease-out, height 0.18s ease-out;
+    transition: width 0.13s cubic-bezier(0.22, 0.61, 0.36, 1),
+                height 0.13s cubic-bezier(0.22, 0.61, 0.36, 1);
     will-change: width, height;
 }
 
@@ -1020,7 +1021,9 @@ body {
     background: #fff !important;
     opacity: 1 !important;
     filter: none !important;
-    transition: width 0.18s ease-out, height 0.18s ease-out;
+    transition: width 0.13s cubic-bezier(0.22, 0.61, 0.36, 1),
+                height 0.13s cubic-bezier(0.22, 0.61, 0.36, 1);
+    will-change: width, height;
 }
 
 .pdf-scroll-page .textLayer {
@@ -1038,7 +1041,9 @@ body {
     user-select: text !important;
     -webkit-user-select: text !important;
     cursor: text;
-    transition: width 0.18s ease-out, height 0.18s ease-out;
+    transition: width 0.13s cubic-bezier(0.22, 0.61, 0.36, 1),
+                height 0.13s cubic-bezier(0.22, 0.61, 0.36, 1);
+    will-change: width, height;
 }
 .pdf-scroll-page .textLayer span,
 .pdf-scroll-page .textLayer br {
@@ -1049,6 +1054,12 @@ body {
     cursor: text;
 }
 .pdf-scroll-page .textLayer ::selection { background: rgba(65, 145, 255, .35); }
+
+/* GPU-accelerated pinch preview */
+#studyPdfBook {
+    transform-origin: 0 0;
+    will-change: transform;
+}
 
 .pdf-book-loading { position: sticky; top: 0; min-height: 100%; }
 
