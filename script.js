@@ -1,125 +1,97 @@
-// RJ STUDY ACADEMY - script.js v29.0 (Pro Design Update)
-// Chat: poll sync + max 3 msgs + 2 min auto wipe (server)
+/* ============================================
+   RJ STUDY ACADEMY - PORTAL SCRIPT
+   ============================================ */
 
-const VALID_PASSWORDS = ["04783", "padhlo", "4181723"];
-const WORKER_URL = "https://rj-test-backen.internationalbgi.workers.dev";
+// ---- CONSTANTS ----
+var VALID_PASSWORDS = ["04783", "padhlo", "4181723"];
+var WORKER_URL = "https://rj-test-backen.internationalbgi.workers.dev";
 
-/* -------------- LOGIN SYSTEM -------------- */
+// ---- PDF STATE ----
+var studyPdfDoc = null;
+var studyPdfZoom = 1;
+var studyPdfBaseWidth = 0;
+var studyPdfPageCount = 0;
+var studyPdfRenderDebounce = null;
+var studyPdfIsPinching = false;
+
+var pinchState = {
+    active: false,
+    startDist: 0,
+    startZoom: 1,
+    contentX: 0,
+    contentY: 0,
+    viewportX: 0,
+    viewportY: 0
+};
+
+// =============================================
+//  LOGIN
+// =============================================
 function handleLogin(e) {
-    if (e) {
-        e.preventDefault();
-        e.stopPropagation();
+    e.preventDefault();
+    var username = document.getElementById("usernameInput").value.trim();
+    var password = document.getElementById("passwordInput").value.trim();
+    var errorMsg = document.getElementById("errorMsg");
+
+    if (!username) {
+        errorMsg.textContent = "Username daalo bhai!";
+        return;
+    }
+    if (!VALID_PASSWORDS.includes(password)) {
+        errorMsg.textContent = "Password galat hai!";
+        return;
     }
 
-    const nameInput = document.getElementById("usernameInput");
-    const passInput = document.getElementById("passwordInput");
-    const errorMsg = document.getElementById("errorMsg");
+    errorMsg.textContent = "";
+    var now = new Date().toISOString();
+    localStorage.setItem("rj_student_name", username);
+    localStorage.setItem("rj_login_time", now);
+    localStorage.setItem("rjStudyUsername", username);
+    sessionStorage.setItem("student_name", username);
 
-    if (!nameInput || !passInput) return false;
-
-    const enteredName = nameInput.value.trim();
-    const enteredPass = passInput.value.trim().toLowerCase();
-
-    if (!enteredName) {
-        if (errorMsg) {
-            errorMsg.innerText = "Please enter your name!";
-            errorMsg.style.display = "block";
-        }
-        return false;
-    }
-
-    if (VALID_PASSWORDS.includes(enteredPass)) {
-        if (errorMsg) errorMsg.style.display = "none";
-
-        localStorage.setItem("rj_student_name", enteredName);
-        localStorage.setItem("rj_login_time", Date.now().toString());
-        localStorage.setItem("rjStudyUsername", enteredName);
-        sessionStorage.setItem("student_name", enteredName);
-
-        activateDashboard(enteredName);
-    } else {
-        if (errorMsg) {
-            errorMsg.innerText = "Incorrect password!";
-            errorMsg.style.display = "block";
-        }
-        passInput.value = "";
-        passInput.focus();
-    }
-    return false;
+    activateDashboard(username);
 }
 
 function checkExistingSession() {
-    const savedName = localStorage.getItem("rj_student_name");
-    const loginTime = localStorage.getItem("rj_login_time");
-
-    if (savedName && loginTime) {
-        const hoursPassed = (Date.now() - Number(loginTime)) / (1000 * 60 * 60);
-        if (hoursPassed < 24) {
-            activateDashboard(savedName);
-            return true;
-        }
-        localStorage.removeItem("rj_student_name");
-        localStorage.removeItem("rj_login_time");
+    var savedName = localStorage.getItem("rj_student_name");
+    if (savedName) {
+        activateDashboard(savedName);
     }
-    return false;
 }
 
-/* -------------- GREETING HELPER -------------- */
 function getGreeting() {
     var h = new Date().getHours();
-    if (h < 12) return "Good Morning ☀️";
-    if (h < 17) return "Good Afternoon 🌤️";
-    if (h < 21) return "Good Evening 🌙";
-    return "Good Night 🌑";
+    if (h < 12) return "Good Morning";
+    if (h < 17) return "Good Afternoon";
+    if (h < 21) return "Good Evening";
+    return "Good Night";
 }
 
-/* -------------- DASHBOARD NAVIGATION -------------- */
-function activateDashboard(studentName) {
-    var displayUsername = document.getElementById("displayUsername");
-    if (displayUsername) displayUsername.innerText = studentName;
-
-    document.querySelectorAll(".displayUsernameCopy").forEach(function (el) {
-        el.innerText = studentName;
-    });
-
-    var initial = studentName.charAt(0).toUpperCase();
-
-    ["profileInitial", "profileInitial2", "profileInitial3", "profileInitial4", "profileInitial5"].forEach(function (id) {
-        var el = document.getElementById(id);
-        if (el) el.innerText = initial;
-    });
-
-    document.querySelectorAll(".dropdown-avatar").forEach(function (el) {
-        el.innerText = initial;
-    });
-
-    var greetEl = document.getElementById("greetingText");
-    if (greetEl) greetEl.innerText = getGreeting();
-
-    hideAllViews();
-    var dash = document.getElementById("dashboard-view");
-    if (dash) dash.classList.add("active");
+function activateDashboard(name) {
+    document.getElementById("login-view").style.display = "none";
+    document.getElementById("dashboard-view").style.display = "block";
+    document.getElementById("dashboard-view").classList.add("active");
+    document.getElementById("displayUsername").textContent = name;
+    document.getElementById("greetingText").textContent = getGreeting() + ", " + name + "!";
 }
 
+// =============================================
+//  NAVIGATION
+// =============================================
 function hideAllViews() {
-    ["login-view", "dashboard-view", "competitive-view", "boards-view", "notifications-view", "subjects-view", "study-material-view", "study-competitive-view", "study-board-view", "study-class-9-view", "study-class-10-view", "study-content-view", "study-pdf-home-view", "study-pdf-competitive-view", "study-pdf-board-view", "study-pdf-class-9-view", "study-pdf-class-10-view", "study-pdf-reader-view"].forEach(function (id) {
-        var v = document.getElementById(id);
-        if (v) v.classList.remove("active");
+    document.querySelectorAll(".sub-view").forEach(function(v) {
+        v.classList.remove("active");
     });
 }
 
-function toggleProfileMenu(event) {
-    event.stopPropagation();
-    var container = event.currentTarget.closest(".profile-menu-container");
-    var dropdown = container ? container.querySelector(".profile-dropdown") : null;
-    closeAllDropdowns();
-    if (dropdown) dropdown.classList.toggle("active");
+function toggleProfileMenu() {
+    var menu = document.getElementById("profileMenu");
+    if (menu) menu.classList.toggle("show");
 }
 
 function closeAllDropdowns() {
-    document.querySelectorAll(".profile-dropdown").forEach(function (d) {
-        d.classList.remove("active");
-    });
+    var menu = document.getElementById("profileMenu");
+    if (menu) menu.classList.remove("show");
 }
 
 function logout() {
@@ -127,888 +99,631 @@ function logout() {
     localStorage.removeItem("rj_login_time");
     localStorage.removeItem("rjStudyUsername");
     sessionStorage.removeItem("student_name");
-
-    var u = document.getElementById("usernameInput");
-    var p = document.getElementById("passwordInput");
-    if (u) u.value = "";
-    if (p) p.value = "";
-
-    closeAllDropdowns();
-    if (isChatOpen) toggleChat(false);
+    document.getElementById("dashboard-view").style.display = "none";
+    document.getElementById("dashboard-view").classList.remove("active");
+    document.getElementById("login-view").style.display = "flex";
+    document.getElementById("usernameInput").value = "";
+    document.getElementById("passwordInput").value = "";
+    document.getElementById("errorMsg").textContent = "";
     hideAllViews();
-    var loginView = document.getElementById("login-view");
-    if (loginView) loginView.classList.add("active");
 }
 
 function switchSubView(viewId) {
-    closeAllDropdowns();
     hideAllViews();
-    var target = document.getElementById(viewId);
-    if (target) target.classList.add("active");
-    window.scrollTo({ top: 0, behavior: "smooth" });
+    var view = document.getElementById(viewId);
+    if (view) view.classList.add("active");
 }
 
 function goHome() {
-    closeAllDropdowns();
     hideAllViews();
-    var dash = document.getElementById("dashboard-view");
-    if (dash) dash.classList.add("active");
-    window.scrollTo({ top: 0, behavior: "smooth" });
 }
 
 function getStudentName() {
-    return (
-        localStorage.getItem("rj_student_name") ||
-        sessionStorage.getItem("student_name") ||
-        localStorage.getItem("rjStudyUsername") ||
-        ""
-    ).trim();
+    return localStorage.getItem("rj_student_name") ||
+           sessionStorage.getItem("student_name") ||
+           "Student";
 }
 
-/* -------------- STUDY MATERIAL SYSTEM -------------- */
-var currentStudyParentView = "study-material-view";
-
-function goBackFromStudyContent() {
-    switchSubView(currentStudyParentView);
+// =============================================
+//  STUDY MATERIAL
+// =============================================
+function openStudyMaterial() {
+    switchSubView("study-view");
+    renderStudyMaterial();
 }
 
-async function openStudyMaterial(folder, fileName, subjectTitle) {
-    currentStudyParentView = folder === "Competitive" ? "study-competitive-view" :
-        (folder === "Board/9th class" ? "study-class-9-view" : "study-class-10-view");
+function renderStudyMaterial() {
+    var container = document.getElementById("studyMaterialContent");
+    if (!container) return;
+    container.innerHTML = '<p style="padding:20px;color:#888;text-align:center;">Loading study material...</p>';
 
-    var title = document.getElementById("studyContentTitle");
-    var subtitle = document.getElementById("studyContentSubtitle");
-    var list = document.getElementById("studyContentList");
-    if (!title || !subtitle || !list) return;
-
-    title.textContent = subjectTitle + " Study Material";
-    subtitle.textContent = "Loading material...";
-    list.innerHTML = '<div class="study-loading"><i class="fa-solid fa-spinner fa-spin"></i> Loading study material...</div>';
-    switchSubView("study-content-view");
-
-    var filePath = "Study%20material/" + folder.split("/").map(encodeURIComponent).join("/") + "/" + encodeURIComponent(fileName) + ".json";
-    try {
-        var response = await fetch(filePath, { cache: "no-store" });
-        if (!response.ok) throw new Error("HTTP " + response.status);
-        var data = await response.json();
-        renderStudyMaterial(data, subjectTitle, list, subtitle);
-    } catch (error) {
-        subtitle.textContent = "Study material could not be loaded.";
-        list.innerHTML = '<div class="study-empty"><i class="fa-solid fa-folder-open"></i><h3>Material not available</h3><p>Check that the JSON file exists at:<br><code>' + escapeStudyHtml("Study material/" + folder + "/" + fileName + ".json") + '</code></p></div>';
-    }
+    fetch(WORKER_URL + "/api/study-material")
+        .then(function(r) { return r.json(); })
+        .then(function(data) {
+            if (data && data.html) {
+                container.innerHTML = data.html;
+            } else {
+                container.innerHTML = '<p style="padding:20px;color:#888;text-align:center;">Koi material nahi mila abhi.</p>';
+            }
+        })
+        .catch(function() {
+            container.innerHTML = '<p style="padding:20px;color:#e74c3c;text-align:center;">Load nahi ho paaya. Retry karo.</p>';
+        });
 }
 
-/* -------------- STUDY PDF SCROLL READER (PDF.js) -------------- */
-var currentStudyPdfParentView = "study-pdf-competitive-view";
-var studyPdfDocument = null;
-var studyPdfLoadToken = 0;
-var studyPdfLoadingTask = null;
-var studyPdfZoom = 1;
-var studyPdfPageInfo = [];
-var studyPdfObserver = null;
-var studyPdfActiveRenders = {};
-var studyPdfRenderDebounce = null;
-var studyPdfIsPinching = false;
+function escapeStudyHtml(str) {
+    var div = document.createElement("div");
+    div.appendChild(document.createTextNode(str));
+    return div.innerHTML;
+}
 
-// Pinch state (new focal-locked system)
-var pinchState = {
-    active: false,
-    startDist: 0,
-    startZoom: 1,
-    startContentX: 0,  // content point under pinch center at start
-    startContentY: 0,
-    rafId: null,
-    pendingZoom: 1,
-    pendingCenterX: 0,
-    pendingCenterY: 0
-};
+// =============================================
+//  PDF READER — SMOOTH ZOOM (Google Drive style)
+// =============================================
 
-function openStudyPdf(pdfPath, title) {
-    var titleEl = document.getElementById("studyPdfTitle");
-    var bookEl = document.getElementById("studyPdfBook");
-    var loadingEl = document.getElementById("studyPdfLoading");
-    var errorEl = document.getElementById("studyPdfError");
-    if (!titleEl || !bookEl || !loadingEl || !errorEl) return;
-    var activeView = document.querySelector(".page-view.active");
-    if (activeView && activeView.id !== "study-pdf-reader-view") currentStudyPdfParentView = activeView.id;
-    var token = ++studyPdfLoadToken;
-    cleanupStudyPdfResources();
+function openStudyPdf(url) {
+    switchSubView("study-pdf-view");
+    var stage = document.getElementById("studyPdfStage");
+    var book = document.getElementById("studyPdfBook");
+    if (!stage || !book) return;
+
+    book.innerHTML = '<p style="color:#aaa;padding:40px;text-align:center;">PDF load ho raha hai...</p>';
     studyPdfZoom = 1;
-    updateStudyPdfZoomLabel();
-    titleEl.textContent = title || "Study PDF";
-    bookEl.innerHTML = "";
-    errorEl.hidden = true;
-    errorEl.textContent = "";
-    loadingEl.hidden = false;
-    switchSubView("study-pdf-reader-view");
-    bindStudyPdfZoomButtons();
-    if (!window.pdfjsLib) {
-        showStudyPdfError("PDF reading library could not be loaded. Please check your internet connection and refresh the page.");
-        loadingEl.hidden = true;
+    studyPdfDoc = null;
+    updatePdfZoomLabel();
+
+    if (typeof pdfjsLib === "undefined") {
+        book.innerHTML = '<p style="color:#e74c3c;padding:40px;text-align:center;">PDF.js load nahi hua.</p>';
         return;
     }
-    window.pdfjsLib.GlobalWorkerOptions.workerSrc = "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js";
-    var task = window.pdfjsLib.getDocument({ url: String(pdfPath || "").split("#")[0], withCredentials: false });
-    studyPdfLoadingTask = task;
-    task.promise.then(function (pdf) {
-        if (token !== studyPdfLoadToken) { try { pdf.destroy(); } catch (e) {} return; }
-        studyPdfLoadingTask = null;
-        studyPdfDocument = pdf;
-        buildStudyPdfScrollDocument(pdf, token);
-    }).catch(function (error) {
-        if (token !== studyPdfLoadToken) return;
-        studyPdfLoadingTask = null;
-        loadingEl.hidden = true;
-        showStudyPdfError(error && error.name === "InvalidPDFException" ? "This file is not a valid PDF." : "PDF could not be loaded. Check the GitHub folder path, file name, and whether the PDF is uploaded.");
-        console.error("Study PDF load error:", error);
-    });
-}
 
-function buildStudyPdfScrollDocument(pdf, token) {
-    var container = document.getElementById("studyPdfBook");
-    var stage = document.getElementById("studyPdfBookStage");
-    var loading = document.getElementById("studyPdfLoading");
-    if (!container || !stage) return;
-    container.innerHTML = "";
-    studyPdfPageInfo = [];
-    var availableWidth = Math.max(280, stage.clientWidth - 28);
-    var fragment = document.createDocumentFragment();
-    var promises = [];
-    for (var i = 1; i <= pdf.numPages; i++) {
-        (function(pageNumber) {
-            promises.push(pdf.getPage(pageNumber).then(function(page) {
-                if (token !== studyPdfLoadToken) { page.cleanup(); return; }
-                var base = page.getViewport({ scale: 1 });
-                var fitScale = availableWidth / base.width;
-                var info = { number: pageNumber, width: base.width, height: base.height, fitScale: fitScale, page: page };
-                studyPdfPageInfo[pageNumber] = info;
-                var wrapper = document.createElement("section");
-                wrapper.className = "pdf-scroll-page";
-                wrapper.dataset.pageNumber = String(pageNumber);
-                wrapper.style.width = Math.round(base.width * fitScale) + "px";
-                wrapper.style.height = Math.round(base.height * fitScale) + "px";
+    pdfjsLib.GlobalWorkerOptions.workerSrc =
+        "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js";
+
+    pdfjsLib.getDocument(url).promise.then(function(pdf) {
+        studyPdfDoc = pdf;
+        studyPdfPageCount = pdf.numPages;
+        book.innerHTML = "";
+
+        pdf.getPage(1).then(function(page) {
+            var vp = page.getViewport({ scale: 1 });
+            var stageW = stage.clientWidth - 32;
+            studyPdfBaseWidth = stageW;
+            studyPdfZoom = 1;
+
+            for (var i = 1; i <= studyPdfPageCount; i++) {
+                var pageDiv = document.createElement("div");
+                pageDiv.className = "pdf-scroll-page";
+                pageDiv.dataset.page = i;
+                pageDiv.style.width = studyPdfBaseWidth + "px";
+                var aspect = vp.height / vp.width;
+                pageDiv.style.height = Math.round(studyPdfBaseWidth * aspect) + "px";
+
                 var canvas = document.createElement("canvas");
                 canvas.className = "pdf-scroll-canvas";
-                canvas.setAttribute("aria-label", "PDF page " + pageNumber);
-                var textLayer = document.createElement("div");
-                textLayer.className = "textLayer";
-                wrapper.appendChild(canvas);
-                wrapper.appendChild(textLayer);
-                fragment.appendChild(wrapper);
-            }));
-        })(i);
-    }
-    Promise.all(promises).then(function() {
-        if (token !== studyPdfLoadToken) return;
-        container.appendChild(fragment);
-        loading.hidden = true;
-        setupStudyPdfPageObserver(token);
-        bindStudyPdfScrollZoom(stage, token);
-        renderStudyPdfScrollPage(1, token);
-    }).catch(function(error) {
-        if (token !== studyPdfLoadToken) return;
-        loading.hidden = true;
-        showStudyPdfError("PDF pages could not be prepared. Please reload and try again.");
-        console.error("PDF page setup error:", error);
+                pageDiv.appendChild(canvas);
+
+                var textDiv = document.createElement("div");
+                textDiv.className = "textLayer";
+                pageDiv.appendChild(textDiv);
+
+                book.appendChild(pageDiv);
+                renderStudyPdfScrollPage(i);
+            }
+
+            setupStudyPdfPinch();
+            setupStudyPdfWheel();
+            setupStudyPdfButtons();
+        });
+    }).catch(function() {
+        book.innerHTML = '<p style="color:#e74c3c;padding:40px;text-align:center;">PDF load nahi ho paaya.</p>';
     });
 }
 
-function setupStudyPdfPageObserver(token) {
-    if (studyPdfObserver) studyPdfObserver.disconnect();
-    var stage = document.getElementById("studyPdfBookStage");
-    var pages = document.querySelectorAll("#studyPdfBook .pdf-scroll-page");
-    if ("IntersectionObserver" in window) {
-        studyPdfObserver = new IntersectionObserver(function(entries) {
-            entries.forEach(function(entry) {
-                if (entry.isIntersecting) renderStudyPdfScrollPage(Number(entry.target.dataset.pageNumber), token);
-            });
-        }, { root: stage, rootMargin: "900px 0px" });
-        pages.forEach(function(page) { studyPdfObserver.observe(page); });
-    } else {
-        pages.forEach(function(page) { renderStudyPdfScrollPage(Number(page.dataset.pageNumber), token); });
-    }
-}
+/* --- Render single page (off-screen staging to avoid black flash) --- */
+function renderStudyPdfScrollPage(pageNum) {
+    if (!studyPdfDoc) return;
+    if (studyPdfIsPinching) return;
 
-function renderStudyPdfScrollPage(pageNumber, token) {
-    var info = studyPdfPageInfo[pageNumber];
-    var wrapper = document.querySelector('#studyPdfBook .pdf-scroll-page[data-page-number="' + pageNumber + '"]');
-    if (!info || !wrapper || wrapper.dataset.rendered === "true") return;
-    if (studyPdfIsPinching) {
-        wrapper.dataset.renderPending = "true";
-        return;
-    }
-    if (studyPdfActiveRenders[pageNumber]) {
-        wrapper.dataset.renderPending = "true";
-        return;
-    }
-    wrapper.dataset.renderPending = "false";
-    studyPdfActiveRenders[pageNumber] = true;
-    var canvas = wrapper.querySelector("canvas");
-    var textLayer = wrapper.querySelector(".textLayer");
-    var cssScale = info.fitScale * studyPdfZoom;
-    var dpr = Math.min(Math.max(1, window.devicePixelRatio || 1), 3);
-    var renderScale = cssScale * dpr;
-    var maxCanvasPixels = 16000000;
-    renderScale = Math.min(renderScale, Math.sqrt(maxCanvasPixels / (info.width * info.height)));
-    var viewport = info.page.getViewport({ scale: renderScale });
-    var cssViewport = info.page.getViewport({ scale: cssScale });
-    wrapper.style.width = Math.ceil(cssViewport.width) + "px";
-    wrapper.style.height = Math.ceil(cssViewport.height) + "px";
-    var stagingCanvas = document.createElement("canvas");
-    stagingCanvas.width = Math.ceil(viewport.width);
-    stagingCanvas.height = Math.ceil(viewport.height);
-    var renderTask = info.page.render({
-        canvasContext: stagingCanvas.getContext("2d", { alpha: false }),
-        viewport: viewport
-    });
-    studyPdfActiveRenders[pageNumber] = renderTask;
-    renderTask.promise.then(function() {
-        if (token !== studyPdfLoadToken || !canvas.isConnected) return;
-        canvas.width = stagingCanvas.width;
-        canvas.height = stagingCanvas.height;
-        canvas.style.width = cssViewport.width + "px";
-        canvas.style.height = cssViewport.height + "px";
-        canvas.getContext("2d", { alpha: false }).drawImage(stagingCanvas, 0, 0);
-        textLayer.innerHTML = "";
-        textLayer.style.width = cssViewport.width + "px";
-        textLayer.style.height = cssViewport.height + "px";
-        if (window.pdfjsLib.renderTextLayer) {
-            return info.page.getTextContent().then(function(textContent) {
-                if (token !== studyPdfLoadToken || !textLayer.isConnected) return;
-                var textTask = window.pdfjsLib.renderTextLayer({
-                    textContent: textContent, container: textLayer,
-                    viewport: cssViewport, textDivs: []
+    var pageDiv = document.querySelector('.pdf-scroll-page[data-page="' + pageNum + '"]');
+    if (!pageDiv) return;
+    var canvas = pageDiv.querySelector(".pdf-scroll-canvas");
+    var textDiv = pageDiv.querySelector(".textLayer");
+    if (!canvas) return;
+
+    var existing = pageDiv.dataset.rendering;
+    if (existing === "active") return;
+    pageDiv.dataset.rendering = "active";
+
+    var w = studyPdfBaseWidth * studyPdfZoom;
+    var dpr = window.devicePixelRatio || 1;
+
+    studyPdfDoc.getPage(pageNum).then(function(page) {
+        var vp = page.getViewport({ scale: 1 });
+        var scale = w / vp.width;
+        var scaledVP = page.getViewport({ scale: scale * dpr });
+        var aspect = vp.height / vp.width;
+        var displayH = Math.round(w * aspect);
+
+        pageDiv.style.width = Math.round(w) + "px";
+        pageDiv.style.height = displayH + "px";
+
+        // Off-screen staging canvas
+        var staging = document.createElement("canvas");
+        staging.width = scaledVP.width;
+        staging.height = scaledVP.height;
+        var sCtx = staging.getContext("2d");
+
+        page.render({ canvasContext: sCtx, viewport: scaledVP }).promise.then(function() {
+            canvas.width = scaledVP.width;
+            canvas.height = scaledVP.height;
+            canvas.style.width = Math.round(w) + "px";
+            canvas.style.height = displayH + "px";
+            var ctx = canvas.getContext("2d");
+            ctx.drawImage(staging, 0, 0);
+            staging = null;
+
+            if (textDiv) {
+                textDiv.innerHTML = "";
+                textDiv.style.width = Math.round(w) + "px";
+                textDiv.style.height = displayH + "px";
+                page.getTextContent().then(function(tc) {
+                    var textVP = page.getViewport({ scale: scale });
+                    tc.items.forEach(function(item) {
+                        var tx = pdfjsLib.Util.transform(textVP.transform, item.transform);
+                        var span = document.createElement("span");
+                        span.textContent = item.str;
+                        span.style.left = tx[4] + "px";
+                        span.style.top = (textVP.height - tx[5] - (item.height * scale * 0.7)) + "px";
+                        span.style.fontSize = (item.height * scale * 0.85) + "px";
+                        span.style.fontFamily = "sans-serif";
+                        textDiv.appendChild(span);
+                    });
                 });
-                return textTask.promise;
-            });
-        }
-    }).then(function() {
-        if (token === studyPdfLoadToken) wrapper.dataset.rendered = "true";
-    }).catch(function(error) {
-        if (error && error.name !== "RenderingCancelledException" && error.name !== "AbortException") {
-            console.error("PDF page render error:", error);
-        }
-    }).finally(function() {
-        delete studyPdfActiveRenders[pageNumber];
-        if (token === studyPdfLoadToken && wrapper.dataset.renderPending === "true") {
-            wrapper.dataset.renderPending = "false";
-            renderStudyPdfScrollPage(pageNumber, token);
-        }
+            }
+            pageDiv.dataset.rendering = "done";
+        }).catch(function() {
+            pageDiv.dataset.rendering = "done";
+        });
     });
 }
 
-// Zoom via buttons/wheel — with CSS transition
-function setStudyPdfZoom(value, focalX, focalY, instant) {
-    var next = Math.max(0.5, Math.min(4, Math.round(value * 100) / 100));
-    if (Math.abs(next - studyPdfZoom) < 0.005 || !studyPdfDocument) return;
-    var oldZoom = studyPdfZoom;
-    var stage = document.getElementById("studyPdfBookStage");
-    var stageRect = stage ? stage.getBoundingClientRect() : null;
-    var localX = stageRect ? (focalX == null ? stageRect.width / 2 : focalX - stageRect.left) : 0;
-    var localY = stageRect ? (focalY == null ? stageRect.height / 2 : focalY - stageRect.top) : 0;
-    var contentX = stage ? stage.scrollLeft + localX : 0;
-    var contentY = stage ? stage.scrollTop + localY : 0;
-    var ratio = next / oldZoom;
-    studyPdfZoom = next;
-    updateStudyPdfZoomLabel();
-
-    var pages = document.querySelectorAll("#studyPdfBook .pdf-scroll-page");
-    pages.forEach(function(wrapper) {
-        var n = Number(wrapper.dataset.pageNumber);
-        var info = studyPdfPageInfo[n];
-        if (info) {
-            var newW = Math.ceil(info.width * info.fitScale * next);
-            var newH = Math.ceil(info.height * info.fitScale * next);
-            wrapper.style.width = newW + "px";
-            wrapper.style.height = newH + "px";
-            var canvas = wrapper.querySelector("canvas");
-            if (canvas) {
-                canvas.style.width = newW + "px";
-                canvas.style.height = newH + "px";
-            }
-            var textLayer = wrapper.querySelector(".textLayer");
-            if (textLayer) {
-                textLayer.style.width = newW + "px";
-                textLayer.style.height = newH + "px";
-            }
-        }
-    });
-
-    if (stage) {
-        requestAnimationFrame(function() {
-            stage.scrollLeft = Math.max(0, contentX * ratio - localX);
-            stage.scrollTop = Math.max(0, contentY * ratio - localY);
-        });
-    }
-
+/* --- Debounced re-render all pages --- */
+function schedulePdfRerender(delay) {
     if (studyPdfRenderDebounce) clearTimeout(studyPdfRenderDebounce);
-    var delay = instant ? 60 : 200;
     studyPdfRenderDebounce = setTimeout(function() {
-        studyPdfRenderDebounce = null;
-        var tk = studyPdfLoadToken;
-        pages.forEach(function(wrapper) {
-            var n = Number(wrapper.dataset.pageNumber);
-            wrapper.dataset.rendered = "false";
-            var oldTask = studyPdfActiveRenders[n];
-            if (oldTask && oldTask.cancel) {
-                wrapper.dataset.renderPending = "true";
-                try { oldTask.cancel(); } catch (e) {}
-            }
-            var r = wrapper.getBoundingClientRect();
-            var sr = stage ? stage.getBoundingClientRect() : null;
-            if (sr && r.bottom >= sr.top - 700 && r.top <= sr.bottom + 700) {
-                renderStudyPdfScrollPage(n, tk);
-            }
-        });
-    }, delay);
-}
-
-function updateStudyPdfZoomLabel() {
-    var label = document.getElementById("studyPdfZoomLabel");
-    if (label) label.textContent = Math.round(studyPdfZoom * 100) + "%";
-}
-
-function bindStudyPdfZoomButtons() {
-    var plus = document.getElementById("studyPdfZoomIn");
-    var minus = document.getElementById("studyPdfZoomOut");
-    var fit = document.getElementById("studyPdfFit");
-    if (plus && plus.dataset.bound !== "true") { plus.dataset.bound = "true"; plus.addEventListener("click", function() { setStudyPdfZoom(studyPdfZoom + 0.12); }); }
-    if (minus && minus.dataset.bound !== "true") { minus.dataset.bound = "true"; minus.addEventListener("click", function() { setStudyPdfZoom(studyPdfZoom - 0.12); }); }
-    if (fit && fit.dataset.bound !== "true") { fit.dataset.bound = "true"; fit.addEventListener("click", function() { setStudyPdfZoom(1); }); }
-}
-
-function bindStudyPdfScrollZoom(stage, token) {
-    if (!stage || stage.dataset.scrollZoomBound === "true") return;
-    stage.dataset.scrollZoomBound = "true";
-
-    // ===== Ctrl+Wheel zoom =====
-    stage.addEventListener("wheel", function(event) {
-        if (!event.ctrlKey && !event.metaKey) return;
-        event.preventDefault();
-        var factor = event.deltaY < 0 ? 1.045 : 0.957;
-        setStudyPdfZoom(studyPdfZoom * factor, event.clientX, event.clientY, false);
-    }, { passive: false });
-
-    // ===== PINCH ZOOM — Focal-locked, GPU accelerated, buttery smooth =====
-    // Approach: Use CSS transform on #studyPdfBook during pinch, calculated
-    // such that the content point under the pinch center stays EXACTLY under
-    // the fingers at all times. On release, bake the transform into real
-    // layout (width/height + scroll position).
-
-    function getPinchData(touches) {
-        var a = touches[0], b = touches[1];
-        return {
-            dist: Math.hypot(a.clientX - b.clientX, a.clientY - b.clientY),
-            cx: (a.clientX + b.clientX) / 2,
-            cy: (a.clientY + b.clientY) / 2
-        };
-    }
-
-    stage.addEventListener("touchstart", function(event) {
-        if (event.touches.length === 2) {
-            event.preventDefault();
-            var p = getPinchData(event.touches);
-            var stageRect = stage.getBoundingClientRect();
-            var localX = p.cx - stageRect.left;
-            var localY = p.cy - stageRect.top;
-
-            pinchState.active = true;
-            studyPdfIsPinching = true;
-            pinchState.startDist = p.dist;
-            pinchState.startZoom = studyPdfZoom;
-            // Store the CONTENT coordinate under the pinch center (unscaled by current zoom)
-            pinchState.startContentX = stage.scrollLeft + localX;
-            pinchState.startContentY = stage.scrollTop + localY;
-            pinchState.pendingZoom = studyPdfZoom;
-            pinchState.pendingCenterX = p.cx;
-            pinchState.pendingCenterY = p.cy;
-
-            // Kill transitions on book during pinch — we drive with transform
-            var book = document.getElementById("studyPdfBook");
-            if (book) {
-                book.style.transition = "none";
-                book.style.transformOrigin = "0 0";
-            }
+        if (!studyPdfDoc || studyPdfIsPinching) return;
+        for (var i = 1; i <= studyPdfPageCount; i++) {
+            var pd = document.querySelector('.pdf-scroll-page[data-page="' + i + '"]');
+            if (pd) pd.dataset.rendering = "";
+            renderStudyPdfScrollPage(i);
         }
-    }, { passive: false });
+    }, delay || 180);
+}
 
-    stage.addEventListener("touchmove", function(event) {
-        if (!pinchState.active || event.touches.length !== 2) return;
-        event.preventDefault();
-        var p = getPinchData(event.touches);
-        if (pinchState.startDist < 1) return;
+/* --- Update zoom label --- */
+function updatePdfZoomLabel() {
+    var lbl = document.getElementById("studyPdfZoomLabel");
+    if (lbl) lbl.textContent = Math.round(studyPdfZoom * 100) + "%";
+}
 
-        var newZoom = Math.max(0.5, Math.min(4,
-            pinchState.startZoom * (p.dist / pinchState.startDist)));
+/* =============================================
+   PINCH ZOOM — Focal-point locked, zero drift
+   ============================================= */
+function setupStudyPdfPinch() {
+    var stage = document.getElementById("studyPdfStage");
+    var book = document.getElementById("studyPdfBook");
+    if (!stage || !book) return;
 
-        pinchState.pendingZoom = newZoom;
-        pinchState.pendingCenterX = p.cx;
-        pinchState.pendingCenterY = p.cy;
+    // Remove old listeners by cloning (clean slate)
+    var newStage = stage.cloneNode(true);
+    stage.parentNode.replaceChild(newStage, stage);
+    stage = newStage;
+    book = stage.querySelector("#studyPdfBook");
+    if (!book) return;
 
-        // Throttle to animation frame for 60fps smoothness
-        if (pinchState.rafId) return;
-        pinchState.rafId = requestAnimationFrame(function() {
-            pinchState.rafId = null;
-            applyPinchTransform();
-        });
-    }, { passive: false });
-
-    function applyPinchTransform() {
-        var book = document.getElementById("studyPdfBook");
-        if (!book || !pinchState.active) return;
-
-        var scaleRatio = pinchState.pendingZoom / pinchState.startZoom;
-        var stageRect = stage.getBoundingClientRect();
-        var localX = pinchState.pendingCenterX - stageRect.left;
-        var localY = pinchState.pendingCenterY - stageRect.top;
-
-        // Math: We want the content point (startContentX, startContentY) to appear
-        // at screen position (localX, localY) after scaling.
-        // After scale with origin (0,0):
-        //   screen_x = (contentX * scaleRatio) - scrollLeft + translateX
-        // We want screen_x = localX, keeping scrollLeft constant (frozen at start):
-        //   translateX = localX + scrollLeft - (contentX * scaleRatio)
-        var tx = localX - (pinchState.startContentX * scaleRatio) + stage.scrollLeft;
-        var ty = localY - (pinchState.startContentY * scaleRatio) + stage.scrollTop;
-
-        // But scrollLeft may have shifted during pinch — lock it to start value
-        // by using the diff. Actually simpler: freeze scroll during pinch.
-        book.style.transform = "translate3d(" + tx + "px, " + ty + "px, 0) scale(" + scaleRatio + ")";
+    function getTouchDist(t1, t2) {
+        var dx = t1.clientX - t2.clientX;
+        var dy = t1.clientY - t2.clientY;
+        return Math.sqrt(dx * dx + dy * dy);
     }
 
-    function finishPinch() {
+    function onPinchStart(t1, t2) {
+        studyPdfIsPinching = true;
+        pinchState.active = true;
+        pinchState.startZoom = studyPdfZoom;
+
+        var stageRect = stage.getBoundingClientRect();
+        var mx = (t1.clientX + t2.clientX) / 2 - stageRect.left;
+        var my = (t1.clientY + t2.clientY) / 2 - stageRect.top;
+
+        pinchState.viewportX = mx;
+        pinchState.viewportY = my;
+        pinchState.contentX = mx + stage.scrollLeft;
+        pinchState.contentY = my + stage.scrollTop;
+        pinchState.startDist = getTouchDist(t1, t2);
+
+        // Freeze scroll & kill transitions
+        stage.style.overflow = "hidden";
+        stage.style.touchAction = "none";
+        book.classList.add("pinching");
+        book.style.transformOrigin = "0 0";
+    }
+
+    function onPinchMove(t1, t2) {
+        if (!pinchState.active) return;
+
+        var dist = getTouchDist(t1, t2);
+        var ratio = dist / pinchState.startDist;
+        var newZoom = pinchState.startZoom * ratio;
+        newZoom = Math.max(0.5, Math.min(4, newZoom));
+
+        var r = newZoom / pinchState.startZoom;
+        var cx = pinchState.contentX;
+        var cy = pinchState.contentY;
+
+        // Focal-locked transform: point (cx,cy) stays at viewport (vx,vy)
+        var tx = cx * (1 - r);
+        var ty = cy * (1 - r);
+
+        book.style.transform = "translate3d(" + tx + "px," + ty + "px,0) scale(" + r + ")";
+        pinchState._currentR = r;
+    }
+
+    function onPinchEnd() {
         if (!pinchState.active) return;
         pinchState.active = false;
         studyPdfIsPinching = false;
-        if (pinchState.rafId) { cancelAnimationFrame(pinchState.rafId); pinchState.rafId = null; }
 
-        var book = document.getElementById("studyPdfBook");
-        var finalZoom = pinchState.pendingZoom;
-        var scaleRatio = finalZoom / pinchState.startZoom;
-        var stageRect = stage.getBoundingClientRect();
-        var localX = pinchState.pendingCenterX - stageRect.left;
-        var localY = pinchState.pendingCenterY - stageRect.top;
+        var r = pinchState._currentR || 1;
+        var cx = pinchState.contentX;
+        var cy = pinchState.contentY;
+        var mx = pinchState.viewportX;
+        var my = pinchState.viewportY;
 
-        // Calculate target scroll position so content point stays under finger
-        var targetScrollLeft = (pinchState.startContentX * scaleRatio) - localX;
-        var targetScrollTop = (pinchState.startContentY * scaleRatio) - localY;
+        var newZoom = pinchState.startZoom * r;
+        newZoom = Math.max(0.5, Math.min(4, newZoom));
+        studyPdfZoom = newZoom;
+        updatePdfZoomLabel();
 
-        // Remove transform
-        if (book) {
-            book.style.transform = "";
-            book.style.transformOrigin = "";
-        }
+        // Single-frame bake: remove transform → set real sizes → set scroll
+        book.style.transform = "";
+        book.classList.remove("pinching");
 
-        // Apply real zoom (resize pages)
-        var oldZoom = studyPdfZoom;
-        studyPdfZoom = Math.max(0.5, Math.min(4, Math.round(finalZoom * 100) / 100));
-        updateStudyPdfZoomLabel();
-
-        var pages = document.querySelectorAll("#studyPdfBook .pdf-scroll-page");
-        pages.forEach(function(wrapper) {
-            var n = Number(wrapper.dataset.pageNumber);
-            var info = studyPdfPageInfo[n];
-            if (info) {
-                var newW = Math.ceil(info.width * info.fitScale * studyPdfZoom);
-                var newH = Math.ceil(info.height * info.fitScale * studyPdfZoom);
-                // Kill transition for instant resize (no visual jump)
-                wrapper.style.transition = "none";
-                wrapper.style.width = newW + "px";
-                wrapper.style.height = newH + "px";
-                var canvas = wrapper.querySelector("canvas");
-                if (canvas) {
-                    canvas.style.transition = "none";
-                    canvas.style.width = newW + "px";
-                    canvas.style.height = newH + "px";
-                }
-                var textLayer = wrapper.querySelector(".textLayer");
-                if (textLayer) {
-                    textLayer.style.transition = "none";
-                    textLayer.style.width = newW + "px";
-                    textLayer.style.height = newH + "px";
-                }
+        // Set real page sizes (no transition during bake)
+        var pages = book.querySelectorAll(".pdf-scroll-page");
+        pages.forEach(function(p) {
+            var baseW = studyPdfBaseWidth;
+            var w = baseW * studyPdfZoom;
+            var aspect = parseFloat(p.style.height) / parseFloat(p.style.width) || 1.414;
+            p.style.width = Math.round(w) + "px";
+            p.style.height = Math.round(w * aspect) + "px";
+            var c = p.querySelector(".pdf-scroll-canvas");
+            if (c) {
+                c.style.width = Math.round(w) + "px";
+                c.style.height = Math.round(w * aspect) + "px";
+            }
+            var t = p.querySelector(".textLayer");
+            if (t) {
+                t.style.width = Math.round(w) + "px";
+                t.style.height = Math.round(w * aspect) + "px";
             }
         });
 
-        // Set scroll to keep focal point locked
+        // Restore scroll & overflow in next frame
         requestAnimationFrame(function() {
-            stage.scrollLeft = Math.max(0, targetScrollLeft);
-            stage.scrollTop = Math.max(0, targetScrollTop);
+            stage.scrollLeft = Math.max(0, cx * r - mx);
+            stage.scrollTop = Math.max(0, cy * r - my);
+            stage.style.overflow = "";
+            stage.style.touchAction = "";
 
-            // Restore transitions after paint
-            requestAnimationFrame(function() {
-                pages.forEach(function(w) {
-                    w.style.transition = "";
-                    var c = w.querySelector("canvas");
-                    if (c) c.style.transition = "";
-                    var t = w.querySelector(".textLayer");
-                    if (t) t.style.transition = "";
-                });
-            });
+            // Sharp re-render after layout settles
+            schedulePdfRerender(120);
         });
 
-        // Debounced re-render for sharp pages
-        if (studyPdfRenderDebounce) clearTimeout(studyPdfRenderDebounce);
-        studyPdfRenderDebounce = setTimeout(function() {
-            studyPdfRenderDebounce = null;
-            var tk = studyPdfLoadToken;
-            pages.forEach(function(wrapper) {
-                var n = Number(wrapper.dataset.pageNumber);
-                wrapper.dataset.rendered = "false";
-                var oldTask = studyPdfActiveRenders[n];
-                if (oldTask && oldTask.cancel) {
-                    wrapper.dataset.renderPending = "true";
-                    try { oldTask.cancel(); } catch (e) {}
-                }
-                var r = wrapper.getBoundingClientRect();
-                var sr = stage.getBoundingClientRect();
-                if (r.bottom >= sr.top - 700 && r.top <= sr.bottom + 700) {
-                    renderStudyPdfScrollPage(n, tk);
-                }
-            });
-        }, 120);
+        pinchState._currentR = 1;
     }
 
-    stage.addEventListener("touchend", function(event) {
-        if (event.touches.length < 2 && pinchState.active) finishPinch();
+    // Touch event handlers
+    stage.addEventListener("touchstart", function(e) {
+        if (e.touches.length === 2) {
+            e.preventDefault();
+            onPinchStart(e.touches[0], e.touches[1]);
+        }
+    }, { passive: false });
+
+    stage.addEventListener("touchmove", function(e) {
+        if (e.touches.length === 2 && pinchState.active) {
+            e.preventDefault();
+            onPinchMove(e.touches[0], e.touches[1]);
+        }
+    }, { passive: false, desynchronized: true });
+
+    stage.addEventListener("touchend", function(e) {
+        if (pinchState.active && e.touches.length < 2) {
+            onPinchEnd();
+        }
     }, { passive: true });
+
     stage.addEventListener("touchcancel", function() {
-        if (pinchState.active) finishPinch();
+        if (pinchState.active) onPinchEnd();
     }, { passive: true });
 }
 
-function cleanupStudyPdfResources() {
-    if (studyPdfRenderDebounce) { clearTimeout(studyPdfRenderDebounce); studyPdfRenderDebounce = null; }
-    studyPdfIsPinching = false;
-    pinchState.active = false;
-    if (pinchState.rafId) { cancelAnimationFrame(pinchState.rafId); pinchState.rafId = null; }
-    if (studyPdfObserver) { studyPdfObserver.disconnect(); studyPdfObserver = null; }
-    Object.keys(studyPdfActiveRenders).forEach(function(key) {
-        var task = studyPdfActiveRenders[key];
-        if (task && task.cancel) { try { task.cancel(); } catch (e) {} }
+/* =============================================
+   WHEEL ZOOM — ultra-smooth fine steps
+   ============================================= */
+function setupStudyPdfWheel() {
+    var stage = document.getElementById("studyPdfStage");
+    if (!stage) return;
+
+    var wheelAccum = 0;
+    var wheelTimer = null;
+
+    stage.addEventListener("wheel", function(e) {
+        if (!studyPdfDoc) return;
+        if (e.ctrlKey || e.metaKey) {
+            e.preventDefault();
+
+            wheelAccum += e.deltaY;
+
+            if (wheelTimer) clearTimeout(wheelTimer);
+            wheelTimer = setTimeout(function() {
+                var step = 1.035;
+                if (wheelAccum > 0) {
+                    studyPdfZoom = Math.max(0.5, studyPdfZoom / step);
+                } else {
+                    studyPdfZoom = Math.min(4, studyPdfZoom * step);
+                }
+                wheelAccum = 0;
+                applyStudyPdfZoomSmooth();
+            }, 16);
+        }
+    }, { passive: false });
+}
+
+/* --- Smooth zoom apply (for wheel & buttons) --- */
+function applyStudyPdfZoomSmooth() {
+    if (!studyPdfDoc) return;
+    var stage = document.getElementById("studyPdfStage");
+    var book = document.getElementById("studyPdfBook");
+    if (!stage || !book) return;
+
+    updatePdfZoomLabel();
+
+    var oldZoom = parseFloat(book.dataset.prevZoom) || 1;
+    var ratio = studyPdfZoom / oldZoom;
+    book.dataset.prevZoom = studyPdfZoom;
+
+    // Keep center of viewport stable
+    var cx = stage.scrollLeft + stage.clientWidth / 2;
+    var cy = stage.scrollTop + stage.clientHeight / 2;
+
+    var pages = book.querySelectorAll(".pdf-scroll-page");
+    pages.forEach(function(p) {
+        var w = studyPdfBaseWidth * studyPdfZoom;
+        var curW = parseFloat(p.style.width) || w;
+        var aspect = parseFloat(p.style.height) / curW || 1.414;
+        p.style.width = Math.round(w) + "px";
+        p.style.height = Math.round(w * aspect) + "px";
+        var c = p.querySelector(".pdf-scroll-canvas");
+        if (c) {
+            c.style.width = Math.round(w) + "px";
+            c.style.height = Math.round(w * aspect) + "px";
+        }
+        var t = p.querySelector(".textLayer");
+        if (t) {
+            t.style.width = Math.round(w) + "px";
+            t.style.height = Math.round(w * aspect) + "px";
+        }
     });
-    studyPdfActiveRenders = {};
-    if (studyPdfLoadingTask) {
-        try { var result = studyPdfLoadingTask.destroy(); if (result && result.catch) result.catch(function() {}); } catch (e) {}
-        studyPdfLoadingTask = null;
-    }
-    if (studyPdfDocument) {
-        try { var destroyResult = studyPdfDocument.destroy(); if (destroyResult && destroyResult.catch) destroyResult.catch(function() {}); } catch (e) {}
-        studyPdfDocument = null;
-    }
-    studyPdfPageInfo = [];
-}
 
-function showStudyPdfError(message) {
-    var errorEl = document.getElementById("studyPdfError");
-    if (errorEl) { errorEl.textContent = message; errorEl.hidden = false; }
-}
-
-function backFromStudyPdf() {
-    studyPdfLoadToken++;
-    cleanupStudyPdfResources();
-    var bookEl = document.getElementById("studyPdfBook");
-    var loadingEl = document.getElementById("studyPdfLoading");
-    var errorEl = document.getElementById("studyPdfError");
-    if (bookEl) bookEl.innerHTML = "";
-    if (loadingEl) loadingEl.hidden = true;
-    if (errorEl) errorEl.hidden = true;
-    switchSubView(currentStudyPdfParentView || "study-pdf-home-view");
-}
-
-function escapeStudyHtml(value) {
-    return String(value == null ? "" : value).replace(/[&<>"']/g, function (ch) {
-        return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[ch];
-    });
-}
-
-function renderStudyMaterial(data, subjectTitle, container, subtitle) {
-    var entries = Array.isArray(data) ? data : null;
-    if (!entries && data && typeof data === "object") {
-        var candidateKeys = ["chapters", "units", "topics", "materials", "notes", "lessons", "data", "content"];
-        for (var i = 0; i < candidateKeys.length; i++) {
-            if (Array.isArray(data[candidateKeys[i]])) { entries = data[candidateKeys[i]]; break; }
-        }
-        if (!entries) entries = [data];
-    }
-    if (!entries || entries.length === 0) {
-        subtitle.textContent = "No study material has been added yet.";
-        container.innerHTML = '<div class="study-empty"><i class="fa-solid fa-book-open"></i><h3>Coming Soon</h3><p>Study material will appear here when it is added.</p></div>';
-        return;
-    }
-
-    subtitle.textContent = entries.length + " material item(s) available in " + subjectTitle + ".";
-    container.innerHTML = "";
-    entries.forEach(function (entry, index) {
-        var card = document.createElement("article");
-        card.className = "study-material-item";
-        var heading = typeof entry === "string" ? entry : (entry.title || entry.name || entry.chapter || entry.topic || (subjectTitle + " Material " + (index + 1)));
-        var body = typeof entry === "string" ? "" : (entry.description || entry.summary || entry.text || entry.content || entry.notes || "");
-        var headingEl = document.createElement("h3");
-        headingEl.textContent = heading;
-        card.appendChild(headingEl);
-        if (body && typeof body === "string") {
-            var bodyEl = document.createElement("p");
-            bodyEl.textContent = body;
-            card.appendChild(bodyEl);
-        }
-        if (entry && typeof entry === "object") {
-            Object.keys(entry).forEach(function (key) {
-                if (["title", "name", "chapter", "topic", "description", "summary", "text", "content", "notes"].indexOf(key) !== -1) return;
-                var value = entry[key];
-                if (value == null || typeof value === "object") return;
-                var detail = document.createElement("p");
-                detail.className = "study-detail-line";
-                var label = document.createElement("strong");
-                label.textContent = key.replace(/[_-]/g, " ") + ": ";
-                detail.appendChild(label);
-                detail.appendChild(document.createTextNode(String(value)));
-                card.appendChild(detail);
-            });
-        }
-        container.appendChild(card);
+    // Adjust scroll to keep center point stable
+    requestAnimationFrame(function() {
+        stage.scrollLeft = Math.max(0, cx * ratio - stage.clientWidth / 2);
+        stage.scrollTop = Math.max(0, cy * ratio - stage.clientHeight / 2);
+        schedulePdfRerender(200);
     });
 }
 
-/* -------------- LAUNCH TEST -------------- */
-function launchTest(subject) {
-    var studentName = getStudentName();
+/* =============================================
+   BUTTON ZOOM
+   ============================================= */
+function setupStudyPdfButtons() {
+    var btnIn = document.getElementById("studyPdfZoomIn");
+    var btnOut = document.getElementById("studyPdfZoomOut");
+    var btnFit = document.getElementById("studyPdfFit");
 
-    if (!studentName) {
-        alert("Session expired! Please login again.");
-        logout();
-        return;
+    if (btnIn) {
+        btnIn.onclick = function() {
+            studyPdfZoom = Math.min(4, studyPdfZoom + 0.12);
+            applyStudyPdfZoomSmooth();
+        };
     }
-
-    sessionStorage.setItem("student_name", studentName);
-    localStorage.setItem("rjStudyUsername", studentName);
-    window.open("test/index.html?subject=" + subject, "_blank");
+    if (btnOut) {
+        btnOut.onclick = function() {
+            studyPdfZoom = Math.max(0.5, studyPdfZoom - 0.12);
+            applyStudyPdfZoomSmooth();
+        };
+    }
+    if (btnFit) {
+        btnFit.onclick = function() {
+            studyPdfZoom = 1;
+            applyStudyPdfZoomSmooth();
+        };
+    }
 }
 
-/* -------------- CHAT SYSTEM -------------- */
-var chatInterval = null;
-var isChatOpen = false;
-var lastChatHash = "";
-var chatPollInFlight = false;
+// =============================================
+//  TEST
+// =============================================
+function launchTest() {
+    switchSubView("test-view");
+    var container = document.getElementById("testContent");
+    if (!container) return;
+    container.innerHTML = '<p style="padding:20px;color:#888;text-align:center;">Test load ho raha hai...</p>';
+
+    fetch(WORKER_URL + "/api/test")
+        .then(function(r) { return r.json(); })
+        .then(function(data) {
+            if (data && data.questions) {
+                var html = '<h3>Practice Test</h3>';
+                data.questions.forEach(function(q, idx) {
+                    html += '<div class="test-question">';
+                    html += '<p>' + (idx + 1) + '. ' + escapeStudyHtml(q.question) + '</p>';
+                    (q.options || []).forEach(function(opt) {
+                        html += '<div class="test-option" onclick="this.classList.toggle(\'selected\')">' +
+                                escapeStudyHtml(opt) + '</div>';
+                    });
+                    html += '</div>';
+                });
+                container.innerHTML = html;
+            } else {
+                container.innerHTML = '<p style="padding:20px;color:#888;text-align:center;">Koi test nahi mila.</p>';
+            }
+        })
+        .catch(function() {
+            container.innerHTML = '<p style="padding:20px;color:#e74c3c;text-align:center;">Test load nahi ho paaya.</p>';
+        });
+}
+
+// =============================================
+//  CHAT SYSTEM
+// =============================================
+var chatPollInterval = null;
+
+function toggleChat() {
+    var panel = document.getElementById("chatPanel");
+    if (!panel) return;
+    var isOpen = panel.classList.contains("open");
+    if (isOpen) {
+        panel.classList.remove("open");
+        if (chatPollInterval) { clearInterval(chatPollInterval); chatPollInterval = null; }
+    } else {
+        panel.classList.add("open");
+        pollChat();
+        chatPollInterval = setInterval(pollChat, 4000);
+    }
+}
+
+function pollChat() {
+    var name = getStudentName();
+    fetch(WORKER_URL + "/api/chat?user=" + encodeURIComponent(name))
+        .then(function(r) { return r.json(); })
+        .then(function(data) {
+            if (data && data.messages) {
+                renderChat(data.messages);
+            }
+        })
+        .catch(function() {});
+}
+
+function sendChatMessage() {
+    var input = document.getElementById("chatInput");
+    if (!input) return;
+    var msg = input.value.trim();
+    if (!msg) return;
+    var name = getStudentName();
+
+    fetch(WORKER_URL + "/api/chat", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ user: name, message: msg })
+    })
+    .then(function() {
+        input.value = "";
+        pollChat();
+    })
+    .catch(function() {});
+}
+
+function renderChat(messages) {
+    var container = document.getElementById("chatMessages");
+    if (!container) return;
+    var name = getStudentName();
+    var html = "";
+    messages.forEach(function(m) {
+        var isMine = (m.user === name);
+        var cls = isMine ? "sent" : "received";
+        var time = m.time ? new Date(m.time).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }) : "";
+        html += '<div class="chat-msg ' + cls + '">';
+        if (!isMine) html += '<strong style="font-size:.72rem;color:#0f3460;">' + escapeStudyHtml(m.user) + '</strong><br>';
+        html += escapeStudyHtml(m.message);
+        html += '<div class="msg-time">' + time + '</div>';
+        html += '</div>';
+    });
+    container.innerHTML = html;
+    container.scrollTop = container.scrollHeight;
+}
 
 function setChatStatus(text) {
     var el = document.getElementById("chatStatus");
-    if (el) el.textContent = text || "";
+    if (el) el.textContent = text;
 }
 
-function toggleChat(forceState) {
-    var overlay = document.getElementById("chatOverlay");
-    if (!overlay) return;
-
-    if (typeof forceState === "boolean") {
-        isChatOpen = forceState;
-    } else {
-        isChatOpen = !isChatOpen;
-    }
-
-    if (chatInterval) {
-        clearInterval(chatInterval);
-        chatInterval = null;
-    }
-
-    if (isChatOpen) {
-        overlay.classList.add("active");
-        lastChatHash = "";
-        setChatStatus("Syncing...");
-        pollChat(true);
-        chatInterval = setInterval(function () {
-            if (!document.hidden) pollChat(false);
-        }, 3000);
-        setTimeout(function () {
-            var input = document.getElementById("chatInput");
-            if (input) input.focus();
-        }, 150);
-    } else {
-        overlay.classList.remove("active");
-        setChatStatus("");
-    }
-}
-
-async function pollChat(forceRender) {
-    var studentName = getStudentName();
-    if (!studentName || !isChatOpen) return;
-    if (chatPollInFlight) return;
-
-    chatPollInFlight = true;
-    try {
-        var res = await fetch(WORKER_URL + "/api/chat?ts=" + Date.now(), {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            cache: "no-store",
-            body: JSON.stringify({ action: "get", studentName: studentName })
-        });
-        var data = await res.json();
-        if (data && data.success) {
-            var history = data.history || [];
-            var hash = JSON.stringify(history);
-            if (forceRender || hash !== lastChatHash) {
-                lastChatHash = hash;
-                renderChat(history);
-            }
-            setChatStatus("Live • " + history.length + "/3 • auto-clear 2 min");
-        } else {
-            setChatStatus("Sync failed");
-        }
-    } catch (e) {
-        setChatStatus("Network error");
-    } finally {
-        chatPollInFlight = false;
-    }
-}
-
-async function sendChatMessage() {
-    var input = document.getElementById("chatInput");
-    if (!input) return;
-
-    var msg = input.value.trim();
-    var studentName = getStudentName();
-    if (!msg || !studentName) return;
-
-    input.value = "";
-    input.disabled = true;
-    setChatStatus("Sending...");
-
-    try {
-        var res = await fetch(WORKER_URL + "/api/chat?ts=" + Date.now(), {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            cache: "no-store",
-            body: JSON.stringify({ studentName: studentName, message: msg })
-        });
-        var data = await res.json();
-        if (data && data.success) {
-            lastChatHash = JSON.stringify(data.history || []);
-            renderChat(data.history || []);
-            setChatStatus("Sent • " + (data.history || []).length + "/3");
-        } else {
-            input.value = msg;
-            setChatStatus((data && data.error) || "Send failed");
-        }
-    } catch (e) {
-        input.value = msg;
-        setChatStatus("Network error");
-    } finally {
-        input.disabled = false;
-        input.focus();
-        setTimeout(function () {
-            pollChat(true);
-        }, 400);
-    }
-}
-
-function renderChat(history) {
-    var body = document.getElementById("chatBody");
-    if (!body) return;
-
-    body.innerHTML = "";
-    if (!history || history.length === 0) {
-        body.innerHTML =
-            '<div style="text-align:center; color:' + "var(--text-dim)" + '; font-size:0.84rem; margin-top:30px; line-height:1.7;">' +
-            '<i class="fa-solid fa-message" style="font-size:2rem; color:rgba(32,232,137,0.15); display:block; margin-bottom:12px;"></i>' +
-            "Max 3 messages. Chat clears after 2 min idle.</div>";
-        return;
-    }
-
-    history.forEach(function (msg) {
-        var div = document.createElement("div");
-        var sender = (msg.sender || "student").toLowerCase();
-        div.className = "chat-message " + (sender === "admin" ? "admin" : "student");
-        div.innerText = msg.text || "";
-        body.appendChild(div);
-    });
-
-    body.scrollTop = body.scrollHeight;
-}
-
-/* -------------- INIT PORTAL -------------- */
+// =============================================
+//  INIT
+// =============================================
 function initPortal() {
     checkExistingSession();
 
-    var form = document.getElementById("loginForm");
-    if (form) {
-        form.addEventListener("submit", handleLogin);
+    var loginForm = document.getElementById("loginForm");
+    if (loginForm) {
+        loginForm.addEventListener("submit", handleLogin);
     }
 
-    window.addEventListener("click", function (e) {
-        if (!e.target.closest(".profile-menu-container")) closeAllDropdowns();
-    });
-
-    document.addEventListener("visibilitychange", function () {
-        if (!document.hidden && isChatOpen) pollChat(true);
-    });
-    window.addEventListener("focus", function () {
-        if (isChatOpen) pollChat(true);
-    });
-
-    setInterval(function () {
-        var greetEl = document.getElementById("greetingText");
-        if (greetEl && document.getElementById("dashboard-view").classList.contains("active")) {
-            greetEl.innerText = getGreeting();
+    // Close dropdowns on outside click
+    document.addEventListener("click", function(e) {
+        if (!e.target.closest(".profile-btn") && !e.target.closest(".profile-menu")) {
+            closeAllDropdowns();
         }
-    }, 60000);
+    });
 }
 
-if (document.readyState === "loading") {
-    document.addEventListener("DOMContentLoaded", initPortal);
-} else {
-    initPortal();
-}
-
+// ---- Window exports ----
 window.handleLogin = handleLogin;
-window.toggleProfileMenu = toggleProfileMenu;
 window.logout = logout;
 window.switchSubView = switchSubView;
 window.goHome = goHome;
-window.launchTest = launchTest;
+window.toggleProfileMenu = toggleProfileMenu;
+window.closeAllDropdowns = closeAllDropdowns;
 window.openStudyMaterial = openStudyMaterial;
 window.openStudyPdf = openStudyPdf;
-window.backFromStudyPdf = backFromStudyPdf;
-window.goBackFromStudyContent = goBackFromStudyContent;
+window.launchTest = launchTest;
 window.toggleChat = toggleChat;
 window.sendChatMessage = sendChatMessage;
 
-/* -------------- TERMINAL ANIMATION -------------- */
-(function () {
-    var terminal = document.getElementById("terminal-bg");
-    if (!terminal) return;
-    var logs = [
-        "Initializing secure hypervisor environment...",
-        "Loading root credentials for RJ_STUDY_ACADEMY_PORTAL...",
-        "Establishing encrypted handshake... [SECURE]",
-        "Injecting pathways: [ENGLISH, HINDI, MATH, SCIENCE]",
-        "Status: Multi-Subject Test Engine v29.0 ONLINE."
+// ---- Boot ----
+document.addEventListener("DOMContentLoaded", initPortal);
+
+// ---- Terminal Animation (cosmetic) ----
+(function() {
+    var term = document.getElementById("terminalText");
+    if (!term) return;
+    var lines = [
+        "> Initializing RJ Study Portal...",
+        "> Loading modules...",
+        "> Connecting to server...",
+        "> Ready. Welcome!"
     ];
-    var li = 0,
-        ci = 0,
-        text = "";
-    function type() {
-        if (li < logs.length) {
-            if (ci < logs[li].length) {
-                text += logs[li].charAt(ci);
-                terminal.innerText = text + "█";
+    var li = 0;
+    function typeLine() {
+        if (li >= lines.length) return;
+        var line = lines[li];
+        var ci = 0;
+        var span = document.createElement("div");
+        term.appendChild(span);
+        function typeChar() {
+            if (ci < line.length) {
+                span.textContent += line[ci];
                 ci++;
-                setTimeout(type, 18);
+                setTimeout(typeChar, 25);
             } else {
-                text += "\n\n";
                 li++;
-                ci = 0;
-                setTimeout(type, 300);
+                setTimeout(typeLine, 300);
             }
-        } else {
-            text += "> root@rj-academy:~$ ";
-            terminal.innerText = text;
-            setTimeout(function () {
-                text = "";
-                li = 0;
-                ci = 0;
-                type();
-            }, 4000);
         }
+        typeChar();
     }
-    type();
+    typeLine();
 })();
