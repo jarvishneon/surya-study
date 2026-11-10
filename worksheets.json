@@ -1,25 +1,125 @@
-{
-  "competitive": {
-    "English": [],
-    "Math": [],
-    "Hindi": [],
-    "Reasoning": [],
-    "GS": []
-  },
-  "board": {
-    "9th-class": {
-      "Hindi": [],
-      "English": [],
-      "Math": [],
-      "Science": [],
-      "Geography": []
-    },
-    "10th-class": {
-      "Hindi": [],
-      "English": [],
-      "Math": [],
-      "Science": [],
-      "Geography": []
-    }
-  }
-}
+name: Generate Worksheet Manifest
+
+on:
+  push:
+    paths:
+      - "Worksheets/**"
+      - "worksheets.json"
+      - ".github/workflows/generate-worksheets.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: worksheet-manifest
+  cancel-in-progress: false
+
+jobs:
+  generate:
+    # Avoid running again for the bot's own manifest commit.
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Generate worksheets.json from image folders
+        shell: bash
+        run: |
+          python3 <<'PY'
+          import json
+          import subprocess
+          from pathlib import PurePosixPath
+
+          IMAGE_EXTENSIONS = {".jpg", ".jpeg", ".png", ".webp", ".gif"}
+          manifest = {
+              "competitive": {
+                  "English": [],
+                  "Math": [],
+                  "Hindi": [],
+                  "Reasoning": [],
+                  "GS": []
+              },
+              "board": {
+                  "9th-class": {
+                      "Hindi": [],
+                      "English": [],
+                      "Math": [],
+                      "Science": [],
+                      "Geography": []
+                  },
+                  "10th-class": {
+                      "Hindi": [],
+                      "English": [],
+                      "Math": [],
+                      "Science": [],
+                      "Geography": []
+                  }
+              }
+          }
+
+          tracked = subprocess.check_output(
+              ["git", "ls-files", "-z"], text=True
+          ).split("\0")
+
+          def natural_key(value):
+              import re
+              return [
+                  int(part) if part.isdigit() else part.lower()
+                  for part in re.split(r"(\d+)", value)
+              ]
+
+          for raw_path in tracked:
+              if not raw_path:
+                  continue
+
+              path = PurePosixPath(raw_path)
+              parts = path.parts
+
+              # Worksheets/Competitive/English/image.jpg
+              # Worksheets/Board/9th-class/English/image.jpg
+              if len(parts) < 4 or parts[0].lower() != "worksheets":
+                  continue
+              if path.suffix.lower() not in IMAGE_EXTENSIONS:
+                  continue
+
+              section = parts[1].lower()
+              if section == "competitive" and len(parts) == 4:
+                  subject = parts[2]
+                  manifest["competitive"].setdefault(subject, []).append(raw_path)
+              elif section == "board" and len(parts) == 5:
+                  class_name = parts[2]
+                  subject = parts[3]
+                  manifest["board"].setdefault(class_name, {}).setdefault(subject, []).append(raw_path)
+
+          for pages in manifest["competitive"].values():
+              if isinstance(pages, list):
+                  pages.sort(key=lambda item: natural_key(PurePosixPath(item).name))
+
+          for subjects in manifest["board"].values():
+              for pages in subjects.values():
+                  if isinstance(pages, list):
+                      pages.sort(key=lambda item: natural_key(PurePosixPath(item).name))
+
+          with open("worksheets.json", "w", encoding="utf-8") as file:
+              json.dump(manifest, file, ensure_ascii=False, indent=2)
+              file.write("\n")
+
+          print("Generated worksheets.json from tracked worksheet images.")
+          PY
+
+      - name: Commit updated manifest
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add worksheets.json
+          if git diff --cached --quiet; then
+            echo "worksheets.json is already up to date."
+            exit 0
+          fi
+          git commit -m "chore: auto-update worksheet manifest"
+          git push
