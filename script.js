@@ -999,11 +999,30 @@ function handleWorksheetKeyboardNavigation(event) {
 function updateWorksheetZoomLabel() {
     var label = document.getElementById("worksheetZoomLabel");
     if (label) label.textContent = Math.round(worksheetZoom * 100) + "%";
+
     var list = document.getElementById("worksheetsReaderList");
-    if (list) {
-        list.style.setProperty("--worksheet-zoom", String(worksheetZoom));
-        list.querySelectorAll(".worksheet-image-page img").forEach(function (img) { img.style.width = (worksheetZoom * 100) + "%"; });
-    }
+    var stage = document.getElementById("worksheetsReaderStage");
+    if (!list || !stage) return;
+
+    /* Keep the zoomed worksheet inside a real, horizontally scrollable layout. */
+    var stageStyle = window.getComputedStyle(stage);
+    var availableWidth = Math.max(1, stage.clientWidth -
+        (parseFloat(stageStyle.paddingLeft) || 0) -
+        (parseFloat(stageStyle.paddingRight) || 0));
+    var baseWidth = Math.min(900, availableWidth);
+    var pageWidth = Math.max(1, Math.round(baseWidth * worksheetZoom));
+    var contentWidth = Math.max(availableWidth, pageWidth);
+
+    list.style.setProperty("--worksheet-zoom", String(worksheetZoom));
+    list.style.width = contentWidth + "px";
+    list.style.maxWidth = "none";
+    list.querySelectorAll(".worksheet-image-page").forEach(function (page) {
+        page.style.width = pageWidth + "px";
+        page.style.flex = "0 0 auto";
+    });
+    list.querySelectorAll(".worksheet-image-page img").forEach(function (img) {
+        img.style.width = "100%";
+    });
 }
 
 function changeWorksheetZoom(delta) {
@@ -1049,6 +1068,10 @@ function bindWorksheetControls() {
     if (plus && !plus.dataset.bound) { plus.dataset.bound = "1"; plus.addEventListener("click", function () { changeWorksheetZoom(0.1); }); }
     if (search && !search.dataset.bound) { search.dataset.bound = "1"; search.addEventListener("keydown", function (e) { if (e.key === "Enter") searchWorksheetPage(); }); }
     var stage = document.getElementById("worksheetsReaderStage");
+    if (stage && !stage.dataset.resizeBound) {
+        stage.dataset.resizeBound = "1";
+        window.addEventListener("resize", updateWorksheetZoomLabel, { passive: true });
+    }
     if (stage && !stage.dataset.pinchBound) {
         stage.dataset.pinchBound = "1";
         var startDistance = 0, startZoom = 1;
