@@ -186,22 +186,21 @@ body {
 /* UPDATED: Fully Circular Logo Icon for 🎯 */
 .logo-icon {
     width: 38px; height: 38px;
-    border-radius: 50%; /* Made perfect circle */
+    border-radius: 50%;
     background: linear-gradient(135deg, var(--primary) 0%, var(--accent) 100%);
     display: grid;
     place-items: center;
-    font-size: 20px; /* Adjusted size for emoji */
+    font-size: 20px;
     box-shadow: 0 0 20px rgba(0, 229, 255, 0.5), inset 0 2px 0 rgba(255, 255, 255, 0.3);
     position: relative;
     flex-shrink: 0;
 }
 
-/* UPDATED: Pulse ring border-radius to 50% */
 .pulse-ring::before {
     content: '';
     position: absolute;
     inset: -4px;
-    border-radius: 50%; /* Made perfect circle */
+    border-radius: 50%;
     border: 2px solid var(--primary);
     animation: pulse-ring 2s ease-out infinite;
     opacity: 0;
@@ -368,7 +367,6 @@ body {
 .card-inner { position: relative; z-index: 2; }
 .login-card-header { text-align: center; margin-bottom: 28px; }
 
-/* BASE CIRCLE (kept for compatibility) */
 .card-icon-circle {
     width: 65px; height: 65px;
     margin: 0 auto 14px;
@@ -381,7 +379,6 @@ body {
     box-shadow: 0 10px 30px rgba(0, 229, 255, 0.4), inset 0 2px 0 rgba(255, 255, 255, 0.3);
 }
 
-/* UPDATED: DARK 3D FINGERPRINT OVERRIDE */
 .dark-3d-fingerprint {
     background: linear-gradient(145deg, #152338, #0a1220) !important;
     box-shadow: 
@@ -390,7 +387,7 @@ body {
         inset 2px 2px 4px rgba(255,255,255,0.08), 
         inset -2px -2px 4px rgba(0,0,0,0.5) !important;
     color: var(--primary) !important;
-    animation: none !important; /* Stop floating animation if any */
+    animation: none !important;
 }
 
 .dark-3d-fingerprint i {
@@ -751,7 +748,6 @@ body {
     .glass-header, header, .dashboard-topbar { padding: 12px 16px; }
     .logo { font-size: 15px; gap: 8px; }
     
-    /* Mobile logo icon adjustment */
     .logo-icon { width: 34px; height: 34px; font-size: 18px; }
     
     .logo-text .accent { font-size: 14px; }
@@ -826,7 +822,7 @@ body {
 
 
 /* ============================================
-   STUDY MATERIAL - uses the existing glass card design
+   STUDY MATERIAL
    ============================================ */
 .icon-study { color: #7dd3fc; background: linear-gradient(135deg, rgba(56, 189, 248, 0.16), rgba(124, 77, 255, 0.16)); }
 .study-nav-card { cursor: pointer; }
@@ -985,10 +981,11 @@ body {
     perspective: none !important;
     overscroll-behavior: contain;
     -webkit-overflow-scrolling: touch;
-    touch-action: pan-x pan-y pinch-zoom !important; /* Allow both scroll + pinch */
-    background: #343a40 !important;
+    touch-action: pan-x pan-y pinch-zoom !important;
+    background: #1a1f2e !important;
 }
 
+/* Document wrapper */
 .pdf-scroll-document {
     width: max-content;
     min-width: 100%;
@@ -999,83 +996,4 @@ body {
     gap: 14px;
 }
 
-/* ===== BUTTER-SMOOTH ZOOM: cubic-bezier easing + GPU transform origin ===== */
-.pdf-scroll-page {
-    position: relative;
-    flex: 0 0 auto;
-    overflow: hidden;
-    background: #fff !important;
-    border-radius: 0 !important;
-    box-shadow: none !important;
-    isolation: isolate;
-    transition: width 0.13s cubic-bezier(0.22, 0.61, 0.36, 1),
-                height 0.13s cubic-bezier(0.22, 0.61, 0.36, 1);
-    will-change: width, height;
-}
-
-.pdf-scroll-canvas {
-    position: absolute;
-    inset: 0;
-    display: block;
-    max-width: none;
-    background: #fff !important;
-    opacity: 1 !important;
-    filter: none !important;
-    transition: width 0.13s cubic-bezier(0.22, 0.61, 0.36, 1),
-                height 0.13s cubic-bezier(0.22, 0.61, 0.36, 1);
-    will-change: width, height;
-}
-
-.pdf-scroll-page .textLayer {
-    position: absolute;
-    inset: 0;
-    overflow: hidden;
-    line-height: 1;
-    opacity: 1;
-    z-index: 2;
-    text-align: initial;
-    transform-origin: 0 0;
-    -webkit-text-size-adjust: none;
-    text-size-adjust: none;
-    forced-color-adjust: none;
-    user-select: text !important;
-    -webkit-user-select: text !important;
-    cursor: text;
-    transition: width 0.13s cubic-bezier(0.22, 0.61, 0.36, 1),
-                height 0.13s cubic-bezier(0.22, 0.61, 0.36, 1);
-    will-change: width, height;
-}
-.pdf-scroll-page .textLayer span,
-.pdf-scroll-page .textLayer br {
-    position: absolute;
-    color: transparent;
-    white-space: pre;
-    transform-origin: 0 0;
-    cursor: text;
-}
-.pdf-scroll-page .textLayer ::selection { background: rgba(65, 145, 255, .35); }
-
-/* GPU-accelerated pinch preview */
-#studyPdfBook {
-    transform-origin: 0 0;
-    will-change: transform;
-}
-
-.pdf-book-loading { position: sticky; top: 0; min-height: 100%; }
-
-@media (max-width: 600px) {
-    #study-pdf-reader-view .pdf-reader-container {
-        height: calc(100dvh - 76px);
-        min-height: 360px;
-        padding: 6px 7px 8px;
-    }
-    .pdf-reader-nav { min-height: 40px; }
-    .pdf-reader-nav .back-btn { padding: 9px 12px; font-size: 12px; }
-    .pdf-reader-book-title { font-size: 12px; }
-    .pdf-toolbar { gap: 5px; min-height: 36px; }
-    .pdf-toolbar button { min-width: 32px; height: 30px; padding: 0 7px; }
-    .pdf-copy-hint { display: none; } /* Hide on mobile to save space */
-    #studyPdfZoomLabel { min-width: 40px; font-size: 11px; }
-    .pdf-scroll-stage { padding: 10px 5px 24px !important; }
-    .pdf-scroll-document { gap: 10px; }
-}
+/* ===== BUTTER-SMOOTH
