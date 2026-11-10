@@ -1098,6 +1098,7 @@ function bindWorksheetControls() {
     var minus = document.getElementById("worksheetZoomOut");
     var plus = document.getElementById("worksheetZoomIn");
     var search = document.getElementById("worksheetSearch");
+    var stage = document.getElementById("worksheetsReaderStage");
     var fullscreen = document.getElementById("worksheetFullscreenToggle");
     if (fullscreen && !fullscreen.dataset.bound) {
         fullscreen.dataset.bound = "1";
