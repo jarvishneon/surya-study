@@ -1,68 +1,32 @@
-{
-  "header": {
-    "date": "10/05/2025",
-    "subject": "English Grammar",
-    "academy_name": "SURYA ACADEMY"
+[
+  {
+    "title": "Question 1",
+    "question": "Past Habitual Tense (Interrogative) की पहचान (Identification) क्या है?",
+    "answer": "जिन हिंदी प्रश्नवाचक वाक्यों की शुरुआत क्या, कब, कहाँ, कैसे, कौन आदि शब्दों से होती हैं तथा क्रिया के अंत में 'किया करता था, किया करती थी, किया करते थे' आदि आता हैं, उन्हें Past Habitual Interrogative Sentences कहते हैं।"
   },
-  "topic": {
-    "english": "Past Habitual Tense (Interrogative)",
-    "hindi": "भूतकाल की आदत - प्रश्नवाचक वाक्य"
+  {
+    "title": "Question 2",
+    "question": "Past Habitual Tense (Interrogative) की संरचना (Structure) क्या है?",
+    "answer": "1. Positive Interrogative: Did + Subject + use to + V1 + Object + ?\n2. Negative Interrogative: Did + Subject + not + use to + V1 + Object + ?"
   },
-  "sections": [
-    {
-      "id": 1,
-      "title": "Identification (पहचान)",
-      "description": "जिन हिंदी प्रश्नवाचक वाक्यों की शुरुआत क्या, क्या, कब, कहाँ, कैसे, कौन आदि शब्दों से होती हैं तथा क्रिया के अंत में किया करता था, किया करती थी, किया करते थे आदि आता हैं, उन्हें Past Habitual Interrogative Sentences कहते हैं।"
-    },
-    {
-      "id": 2,
-      "title": "Structure (संरचना)",
-      "formulas": {
-        "positive_interrogative": "Did + Subject + use to + V1 + Object + ?",
-        "negative_interrogative": "Did + Subject + not + use to + V1 + Object + ?"
-      }
-    },
-    {
-      "id": 3,
-      "title": "Rules (नियम)",
-      "list": [
-        "प्रश्नवाचक वाक्य में Did वाक्य के शुरू में आता हैं।",
-        "Did के बाद Subject आता हैं।",
-        "use to के बाद हमेशा V1 आती हैं।",
-        "Negative में did not + use to लगाते हैं।",
-        "Object अंत में लिखते हैं।"
-      ]
-    },
-    {
-      "id": 4,
-      "title": "Examples (उदाहरण)",
-      "categories": [
-        {
-          "type": "A. Positive Interrogative",
-          "items": [
-            { "hindi": "क्या मैं स्कूल जाया करता था?", "english": "Did I use to go to school?" },
-            { "hindi": "क्या वह क्रिकेट खेला करता था?", "english": "Did he use to play cricket?" },
-            { "hindi": "क्या सीता गाना गाया करती थी?", "english": "Did Sita use to sing a song?" },
-            { "hindi": "क्या हम साथ पढ़ा करते थें।", "english": "Did we use to study together?" },
-            { "hindi": "क्या बच्चे पार्क में खेला करते थें?", "english": "Did children use to play in the park ?" }
-          ]
-        },
-        {
-          "type": "B. Negative Interrogative",
-          "items": [
-            { "hindi": "क्या मैं स्कूल नहीं जाया करता था?", "english": "Did I not use to go to school?" },
-            { "hindi": "क्या वह क्रिकेट नहीं खेला करता था?", "english": "Did he not use to play cricket?" },
-            { "hindi": "क्या सीता गाना नहीं गाया करती थीं?", "english": "Did Sita not use to sing a song?" },
-            { "hindi": "क्या हम साथ में नहीं पढ़ा करते थें?", "english": "Did we not use to study together?" },
-            { "hindi": "क्या बच्चे पार्क में नहीं खेला करते थें?", "english": "Did children not use to play in the park ?" }
-          ]
-        }
-      ]
-    },
-    {
-      "id": 5,
-      "title": "Easy Trick (याद रखने की ट्रिक)",
-      "formula": "Did + Subject + (not) + use to + V1 + ?"
-    }
-  ]
-}
+  {
+    "title": "Question 3",
+    "question": "Past Habitual Tense (Interrogative) के नियम (Rules) क्या हैं?",
+    "answer": "1. प्रश्नवाचक वाक्य में Did वाक्य के शुरू में आता हैं।\n2. Did के बाद Subject आता हैं।\n3. use to के बाद हमेशा V1 आती हैं।\n4. Negative में did not + use to लगाते हैं।\n5. Object अंत में लिखते हैं।"
+  },
+  {
+    "title": "Question 4",
+    "question": "Positive Interrogative Sentences के उदाहरण (Examples) दीजिए।",
+    "answer": "1. क्या मैं स्कूल जाया करता था? -> Did I use to go to school?\n2. क्या वह क्रिकेट खेला करता था? -> Did he use to play cricket?\n3. क्या सीता गाना गाया करती थी? -> Did Sita use to sing a song?\n4. क्या हम साथ पढ़ा करते थे? -> Did we use to study together?\n5. क्या बच्चे पार्क में खेला करते थे? -> Did children use to play in the park?"
+  },
+  {
+    "title": "Question 5",
+    "question": "Negative Interrogative Sentences के उदाहरण (Examples) दीजिए।",
+    "answer": "1. क्या मैं स्कूल नहीं जाया करता था? -> Did I not use to go to school?\n2. क्या वह क्रिकेट नहीं खेला करता था? -> Did he not use to play cricket?\n3. क्या सीता गाना नहीं गाया करती थी? -> Did Sita not use to sing a song?\n4. क्या हम साथ में नहीं पढ़ा करते थे? -> Did we not use to study together?\n5. क्या बच्चे पार्क में नहीं खेला करते थे? -> Did children not use to play in the park?"
+  },
+  {
+    "title": "Question 6",
+    "question": "Past Habitual Tense (Interrogative) को याद रखने की Easy Trick क्या है?",
+    "answer": "Did + Subject + (not) + use to + V1 + ?"
+  }
+]
