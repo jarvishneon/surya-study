@@ -1,877 +1,1070 @@
-// RJ STUDY ACADEMY - script.js v29.0 (Pro Design Update)
-// Chat: poll sync + max 3 msgs + 2 min auto wipe (server)
+/* RJ STUDY ACADEMY - FULL PRO STYLES
+   Glass + 3D + Neon | 100% Mobile Friendly
+   ============================================ */
 
-const VALID_PASSWORDS = ["04783", "padhlo", "4181723"];
-const WORKER_URL = "https://rj-test-backen.internationalbgi.workers.dev";
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    -webkit-tap-highlight-color: transparent;
+}
 
-/* -------------- LOGIN SYSTEM -------------- */
-function handleLogin(e) {
-    if (e) {
-        e.preventDefault();
-        e.stopPropagation();
+:root {
+    --primary: #00e5ff;
+    --primary-dark: #0099cc;
+    --accent: #7c4dff;
+    --accent-2: #ff00e5;
+    --success: #00ff88;
+    --warning: #ffb800;
+    --danger: #ff3b5c;
+    --bg-dark: #030b1a;
+    --bg-darker: #020611;
+    --glass-bg: rgba(255, 255, 255, 0.04);
+    --glass-border: rgba(255, 255, 255, 0.08);
+    --glass-border-strong: rgba(0, 229, 255, 0.25);
+    --text-primary: #e8f0ff;
+    --text-secondary: #8da3c7;
+    --text-muted: #5a7090;
+    --shadow-glow: 0 0 40px rgba(0, 229, 255, 0.15);
+    --shadow-deep: 0 20px 60px rgba(0, 0, 0, 0.5);
+    --shadow-card: 0 8px 32px rgba(0, 0, 0, 0.4);
+}
+
+html, body {
+    min-height: 100%;
+    background: var(--bg-dark);
+    color: var(--text-primary);
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    overflow-x: hidden;
+    scroll-behavior: smooth;
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior-y: contain;
+}
+
+body {
+    background: 
+        radial-gradient(ellipse at top left, rgba(124, 77, 255, 0.15) 0%, transparent 50%),
+        radial-gradient(ellipse at top right, rgba(0, 229, 255, 0.12) 0%, transparent 50%),
+        radial-gradient(ellipse at bottom center, rgba(255, 0, 229, 0.08) 0%, transparent 60%),
+        linear-gradient(180deg, #020611 0%, #030b1a 50%, #020611 100%);
+    background-attachment: fixed;
+    min-height: 100vh;
+    position: relative;
+}
+
+/* ============================================
+   BACKGROUND LAYERS
+   ============================================ */
+.bg-layer {
+    position: fixed;
+    inset: 0;
+    z-index: 0;
+    pointer-events: none;
+    overflow: hidden;
+}
+
+.ambient-orb {
+    position: absolute;
+    border-radius: 50%;
+    filter: blur(80px);
+    opacity: 0.5;
+    animation: float-orb 20s ease-in-out infinite;
+}
+
+.orb-1 { width: 500px; height: 500px; background: radial-gradient(circle, #00e5ff 0%, transparent 70%); top: -100px; left: -100px; animation-delay: 0s; }
+.orb-2 { width: 600px; height: 600px; background: radial-gradient(circle, #7c4dff 0%, transparent 70%); top: 20%; right: -150px; animation-delay: -7s; }
+.orb-3 { width: 450px; height: 450px; background: radial-gradient(circle, #ff00e5 0%, transparent 70%); bottom: -100px; left: 30%; animation-delay: -14s; }
+.orb-4 { width: 380px; height: 380px; background: radial-gradient(circle, #00ff88 0%, transparent 70%); top: 50%; left: 50%; animation-delay: -4s; opacity: 0.3; }
+
+@keyframes float-orb {
+    0%, 100% { transform: translate(0, 0) scale(1); }
+    33% { transform: translate(60px, -40px) scale(1.1); }
+    66% { transform: translate(-40px, 60px) scale(0.95); }
+}
+
+.cyber-grid {
+    position: absolute;
+    inset: 0;
+    background-image: 
+        linear-gradient(rgba(0, 229, 255, 0.04) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(0, 229, 255, 0.04) 1px, transparent 1px);
+    background-size: 60px 60px;
+    mask-image: radial-gradient(ellipse at center, black 30%, transparent 80%);
+    -webkit-mask-image: radial-gradient(ellipse at center, black 30%, transparent 80%);
+    animation: grid-move 25s linear infinite;
+}
+
+@keyframes grid-move {
+    0% { background-position: 0 0; }
+    100% { background-position: 60px 60px; }
+}
+
+.aurora-glow {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(115deg, transparent 0%, rgba(0, 229, 255, 0.04) 25%, rgba(124, 77, 255, 0.04) 50%, rgba(255, 0, 229, 0.03) 75%, transparent 100%);
+    animation: aurora 15s ease-in-out infinite;
+}
+
+@keyframes aurora {
+    0%, 100% { opacity: 0.4; transform: translateX(-10%); }
+    50% { opacity: 0.8; transform: translateX(10%); }
+}
+
+.scan-line {
+    position: absolute;
+    left: 0; right: 0;
+    height: 2px;
+    background: linear-gradient(90deg, transparent, var(--primary), transparent);
+    opacity: 0.5;
+    animation: scan 8s linear infinite;
+    box-shadow: 0 0 20px var(--primary);
+}
+
+@keyframes scan {
+    0% { top: 0; }
+    100% { top: 100%; }
+}
+
+/* ============================================
+   PAGE VIEWS
+   ============================================ */
+.page-view {
+    display: none;
+    min-height: 100vh;
+    position: relative;
+    z-index: 1;
+    animation: fadeInView 0.6s ease;
+}
+
+.page-view.active { display: block; }
+
+@keyframes fadeInView {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* ============================================
+   HEADER
+   ============================================ */
+.glass-header, header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 16px 32px;
+    background: rgba(5, 15, 30, 0.6);
+    backdrop-filter: blur(20px) saturate(180%);
+    -webkit-backdrop-filter: blur(20px) saturate(180%);
+    border-bottom: 1px solid var(--glass-border);
+    position: sticky;
+    top: 0;
+    z-index: 100;
+}
+
+.logo {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 18px;
+    font-weight: 800;
+    letter-spacing: -0.3px;
+    cursor: pointer;
+    user-select: none;
+}
+
+.logo-text { display: flex; gap: 5px; }
+
+.logo .accent, .logo span {
+    background: linear-gradient(135deg, var(--primary) 0%, var(--accent) 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+/* UPDATED: Fully Circular Logo Icon for 🎯 */
+.logo-icon {
+    width: 38px; height: 38px;
+    border-radius: 50%; /* Made perfect circle */
+    background: linear-gradient(135deg, var(--primary) 0%, var(--accent) 100%);
+    display: grid;
+    place-items: center;
+    font-size: 20px; /* Adjusted size for emoji */
+    box-shadow: 0 0 20px rgba(0, 229, 255, 0.5), inset 0 2px 0 rgba(255, 255, 255, 0.3);
+    position: relative;
+    flex-shrink: 0;
+}
+
+/* UPDATED: Pulse ring border-radius to 50% */
+.pulse-ring::before {
+    content: '';
+    position: absolute;
+    inset: -4px;
+    border-radius: 50%; /* Made perfect circle */
+    border: 2px solid var(--primary);
+    animation: pulse-ring 2s ease-out infinite;
+    opacity: 0;
+}
+
+@keyframes pulse-ring {
+    0% { transform: scale(0.95); opacity: 1; }
+    100% { transform: scale(1.3); opacity: 0; }
+}
+
+.header-badge, .glass-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 14px;
+    background: var(--glass-bg);
+    border: 1px solid var(--glass-border-strong);
+    border-radius: 30px;
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--primary);
+    backdrop-filter: blur(10px);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    white-space: nowrap;
+}
+
+.live-dot {
+    width: 7px; height: 7px;
+    border-radius: 50%;
+    background: var(--success);
+    box-shadow: 0 0 10px var(--success);
+    animation: live-pulse 1.5s ease-in-out infinite;
+}
+
+.live-dot-sm {
+    display: inline-block;
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    background: var(--success);
+    box-shadow: 0 0 8px var(--success);
+    margin-right: 4px;
+    animation: live-pulse 1.5s ease-in-out infinite;
+}
+
+@keyframes live-pulse {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.6; transform: scale(1.2); }
+}
+
+/* ============================================
+   LOGIN HERO
+   ============================================ */
+.hero-login-container {
+    display: grid;
+    grid-template-columns: 1.1fr 1fr;
+    gap: 50px;
+    max-width: 1300px;
+    margin: 0 auto;
+    padding: 50px 32px;
+    align-items: center;
+    min-height: calc(100vh - 160px);
+}
+
+.hero-left { animation: slideInLeft 0.8s ease; }
+
+@keyframes slideInLeft {
+    from { opacity: 0; transform: translateX(-30px); }
+    to { opacity: 1; transform: translateX(0); }
+}
+
+.hero-badge, .glass-badge-sm {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 14px;
+    background: rgba(0, 229, 255, 0.08);
+    border: 1px solid rgba(0, 229, 255, 0.25);
+    border-radius: 8px;
+    color: var(--primary);
+    font-family: 'Fira Code', monospace;
+    font-size: 11px;
+    font-weight: 600;
+    margin-bottom: 24px;
+    backdrop-filter: blur(10px);
+    letter-spacing: 1px;
+}
+
+.hero-left h1, .glitch-text {
+    font-size: clamp(30px, 5vw, 52px);
+    font-weight: 800;
+    line-height: 1.15;
+    margin-bottom: 20px;
+    letter-spacing: -1.5px;
+}
+
+.highlight-block {
+    display: inline-block;
+    background: linear-gradient(135deg, var(--primary) 0%, var(--accent) 50%, var(--accent-2) 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+.hero-desc {
+    font-size: 16px;
+    color: var(--text-secondary);
+    margin-bottom: 20px;
+    max-width: 520px;
+}
+
+/* ============================================
+   LOGIN CARD - 3D GLASS
+   ============================================ */
+.hero-right { animation: slideInRight 0.8s ease; }
+
+@keyframes slideInRight {
+    from { opacity: 0; transform: translateX(30px); }
+    to { opacity: 1; transform: translateX(0); }
+}
+
+.login-card, .glass-card-3d {
+    position: relative;
+    background: linear-gradient(135deg, rgba(15, 25, 50, 0.6) 0%, rgba(10, 20, 40, 0.5) 100%);
+    border: 1px solid var(--glass-border);
+    border-radius: 24px;
+    padding: 36px 30px;
+    backdrop-filter: blur(30px) saturate(180%);
+    -webkit-backdrop-filter: blur(30px) saturate(180%);
+    box-shadow: 0 25px 70px rgba(0, 0, 0, 0.5), 0 0 60px rgba(0, 229, 255, 0.08), inset 0 1px 0 rgba(255, 255, 255, 0.08);
+    overflow: hidden;
+    transition: transform 0.4s cubic-bezier(0.23, 1, 0.32, 1);
+}
+
+.login-card:hover { transform: translateY(-4px); }
+
+.card-shine {
+    position: absolute;
+    top: -50%; left: -50%;
+    width: 200%; height: 200%;
+    background: linear-gradient(115deg, transparent 30%, rgba(255, 255, 255, 0.08) 50%, transparent 70%);
+    animation: shine 6s ease-in-out infinite;
+    pointer-events: none;
+}
+
+@keyframes shine {
+    0%, 100% { transform: translateX(-100%) translateY(-100%); }
+    50% { transform: translateX(100%) translateY(100%); }
+}
+
+.card-border-glow {
+    position: absolute;
+    inset: -1px;
+    border-radius: 24px;
+    padding: 1px;
+    background: linear-gradient(135deg, var(--primary), transparent 30%, transparent 70%, var(--accent));
+    -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    -webkit-mask-composite: xor;
+    mask-composite: exclude;
+    opacity: 0.6;
+    pointer-events: none;
+}
+
+.card-inner { position: relative; z-index: 2; }
+.login-card-header { text-align: center; margin-bottom: 28px; }
+
+/* BASE CIRCLE (kept for compatibility) */
+.card-icon-circle {
+    width: 65px; height: 65px;
+    margin: 0 auto 14px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--primary) 0%, var(--accent) 100%);
+    display: grid;
+    place-items: center;
+    font-size: 26px;
+    color: #000;
+    box-shadow: 0 10px 30px rgba(0, 229, 255, 0.4), inset 0 2px 0 rgba(255, 255, 255, 0.3);
+}
+
+/* UPDATED: DARK 3D FINGERPRINT OVERRIDE */
+.dark-3d-fingerprint {
+    background: linear-gradient(145deg, #152338, #0a1220) !important;
+    box-shadow: 
+        8px 8px 16px rgba(0,0,0,0.6), 
+        -4px -4px 12px rgba(255,255,255,0.03), 
+        inset 2px 2px 4px rgba(255,255,255,0.08), 
+        inset -2px -2px 4px rgba(0,0,0,0.5) !important;
+    color: var(--primary) !important;
+    animation: none !important; /* Stop floating animation if any */
+}
+
+.dark-3d-fingerprint i {
+    font-size: 28px;
+    color: var(--primary);
+    filter: drop-shadow(0 0 10px rgba(0, 229, 255, 0.5));
+    animation: scan-finger 2.5s infinite;
+}
+
+@keyframes scan-finger {
+    0%, 100% { filter: drop-shadow(0 0 4px rgba(0, 229, 255, 0.2)); color: #0099cc; }
+    50% { filter: drop-shadow(0 0 16px rgba(0, 229, 255, 0.9)); color: var(--primary); }
+}
+
+
+.login-card h2 {
+    font-size: 22px;
+    font-weight: 700;
+    margin-bottom: 6px;
+    background: linear-gradient(135deg, #fff 0%, var(--primary) 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+.subtitle {
+    color: var(--text-secondary);
+    font-size: 13px;
+    margin-bottom: 0;
+}
+
+/* INPUTS */
+.input-group { margin-bottom: 16px; }
+.input-group label {
+    display: flex; align-items: center; gap: 8px;
+    font-size: 12px; font-weight: 600; color: var(--text-secondary);
+    margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.8px;
+}
+.input-group label i { color: var(--primary); font-size: 11px; }
+
+.input-wrapper, .input-with-icon {
+    position: relative; display: flex; align-items: center;
+    background: rgba(5, 15, 30, 0.6); border: 1px solid var(--glass-border);
+    border-radius: 12px; padding: 0 16px; transition: all 0.3s ease; overflow: hidden;
+}
+
+.input-wrapper:focus-within, .input-with-icon:focus-within {
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px rgba(0, 229, 255, 0.15), 0 0 20px rgba(0, 229, 255, 0.2);
+    background: rgba(5, 15, 30, 0.9);
+}
+
+.input-wrapper input, .input-with-icon input {
+    flex: 1; background: transparent; border: none; outline: none;
+    padding: 14px 0; color: var(--text-primary); font-size: 15px;
+    font-family: inherit; width: 100%;
+}
+
+.input-wrapper input::placeholder { color: var(--text-muted); }
+
+.input-glow {
+    position: absolute; bottom: 0; left: 0; width: 0; height: 2px;
+    background: linear-gradient(90deg, var(--primary), var(--accent));
+    transition: width 0.4s ease;
+}
+
+.input-wrapper:focus-within .input-glow { width: 100%; }
+
+.error-msg {
+    display: none; align-items: center; gap: 6px;
+    color: var(--danger); background: rgba(255, 59, 92, 0.1);
+    border: 1px solid rgba(255, 59, 92, 0.3); padding: 10px 14px;
+    border-radius: 10px; font-size: 13px; font-weight: 500; margin-bottom: 14px;
+}
+.error-msg.show { display: flex; }
+
+/* NEON LOGIN BUTTON */
+.login-btn, .neon-btn {
+    position: relative; width: 100%; padding: 15px;
+    background: linear-gradient(135deg, #0a1428 0%, #050a14 100%);
+    border: 1px solid var(--primary); border-radius: 12px;
+    color: var(--primary); font-size: 14px; font-weight: 700;
+    cursor: pointer; overflow: hidden; transition: all 0.3s ease;
+    text-transform: uppercase; letter-spacing: 1px;
+    box-shadow: 0 0 20px rgba(0, 229, 255, 0.3), inset 0 0 20px rgba(0, 229, 255, 0.05);
+}
+
+.btn-content {
+    position: relative; z-index: 2; display: inline-flex; align-items: center;
+    gap: 10px; justify-content: center; width: 100%;
+}
+
+.login-btn:hover {
+    color: #000; background: linear-gradient(135deg, var(--primary) 0%, var(--accent) 100%);
+    box-shadow: 0 0 40px rgba(0, 229, 255, 0.6), 0 10px 30px rgba(0, 229, 255, 0.3);
+    transform: translateY(-2px);
+}
+
+.btn-glow {
+    position: absolute; top: 50%; left: 50%; width: 0; height: 0;
+    background: var(--primary); border-radius: 50%; transform: translate(-50%, -50%);
+    transition: all 0.6s ease; opacity: 0.3;
+}
+.login-btn:hover .btn-glow { width: 300px; height: 300px; }
+.login-btn:active { transform: translateY(0); }
+
+.login-footer-text { margin-top: 18px; text-align: center; }
+.security-badge {
+    display: inline-flex; align-items: center; gap: 8px; padding: 8px 14px;
+    background: rgba(0, 255, 136, 0.08); border: 1px solid rgba(0, 255, 136, 0.2);
+    border-radius: 20px; font-size: 11px; color: var(--success); font-weight: 600;
+}
+
+/* MOVED STATS */
+.moved-stats-container { margin-top: 22px; display: flex; flex-direction: column; gap: 12px; }
+.features-tags, .trust-badges { display: flex; gap: 10px; flex-wrap: wrap; justify-content: center; }
+.tag, .glass-tag {
+    display: inline-flex; align-items: center; gap: 6px; padding: 8px 14px;
+    background: var(--glass-bg); border: 1px solid var(--glass-border);
+    border-radius: 20px; font-size: 12px; font-weight: 500;
+    color: var(--text-secondary); backdrop-filter: blur(10px); transition: all 0.3s;
+}
+.tag:hover, .glass-tag:hover { border-color: var(--primary); color: var(--primary); transform: translateY(-2px); }
+.tag i { color: var(--success); font-size: 11px; }
+
+.trust-item, .glass-trust {
+    display: inline-flex; align-items: center; gap: 6px; padding: 9px 14px;
+    background: var(--glass-bg); border: 1px solid var(--glass-border);
+    border-radius: 12px; font-size: 12px; color: var(--text-secondary);
+    backdrop-filter: blur(10px); transition: all 0.3s;
+}
+.trust-item:hover { border-color: var(--glass-border-strong); }
+.trust-item i { color: var(--primary); font-size: 13px; }
+.trust-item strong { color: var(--text-primary); font-weight: 700; }
+
+/* ============================================
+   DASHBOARD TOPBAR
+   ============================================ */
+.dashboard-topbar, .glass-topbar {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 14px 32px; background: rgba(5, 15, 30, 0.7);
+    backdrop-filter: blur(20px) saturate(180%); border-bottom: 1px solid var(--glass-border);
+    position: sticky; top: 0; z-index: 100;
+}
+.topbar-right { display: flex; align-items: center; gap: 14px; }
+.topbar-greeting {
+    display: flex; align-items: center; gap: 8px; font-size: 13px; color: var(--text-secondary);
+    padding: 8px 14px; background: var(--glass-bg); border: 1px solid var(--glass-border);
+    border-radius: 20px; backdrop-filter: blur(10px); white-space: nowrap;
+}
+.topbar-greeting i { color: var(--warning); }
+.profile-menu-container { position: relative; }
+.profile-circle, .glow-avatar {
+    width: 42px; height: 42px; border-radius: 50%;
+    background: linear-gradient(135deg, var(--primary) 0%, var(--accent) 100%);
+    color: #000; display: grid; place-items: center; font-size: 16px; font-weight: 800;
+    cursor: pointer; transition: all 0.3s; box-shadow: 0 0 20px rgba(0, 229, 255, 0.4), inset 0 2px 0 rgba(255, 255, 255, 0.3);
+    border: 2px solid rgba(255, 255, 255, 0.1);
+}
+.profile-circle:hover { transform: scale(1.08); box-shadow: 0 0 30px rgba(0, 229, 255, 0.6); }
+
+.profile-dropdown, .glass-dropdown {
+    position: absolute; top: calc(100% + 14px); right: 0; width: 270px;
+    background: rgba(10, 20, 40, 0.95); backdrop-filter: blur(30px) saturate(180%);
+    border: 1px solid var(--glass-border-strong); border-radius: 16px; padding: 14px;
+    box-shadow: var(--shadow-deep); opacity: 0; visibility: hidden;
+    transform: translateY(-10px); transition: all 0.3s ease; z-index: 200;
+}
+.profile-dropdown.active { opacity: 1; visibility: visible; transform: translateY(0); }
+
+.dropdown-header { display: flex; align-items: center; gap: 12px; padding-bottom: 12px; }
+.dropdown-avatar {
+    width: 42px; height: 42px; border-radius: 50%; background: linear-gradient(135deg, var(--primary), var(--accent));
+    color: #000; display: grid; place-items: center; font-weight: 800; font-size: 16px; flex-shrink: 0;
+    box-shadow: 0 0 15px rgba(0, 229, 255, 0.3);
+}
+.dropdown-username { font-size: 14px; font-weight: 700; color: var(--text-primary); }
+.dropdown-role { font-size: 11px; color: var(--text-secondary); margin-top: 2px; display: flex; align-items: center; gap: 4px; }
+.dropdown-divider { height: 1px; background: var(--glass-border); margin: 10px 0; }
+.dropdown-logout-btn {
+    width: 100%; display: flex; align-items: center; justify-content: center; gap: 8px;
+    padding: 11px; background: rgba(255, 59, 92, 0.1); border: 1px solid rgba(255, 59, 92, 0.3);
+    border-radius: 10px; color: var(--danger); font-size: 13px; font-weight: 600; cursor: pointer; transition: all 0.3s;
+}
+.dropdown-logout-btn:hover { background: var(--danger); color: #fff; box-shadow: 0 0 20px rgba(255, 59, 92, 0.4); }
+
+/* ============================================
+   DASHBOARD
+   ============================================ */
+.dashboard-container {
+    max-width: 1300px;
+    margin: 0 auto;
+    padding: 40px 32px;
+    position: relative;
+    z-index: 1;
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior: contain;
+    scroll-behavior: smooth;
+    will-change: scroll-position;
+}
+.dashboard-intro { text-align: center; margin-bottom: 36px; animation: fadeInView 0.8s ease; }
+.intro-kicker, .glass-kicker {
+    display: inline-flex; align-items: center; gap: 8px; padding: 8px 16px; background: var(--glass-bg);
+    border: 1px solid var(--glass-border-strong); border-radius: 20px; font-size: 11px; font-weight: 700;
+    color: var(--primary); letter-spacing: 1.5px; margin-bottom: 16px; backdrop-filter: blur(10px);
+}
+.status-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--success); box-shadow: 0 0 10px var(--success); animation: live-pulse 1.5s infinite; }
+.dash-title { font-size: clamp(28px, 4.5vw, 44px); font-weight: 800; letter-spacing: -1px; margin-bottom: 10px; line-height: 1.2; }
+.gradient-text { background: linear-gradient(135deg, var(--primary) 0%, var(--accent) 50%, var(--accent-2) 100%); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; }
+.dash-subtitle { color: var(--text-secondary); font-size: 15px; }
+
+/* DASHBOARD GRID */
+.dashboard-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 20px; }
+.dash-card, .glass-dash-card {
+    position: relative; background: linear-gradient(135deg, rgba(15, 25, 50, 0.5) 0%, rgba(10, 20, 40, 0.3) 100%);
+    border: 1px solid var(--glass-border); border-radius: 20px; padding: 26px 22px; cursor: pointer;
+    transition: all 0.4s cubic-bezier(0.23, 1, 0.32, 1); backdrop-filter: blur(20px) saturate(180%);
+    overflow: hidden; box-shadow: var(--shadow-card);
+}
+.dash-card::before {
+    content: ''; position: absolute; top: 0; left: 0; right: 0; height: 1px;
+    background: linear-gradient(90deg, transparent, var(--primary), transparent); opacity: 0; transition: opacity 0.4s;
+}
+.dash-card:hover { transform: translateY(-6px); border-color: var(--glass-border-strong); box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5), 0 0 40px rgba(0, 229, 255, 0.2); }
+.dash-card:hover::before { opacity: 1; }
+
+.card-glow-line {
+    position: absolute; bottom: 0; left: 50%; transform: translateX(-50%); width: 50%; height: 2px;
+    background: linear-gradient(90deg, transparent, var(--primary), transparent); opacity: 0; transition: all 0.4s;
+}
+.dash-card:hover .card-glow-line { opacity: 1; width: 90%; }
+
+.dash-icon {
+    width: 54px; height: 54px; border-radius: 14px; background: linear-gradient(135deg, rgba(0, 229, 255, 0.15), rgba(124, 77, 255, 0.15));
+    border: 1px solid var(--glass-border-strong); display: grid; place-items: center; font-size: 22px; color: var(--primary);
+    margin-bottom: 16px; transition: all 0.4s; box-shadow: 0 0 20px rgba(0, 229, 255, 0.1);
+}
+.icon-trophy { color: var(--warning); background: linear-gradient(135deg, rgba(255, 184, 0, 0.15), rgba(255, 100, 0, 0.1)); }
+.icon-book { color: var(--success); background: linear-gradient(135deg, rgba(0, 255, 136, 0.15), rgba(0, 200, 100, 0.1)); }
+.icon-bell { color: var(--accent-2); background: linear-gradient(135deg, rgba(255, 0, 229, 0.15), rgba(200, 0, 180, 0.1)); }
+.icon-test { color: var(--primary); }
+.icon-chat { color: var(--accent); background: linear-gradient(135deg, rgba(124, 77, 255, 0.15), rgba(100, 60, 200, 0.1)); }
+
+.dash-card:hover .dash-icon { transform: rotate(-5deg) scale(1.1); box-shadow: 0 0 30px rgba(0, 229, 255, 0.3); }
+.dash-card h3 { font-size: 18px; font-weight: 700; margin-bottom: 8px; color: var(--text-primary); }
+.dash-card p { color: var(--text-secondary); font-size: 13.5px; line-height: 1.6; margin-bottom: 16px; }
+.dash-action-btn { display: inline-flex; align-items: center; gap: 6px; color: var(--primary); font-size: 13px; font-weight: 600; transition: gap 0.3s; }
+.dash-card:hover .dash-action-btn { gap: 12px; }
+
+/* ============================================
+   SECTION HEADER & BACK BUTTON
+   ============================================ */
+.back-btn, .glass-back-btn {
+    display: inline-flex; align-items: center; gap: 8px; padding: 10px 18px; background: var(--glass-bg);
+    border: 1px solid var(--glass-border); border-radius: 10px; color: var(--text-secondary); font-size: 13px;
+    font-weight: 600; cursor: pointer; transition: all 0.3s; margin-bottom: 24px; backdrop-filter: blur(10px);
+}
+.back-btn:hover { color: var(--primary); border-color: var(--primary); transform: translateX(-4px); box-shadow: 0 0 20px rgba(0, 229, 255, 0.2); }
+.section-header { text-align: center; margin-bottom: 32px; }
+.section-icon-wrap {
+    width: 65px; height: 65px; margin: 0 auto 14px; border-radius: 20px;
+    background: linear-gradient(135deg, rgba(0, 229, 255, 0.15), rgba(124, 77, 255, 0.15));
+    border: 1px solid var(--glass-border-strong); display: grid; place-items: center; font-size: 26px;
+    color: var(--primary); box-shadow: 0 0 30px rgba(0, 229, 255, 0.2);
+}
+.section-header h2 { font-size: clamp(22px, 3.5vw, 30px); font-weight: 800; margin-bottom: 8px; background: linear-gradient(135deg, #fff 0%, var(--primary) 100%); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; }
+.section-header p { color: var(--text-secondary); font-size: 14px; }
+
+/* ============================================
+   SUB GRID CARDS
+   ============================================ */
+.sub-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 18px; }
+.sub-card {
+    position: relative; display: block; background: linear-gradient(135deg, rgba(15, 25, 50, 0.5), rgba(10, 20, 40, 0.3));
+    border: 1px solid var(--glass-border); border-radius: 18px; padding: 22px; text-decoration: none; color: inherit;
+    transition: all 0.4s; backdrop-filter: blur(20px); overflow: hidden; box-shadow: var(--shadow-card);
+}
+.sub-card-shine { position: absolute; top: 0; left: -100%; width: 100%; height: 100%; background: linear-gradient(90deg, transparent, rgba(0, 229, 255, 0.1), transparent); transition: left 0.6s; }
+.sub-card:hover { transform: translateY(-5px); border-color: var(--primary); box-shadow: 0 15px 40px rgba(0, 0, 0, 0.5), 0 0 30px rgba(0, 229, 255, 0.25); }
+.sub-card:hover .sub-card-shine { left: 100%; }
+.sub-card-icon { width: 48px; height: 48px; border-radius: 12px; background: linear-gradient(135deg, rgba(0, 229, 255, 0.15), rgba(124, 77, 255, 0.15)); border: 1px solid var(--glass-border-strong); display: grid; place-items: center; color: var(--primary); font-size: 18px; margin-bottom: 12px; }
+.sub-card h4 { font-size: 16px; font-weight: 700; margin-bottom: 6px; }
+.sub-card p { color: var(--text-secondary); font-size: 12.5px; line-height: 1.5; }
+.sub-card-arrow { position: absolute; top: 18px; right: 18px; color: var(--text-muted); font-size: 13px; transition: all 0.3s; }
+.sub-card:hover .sub-card-arrow { color: var(--primary); transform: translate(3px, -3px); }
+
+/* ============================================
+   NOTIFICATIONS
+   ============================================ */
+.notification-list { display: flex; flex-direction: column; gap: 14px; }
+.notification-item { position: relative; display: flex; align-items: flex-start; gap: 14px; padding: 18px; background: linear-gradient(135deg, rgba(15, 25, 50, 0.5), rgba(10, 20, 40, 0.3)); border: 1px solid var(--glass-border); border-radius: 16px; backdrop-filter: blur(20px); transition: all 0.3s; }
+.notification-item:hover { border-color: var(--glass-border-strong); transform: translateX(4px); }
+.notif-icon { width: 42px; height: 42px; border-radius: 12px; background: linear-gradient(135deg, rgba(0, 229, 255, 0.2), rgba(124, 77, 255, 0.2)); display: grid; place-items: center; color: var(--primary); font-size: 18px; flex-shrink: 0; }
+.pulse-notif { animation: pulse-glow 2s ease-in-out infinite; }
+@keyframes pulse-glow { 0%, 100% { box-shadow: 0 0 0 0 rgba(0, 229, 255, 0.4); } 50% { box-shadow: 0 0 0 10px rgba(0, 229, 255, 0); } }
+.notif-content { flex: 1; min-width: 0; }
+.notif-content h4 { font-size: 15px; font-weight: 700; margin-bottom: 4px; }
+.notif-content p { font-size: 13px; color: var(--text-secondary); margin-bottom: 8px; line-height: 1.5; }
+.notif-time { display: inline-flex; align-items: center; gap: 5px; font-size: 11px; color: var(--text-muted); }
+.notif-badge { padding: 4px 10px; background: linear-gradient(135deg, var(--accent-2), var(--accent)); color: #fff; font-size: 10px; font-weight: 800; border-radius: 20px; letter-spacing: 1px; align-self: flex-start; box-shadow: 0 0 15px rgba(255, 0, 229, 0.3); flex-shrink: 0; }
+
+/* ============================================
+   SUBJECT CARDS
+   ============================================ */
+.subject-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 20px; }
+.subject-card { position: relative; background: linear-gradient(135deg, rgba(15, 25, 50, 0.5), rgba(10, 20, 40, 0.3)); border: 1px solid var(--glass-border); border-radius: 20px; padding: 26px 22px; text-align: center; cursor: pointer; transition: all 0.4s; backdrop-filter: blur(20px); overflow: hidden; }
+.subject-glow { position: absolute; top: -50%; left: -50%; width: 200%; height: 200%; opacity: 0; transition: opacity 0.4s; filter: blur(60px); pointer-events: none; }
+.glow-blue { background: radial-gradient(circle, rgba(0, 229, 255, 0.3), transparent 60%); }
+.glow-orange { background: radial-gradient(circle, rgba(255, 140, 0, 0.3), transparent 60%); }
+.glow-purple { background: radial-gradient(circle, rgba(124, 77, 255, 0.3), transparent 60%); }
+.glow-green { background: radial-gradient(circle, rgba(0, 255, 136, 0.3), transparent 60%); }
+.subject-card:hover { transform: translateY(-6px); border-color: var(--glass-border-strong); }
+.subject-card:hover .subject-glow { opacity: 1; }
+.subject-icon { font-size: 48px; margin-bottom: 12px; display: inline-block; transition: transform 0.4s; filter: drop-shadow(0 4px 12px rgba(0, 229, 255, 0.3)); }
+.subject-card:hover .subject-icon { transform: scale(1.15) rotate(-5deg); }
+.subject-card h3 { font-size: 19px; font-weight: 700; margin-bottom: 4px; position: relative; z-index: 2; }
+.subject-desc { color: var(--text-secondary); font-size: 12.5px; margin-bottom: 16px; position: relative; z-index: 2; }
+.subject-start-btn { display: inline-flex; align-items: center; gap: 8px; padding: 10px 20px; background: linear-gradient(135deg, var(--primary), var(--accent)); color: #000; border-radius: 20px; font-size: 13px; font-weight: 700; transition: all 0.3s; position: relative; z-index: 2; box-shadow: 0 5px 20px rgba(0, 229, 255, 0.3); }
+.subject-card:hover .subject-start-btn { box-shadow: 0 8px 30px rgba(0, 229, 255, 0.5); transform: scale(1.05); }
+
+/* ============================================
+   CHAT OVERLAY
+   ============================================ */
+.chat-overlay { position: fixed; bottom: 24px; right: 24px; width: 360px; max-height: 520px; background: rgba(10, 20, 40, 0.92); backdrop-filter: blur(30px) saturate(180%); border: 1px solid var(--glass-border-strong); border-radius: 20px; box-shadow: 0 25px 70px rgba(0, 0, 0, 0.6), 0 0 40px rgba(0, 229, 255, 0.15); display: none; flex-direction: column; z-index: 999; overflow: hidden; animation: slideUpChat 0.4s ease; }
+.chat-overlay.active { display: flex; }
+@keyframes slideUpChat { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
+.chat-header { display: flex; align-items: center; justify-content: space-between; padding: 14px 18px; background: linear-gradient(135deg, rgba(0, 229, 255, 0.1), rgba(124, 77, 255, 0.1)); border-bottom: 1px solid var(--glass-border); }
+.chat-heading { display: flex; align-items: center; gap: 10px; }
+.chat-heading-icon { width: 38px; height: 38px; border-radius: 50%; background: linear-gradient(135deg, var(--primary), var(--accent)); display: grid; place-items: center; color: #000; box-shadow: 0 0 15px rgba(0, 229, 255, 0.4); }
+.chat-heading strong { display: block; font-size: 14px; font-weight: 700; }
+.chat-heading small { display: block; font-size: 11px; color: var(--success); margin-top: 2px; }
+.chat-close { background: var(--glass-bg); border: 1px solid var(--glass-border); color: var(--text-primary); width: 30px; height: 30px; border-radius: 50%; cursor: pointer; display: grid; place-items: center; transition: all 0.3s; }
+.chat-close:hover { background: var(--danger); border-color: var(--danger); transform: rotate(90deg); }
+.chat-body { flex: 1; overflow-y: auto; padding: 16px; display: flex; flex-direction: column; gap: 10px; min-height: 240px; }
+.chat-input-area { display: flex; gap: 8px; padding: 12px; border-top: 1px solid var(--glass-border); background: rgba(5, 15, 30, 0.5); }
+.chat-input-area input { flex: 1; padding: 11px 14px; background: rgba(5, 15, 30, 0.6); border: 1px solid var(--glass-border); border-radius: 10px; color: var(--text-primary); font-size: 13px; outline: none; transition: all 0.3s; min-width: 0; }
+.chat-input-area input:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(0, 229, 255, 0.15); }
+.chat-input-area button { width: 42px; height: 42px; background: linear-gradient(135deg, var(--primary), var(--accent)); border: none; border-radius: 10px; color: #000; cursor: pointer; transition: all 0.3s; box-shadow: 0 0 15px rgba(0, 229, 255, 0.3); flex-shrink: 0; }
+.chat-input-area button:hover { transform: scale(1.05); box-shadow: 0 0 25px rgba(0, 229, 255, 0.5); }
+
+/* ============================================
+   FOOTER
+   ============================================ */
+.site-footer, .glass-footer { text-align: center; padding: 20px; border-top: 1px solid var(--glass-border); background: rgba(5, 15, 30, 0.5); backdrop-filter: blur(10px); color: var(--text-muted); font-size: 12.5px; position: relative; z-index: 1; }
+
+/* ============================================
+   RESPONSIVE - TABLET & MOBILE
+   ============================================ */
+@media (max-width: 960px) {
+    .hero-login-container { grid-template-columns: 1fr; padding: 30px 20px; gap: 36px; min-height: auto; }
+    .hero-left { text-align: center; }
+    .hero-desc { margin: 0 auto 20px; }
+    .glass-header, .dashboard-topbar { padding: 14px 20px; }
+    .dashboard-container { padding: 30px 20px; }
+}
+
+@media (max-width: 768px) {
+    .glass-header, header, .dashboard-topbar { padding: 12px 16px; }
+    .logo { font-size: 15px; gap: 8px; }
+    
+    /* Mobile logo icon adjustment */
+    .logo-icon { width: 34px; height: 34px; font-size: 18px; }
+    
+    .logo-text .accent { font-size: 14px; }
+    .header-badge, .glass-badge { font-size: 10px; padding: 6px 10px; letter-spacing: 0.3px; }
+    .header-badge .fa-lock { display: none; }
+    
+    .hero-login-container { padding: 24px 16px; gap: 28px; }
+    .hero-left h1 { font-size: 30px; line-height: 1.2; }
+    .hero-desc { font-size: 14.5px; }
+    .hero-badge { font-size: 10px; padding: 7px 12px; margin-bottom: 18px; }
+    
+    .login-card { padding: 28px 22px; border-radius: 20px; }
+    .login-card h2 { font-size: 20px; }
+    .card-icon-circle { width: 56px; height: 56px; font-size: 22px; }
+    .subtitle { font-size: 12.5px; }
+    
+    .input-wrapper input { padding: 13px 0; font-size: 14px; }
+    .login-btn { padding: 14px; font-size: 13px; }
+    
+    .topbar-greeting { display: none; }
+    .profile-circle { width: 38px; height: 38px; font-size: 14px; }
+    
+    .dashboard-container { padding: 24px 16px; }
+    .dashboard-grid { grid-template-columns: 1fr; gap: 16px; }
+    .dash-card { padding: 22px 20px; }
+    .dash-card h3 { font-size: 17px; }
+    .dash-card p { font-size: 13px; }
+    
+    .sub-grid { grid-template-columns: 1fr; gap: 14px; }
+    .subject-grid { grid-template-columns: repeat(2, 1fr); gap: 14px; }
+    .subject-card { padding: 22px 16px; }
+    .subject-icon { font-size: 40px; }
+    .subject-card h3 { font-size: 16px; }
+    
+    .chat-overlay { bottom: 12px; right: 12px; left: 12px; width: auto; max-height: 70vh; }
+    .profile-dropdown { width: 250px; }
+}
+
+@media (max-width: 480px) {
+    .glass-header, header, .dashboard-topbar { padding: 10px 12px; }
+    .logo-text { display: flex; gap: 4px; }
+    .logo-text > span:not(.accent) { display: none; }
+    .logo-text .accent { font-size: 14px; }
+    .header-badge { font-size: 9.5px; padding: 5px 9px; }
+    
+    .hero-login-container { padding: 20px 12px; }
+    .hero-left h1 { font-size: 26px; letter-spacing: -0.8px; }
+    .login-card { padding: 24px 18px; border-radius: 18px; }
+    .login-card h2 { font-size: 19px; }
+    
+    .input-wrapper { padding: 0 14px; }
+    .input-wrapper input { padding: 12px 0; font-size: 14px; }
+    .login-btn { padding: 13px; font-size: 12.5px; letter-spacing: 0.5px; }
+    
+    .tag, .glass-tag, .trust-item, .glass-trust { font-size: 11px; padding: 7px 11px; }
+    .features-tags, .trust-badges { gap: 8px; }
+    
+    .dashboard-container { padding: 20px 12px; }
+    .dash-title { font-size: 24px; }
+    .dash-card { padding: 20px 18px; border-radius: 16px; }
+    .dash-card h3 { font-size: 16px; }
+    .dash-icon { width: 44px; height: 44px; font-size: 18px; margin-bottom: 14px; }
+    
+    .profile-dropdown { width: calc(100vw - 32px); right: -4px; }
+}
+
+::-webkit-scrollbar { width: 8px; height: 8px; }
+::-webkit-scrollbar-track { background: rgba(5, 15, 30, 0.3); }
+::-webkit-scrollbar-thumb { background: linear-gradient(180deg, var(--primary), var(--accent)); border-radius: 10px; }
+::-webkit-scrollbar-thumb:hover { background: var(--primary); }
+::selection { background: var(--primary); color: #000; }
+
+
+/* ============================================
+   STUDY MATERIAL - uses the existing glass card design
+   ============================================ */
+.icon-study { color: #7dd3fc; background: linear-gradient(135deg, rgba(56, 189, 248, 0.16), rgba(124, 77, 255, 0.16)); }
+.study-nav-card { cursor: pointer; }
+.study-content-list { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 18px; }
+.study-material-item { position: relative; padding: 22px; border: 1px solid var(--glass-border); border-radius: 18px; background: linear-gradient(135deg, rgba(15, 25, 50, 0.58), rgba(10, 20, 40, 0.34)); box-shadow: var(--shadow-card); backdrop-filter: blur(20px); overflow-wrap: anywhere; }
+.study-material-item::before { content: ''; position: absolute; top: 0; left: 12%; right: 12%; height: 1px; background: linear-gradient(90deg, transparent, var(--primary), transparent); }
+.study-material-item h3 { color: var(--text-primary); font-size: 16px; margin-bottom: 9px; }
+.study-material-item p { color: var(--text-secondary); font-size: 13px; line-height: 1.7; margin-top: 7px; white-space: pre-wrap; }
+.study-material-item .study-detail-line { font-size: 12px; }
+.study-material-item .study-detail-line strong { color: var(--primary); text-transform: capitalize; }
+.study-loading, .study-empty { grid-column: 1 / -1; text-align: center; padding: 42px 20px; color: var(--text-secondary); border: 1px solid var(--glass-border); border-radius: 18px; background: var(--glass-bg); }
+.study-loading i, .study-empty > i { display: block; color: var(--primary); font-size: 30px; margin-bottom: 14px; }
+.study-empty h3 { color: var(--text-primary); margin-bottom: 7px; }
+.study-empty p { font-size: 13px; line-height: 1.7; }
+.study-empty code { color: var(--primary); overflow-wrap: anywhere; }
+@media (max-width: 768px) { .study-content-list { grid-template-columns: 1fr; gap: 14px; } .study-material-item { padding: 19px; } }
+
+
+/* ============================================
+   STUDY PDF - immersive reader
+   ============================================ */
+.icon-study-pdf { color: #ff7777; background: linear-gradient(135deg, rgba(255, 80, 80, 0.17), rgba(124, 77, 255, 0.16)); }
+#study-pdf-reader-view { min-height: 100dvh; overflow: hidden; }
+#study-pdf-reader-view .pdf-reader-topbar { position: relative; z-index: 5; }
+#study-pdf-reader-view .site-footer { display: none !important; }
+.pdf-reader-container { width: 100%; max-width: 1500px; height: calc(100dvh - 88px); min-height: 420px; margin: 0 auto; padding: 8px 12px 12px; display: flex; flex-direction: column; gap: 8px; }
+.pdf-reader-nav { flex: 0 0 auto; min-height: 44px; display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.pdf-reader-nav .back-btn { margin: 0; flex: 0 0 auto; }
+.pdf-reader-book-title { min-width: 0; color: var(--text-primary); font-size: 14px; font-weight: 800; text-align: right; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+.pdf-book-loading { position: absolute; z-index: 4; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 12px; color: #dbeafe; background: rgba(8, 16, 34, .94); font-size: 13px; }
+.pdf-book-loading[hidden], .pdf-error[hidden] { display: none !important; }
+.pdf-book-loading i { color: #38bdf8; font-size: 30px; }
+.pdf-error { position: absolute; z-index: 6; inset: 20px; display: flex; align-items: center; justify-content: center; margin: auto; padding: 24px; max-width: 560px; color: #fecaca; text-align: center; line-height: 1.7; background: rgba(17,24,39,.96); border-radius: 14px; }
+
+/* ============================================
+   SCROLL RESTORE + NATURAL TOUCH BEHAVIOUR
+   ============================================ */
+html {
+    height: auto;
+    min-height: 100%;
+    overflow-x: clip;
+    overflow-y: auto;
+    scroll-behavior: auto;
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior-y: auto;
+}
+
+body {
+    height: auto;
+    min-height: 100vh;
+    min-height: 100dvh;
+    overflow-x: clip;
+    overflow-y: visible;
+    touch-action: pan-y pinch-zoom;
+    overscroll-behavior-y: auto;
+}
+
+.page-view {
+    height: auto;
+    min-height: 100vh;
+    min-height: 100dvh;
+    overflow: visible;
+}
+
+.page-view.active {
+    display: block;
+}
+
+.dashboard-container {
+    overflow: visible;
+    scroll-behavior: auto;
+    will-change: auto;
+    touch-action: pan-y pinch-zoom;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    html { scroll-behavior: auto; }
+    .page-view { animation-duration: 0.01ms; }
+}
+
+/* ===== PDF SCROLL READER: Google-Drive-style smooth zoom ===== */
+#study-pdf-reader-view {
+    min-height: 100dvh !important;
+    height: auto !important;
+    overflow: visible !important;
+}
+#study-pdf-reader-view .pdf-reader-container {
+    width: 100%;
+    max-width: 1200px;
+    height: calc(100dvh - 88px);
+    min-height: 420px;
+    margin: 0 auto;
+    display: flex;
+    flex-direction: column;
+}
+
+/* Toolbar with zoom controls */
+.pdf-toolbar {
+    flex: 0 0 auto;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    min-height: 38px;
+    padding: 2px 8px;
+    color: var(--text-primary);
+}
+.pdf-toolbar button {
+    min-width: 34px;
+    height: 32px;
+    padding: 0 9px;
+    border: 1px solid rgba(100, 190, 220, .35);
+    border-radius: 8px;
+    color: #eaf6ff;
+    background: rgba(18, 43, 66, .9);
+    cursor: pointer;
+    font-size: 13px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.2s, border-color 0.2s, transform 0.1s;
+}
+.pdf-toolbar button:hover {
+    background: rgba(0, 229, 255, .18);
+    border-color: var(--primary);
+}
+.pdf-toolbar button:active {
+    transform: scale(.93);
+}
+#studyPdfZoomLabel {
+    min-width: 46px;
+    text-align: center;
+    font-size: 12px;
+    font-weight: 800;
+    color: var(--primary);
+    user-select: none;
+}
+.pdf-copy-hint {
+    margin-left: 8px;
+    color: var(--text-secondary, #9fb3c8);
+    font-size: 11px;
+}
+
+/* Scroll stage — native pan + pinch zoom allowed */
+.pdf-scroll-stage {
+    display: block !important;
+    flex: 1 1 auto;
+    min-height: 0;
+    width: 100%;
+    overflow: auto !important;
+    padding: 14px 10px 32px !important;
+    border-radius: 0 !important;
+    border: 0 !important;
+    box-shadow: none !important;
+    perspective: none !important;
+    overscroll-behavior: contain;
+    -webkit-overflow-scrolling: touch;
+    touch-action: pan-x pan-y pinch-zoom !important; /* Allow both scroll + pinch */
+    background: #343a40 !important;
+}
+
+.pdf-scroll-document {
+    width: max-content;
+    min-width: 100%;
+    margin: 0 auto;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 14px;
+}
+
+/* SMOOTH ZOOM: Transition on resize for Google-Drive feel */
+.pdf-scroll-page {
+    position: relative;
+    flex: 0 0 auto;
+    overflow: hidden;
+    background: #fff !important;
+    border-radius: 0 !important;
+    box-shadow: none !important;
+    isolation: isolate;
+    transition: width 0.18s ease-out, height 0.18s ease-out;
+    will-change: width, height;
+}
+
+.pdf-scroll-canvas {
+    position: absolute;
+    inset: 0;
+    display: block;
+    max-width: none;
+    background: #fff !important;
+    opacity: 1 !important;
+    filter: none !important;
+    transition: width 0.18s ease-out, height 0.18s ease-out;
+}
+
+.pdf-scroll-page .textLayer {
+    position: absolute;
+    inset: 0;
+    overflow: hidden;
+    line-height: 1;
+    opacity: 1;
+    z-index: 2;
+    text-align: initial;
+    transform-origin: 0 0;
+    -webkit-text-size-adjust: none;
+    text-size-adjust: none;
+    forced-color-adjust: none;
+    user-select: text !important;
+    -webkit-user-select: text !important;
+    cursor: text;
+    transition: width 0.18s ease-out, height 0.18s ease-out;
+}
+.pdf-scroll-page .textLayer span,
+.pdf-scroll-page .textLayer br {
+    position: absolute;
+    color: transparent;
+    white-space: pre;
+    transform-origin: 0 0;
+    cursor: text;
+}
+.pdf-scroll-page .textLayer ::selection { background: rgba(65, 145, 255, .35); }
+
+.pdf-book-loading { position: sticky; top: 0; min-height: 100%; }
+
+@media (max-width: 600px) {
+    #study-pdf-reader-view .pdf-reader-container {
+        height: calc(100dvh - 76px);
+        min-height: 360px;
+        padding: 6px 7px 8px;
     }
-
-    const nameInput = document.getElementById("usernameInput");
-    const passInput = document.getElementById("passwordInput");
-    const errorMsg = document.getElementById("errorMsg");
-
-    if (!nameInput || !passInput) return false;
-
-    const enteredName = nameInput.value.trim();
-    const enteredPass = passInput.value.trim().toLowerCase();
-
-    if (!enteredName) {
-        if (errorMsg) {
-            errorMsg.innerText = "Please enter your name!";
-            errorMsg.style.display = "block";
-        }
-        return false;
-    }
-
-    if (VALID_PASSWORDS.includes(enteredPass)) {
-        if (errorMsg) errorMsg.style.display = "none";
-
-        localStorage.setItem("rj_student_name", enteredName);
-        localStorage.setItem("rj_login_time", Date.now().toString());
-        localStorage.setItem("rjStudyUsername", enteredName);
-        sessionStorage.setItem("student_name", enteredName);
-
-        activateDashboard(enteredName);
-    } else {
-        if (errorMsg) {
-            errorMsg.innerText = "Incorrect password!";
-            errorMsg.style.display = "block";
-        }
-        passInput.value = "";
-        passInput.focus();
-    }
-    return false;
+    .pdf-reader-nav { min-height: 40px; }
+    .pdf-reader-nav .back-btn { padding: 9px 12px; font-size: 12px; }
+    .pdf-reader-book-title { font-size: 12px; }
+    .pdf-toolbar { gap: 5px; min-height: 36px; }
+    .pdf-toolbar button { min-width: 32px; height: 30px; padding: 0 7px; }
+    .pdf-copy-hint { display: none; } /* Hide on mobile to save space */
+    #studyPdfZoomLabel { min-width: 40px; font-size: 11px; }
+    .pdf-scroll-stage { padding: 10px 5px 24px !important; }
+    .pdf-scroll-document { gap: 10px; }
 }
-
-function checkExistingSession() {
-    const savedName = localStorage.getItem("rj_student_name");
-    const loginTime = localStorage.getItem("rj_login_time");
-
-    if (savedName && loginTime) {
-        const hoursPassed = (Date.now() - Number(loginTime)) / (1000 * 60 * 60);
-        if (hoursPassed < 24) {
-            activateDashboard(savedName);
-            return true;
-        }
-        localStorage.removeItem("rj_student_name");
-        localStorage.removeItem("rj_login_time");
-    }
-    return false;
-}
-
-/* -------------- GREETING HELPER -------------- */
-function getGreeting() {
-    var h = new Date().getHours();
-    if (h < 12) return "Good Morning ☀️";
-    if (h < 17) return "Good Afternoon 🌤️";
-    if (h < 21) return "Good Evening 🌙";
-    return "Good Night 🌑";
-}
-
-/* -------------- DASHBOARD NAVIGATION -------------- */
-function activateDashboard(studentName) {
-    var displayUsername = document.getElementById("displayUsername");
-    if (displayUsername) displayUsername.innerText = studentName;
-
-    document.querySelectorAll(".displayUsernameCopy").forEach(function (el) {
-        el.innerText = studentName;
-    });
-
-    var initial = studentName.charAt(0).toUpperCase();
-
-    // Update profile circles
-    ["profileInitial", "profileInitial2", "profileInitial3", "profileInitial4", "profileInitial5"].forEach(function (id) {
-        var el = document.getElementById(id);
-        if (el) el.innerText = initial;
-    });
-
-    // Update dropdown avatars
-    document.querySelectorAll(".dropdown-avatar").forEach(function (el) {
-        el.innerText = initial;
-    });
-
-    // Update greeting
-    var greetEl = document.getElementById("greetingText");
-    if (greetEl) greetEl.innerText = getGreeting();
-
-    hideAllViews();
-    var dash = document.getElementById("dashboard-view");
-    if (dash) dash.classList.add("active");
-}
-
-function hideAllViews() {
-    ["login-view", "dashboard-view", "competitive-view", "boards-view", "notifications-view", "subjects-view", "study-material-view", "study-competitive-view", "study-board-view", "study-class-9-view", "study-class-10-view", "study-content-view", "study-pdf-home-view", "study-pdf-competitive-view", "study-pdf-board-view", "study-pdf-class-9-view", "study-pdf-class-10-view", "study-pdf-reader-view"].forEach(function (id) {
-        var v = document.getElementById(id);
-        if (v) v.classList.remove("active");
-    });
-}
-
-function toggleProfileMenu(event) {
-    event.stopPropagation();
-    var container = event.currentTarget.closest(".profile-menu-container");
-    var dropdown = container ? container.querySelector(".profile-dropdown") : null;
-    closeAllDropdowns();
-    if (dropdown) dropdown.classList.toggle("active");
-}
-
-function closeAllDropdowns() {
-    document.querySelectorAll(".profile-dropdown").forEach(function (d) {
-        d.classList.remove("active");
-    });
-}
-
-function logout() {
-    localStorage.removeItem("rj_student_name");
-    localStorage.removeItem("rj_login_time");
-    localStorage.removeItem("rjStudyUsername");
-    sessionStorage.removeItem("student_name");
-
-    var u = document.getElementById("usernameInput");
-    var p = document.getElementById("passwordInput");
-    if (u) u.value = "";
-    if (p) p.value = "";
-
-    closeAllDropdowns();
-    if (isChatOpen) toggleChat(false);
-    hideAllViews();
-    var loginView = document.getElementById("login-view");
-    if (loginView) loginView.classList.add("active");
-}
-
-function switchSubView(viewId) {
-    closeAllDropdowns();
-    hideAllViews();
-    var target = document.getElementById(viewId);
-    if (target) target.classList.add("active");
-    window.scrollTo({ top: 0, behavior: "smooth" });
-}
-
-function goHome() {
-    closeAllDropdowns();
-    hideAllViews();
-    var dash = document.getElementById("dashboard-view");
-    if (dash) dash.classList.add("active");
-    window.scrollTo({ top: 0, behavior: "smooth" });
-}
-
-function getStudentName() {
-    return (
-        localStorage.getItem("rj_student_name") ||
-        sessionStorage.getItem("student_name") ||
-        localStorage.getItem("rjStudyUsername") ||
-        ""
-    ).trim();
-}
-
-/* -------------- STUDY MATERIAL SYSTEM -------------- */
-var currentStudyParentView = "study-material-view";
-
-function goBackFromStudyContent() {
-    switchSubView(currentStudyParentView);
-}
-
-async function openStudyMaterial(folder, fileName, subjectTitle) {
-    currentStudyParentView = folder === "Competitive" ? "study-competitive-view" :
-        (folder === "Board/9th class" ? "study-class-9-view" : "study-class-10-view");
-
-    var title = document.getElementById("studyContentTitle");
-    var subtitle = document.getElementById("studyContentSubtitle");
-    var list = document.getElementById("studyContentList");
-    if (!title || !subtitle || !list) return;
-
-    title.textContent = subjectTitle + " Study Material";
-    subtitle.textContent = "Loading material...";
-    list.innerHTML = '<div class="study-loading"><i class="fa-solid fa-spinner fa-spin"></i> Loading study material...</div>';
-    switchSubView("study-content-view");
-
-    var filePath = "Study%20material/" + folder.split("/").map(encodeURIComponent).join("/") + "/" + encodeURIComponent(fileName) + ".json";
-    try {
-        var response = await fetch(filePath, { cache: "no-store" });
-        if (!response.ok) throw new Error("HTTP " + response.status);
-        var data = await response.json();
-        renderStudyMaterial(data, subjectTitle, list, subtitle);
-    } catch (error) {
-        subtitle.textContent = "Study material could not be loaded.";
-        list.innerHTML = '<div class="study-empty"><i class="fa-solid fa-folder-open"></i><h3>Material not available</h3><p>Check that the JSON file exists at:<br><code>' + escapeStudyHtml("Study material/" + folder + "/" + fileName + ".json") + '</code></p></div>';
-    }
-}
-
-/* -------------- STUDY PDF SCROLL READER (PDF.js) -------------- */
-var currentStudyPdfParentView = "study-pdf-competitive-view";
-var studyPdfDocument = null;
-var studyPdfLoadToken = 0;
-var studyPdfLoadingTask = null;
-var studyPdfZoom = 1;
-var studyPdfPageInfo = [];
-var studyPdfObserver = null;
-var studyPdfActiveRenders = {};
-var studyPdfTouchStartDistance = 0;
-var studyPdfTouchStartZoom = 1;
-var studyPdfTouchPreviewZoom = 1;
-var studyPdfRenderDebounce = null;
-var studyPdfIsPinching = false;
-
-function openStudyPdf(pdfPath, title) {
-    var titleEl = document.getElementById("studyPdfTitle");
-    var bookEl = document.getElementById("studyPdfBook");
-    var loadingEl = document.getElementById("studyPdfLoading");
-    var errorEl = document.getElementById("studyPdfError");
-    if (!titleEl || !bookEl || !loadingEl || !errorEl) return;
-    var activeView = document.querySelector(".page-view.active");
-    if (activeView && activeView.id !== "study-pdf-reader-view") currentStudyPdfParentView = activeView.id;
-    var token = ++studyPdfLoadToken;
-    cleanupStudyPdfResources();
-    studyPdfZoom = 1;
-    updateStudyPdfZoomLabel();
-    titleEl.textContent = title || "Study PDF";
-    bookEl.innerHTML = "";
-    errorEl.hidden = true;
-    errorEl.textContent = "";
-    loadingEl.hidden = false;
-    switchSubView("study-pdf-reader-view");
-    bindStudyPdfZoomButtons();
-    if (!window.pdfjsLib) {
-        showStudyPdfError("PDF reading library could not be loaded. Please check your internet connection and refresh the page.");
-        loadingEl.hidden = true;
-        return;
-    }
-    window.pdfjsLib.GlobalWorkerOptions.workerSrc = "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js";
-    var task = window.pdfjsLib.getDocument({ url: String(pdfPath || "").split("#")[0], withCredentials: false });
-    studyPdfLoadingTask = task;
-    task.promise.then(function (pdf) {
-        if (token !== studyPdfLoadToken) { try { pdf.destroy(); } catch (e) {} return; }
-        studyPdfLoadingTask = null;
-        studyPdfDocument = pdf;
-        buildStudyPdfScrollDocument(pdf, token);
-    }).catch(function (error) {
-        if (token !== studyPdfLoadToken) return;
-        studyPdfLoadingTask = null;
-        loadingEl.hidden = true;
-        showStudyPdfError(error && error.name === "InvalidPDFException" ? "This file is not a valid PDF." : "PDF could not be loaded. Check the GitHub folder path, file name, and whether the PDF is uploaded.");
-        console.error("Study PDF load error:", error);
-    });
-}
-
-function buildStudyPdfScrollDocument(pdf, token) {
-    var container = document.getElementById("studyPdfBook");
-    var stage = document.getElementById("studyPdfBookStage");
-    var loading = document.getElementById("studyPdfLoading");
-    if (!container || !stage) return;
-    container.innerHTML = "";
-    studyPdfPageInfo = [];
-    var availableWidth = Math.max(280, stage.clientWidth - 28);
-    var fragment = document.createDocumentFragment();
-    var promises = [];
-    for (var i = 1; i <= pdf.numPages; i++) {
-        (function(pageNumber) {
-            promises.push(pdf.getPage(pageNumber).then(function(page) {
-                if (token !== studyPdfLoadToken) { page.cleanup(); return; }
-                var base = page.getViewport({ scale: 1 });
-                var fitScale = availableWidth / base.width;
-                var info = { number: pageNumber, width: base.width, height: base.height, fitScale: fitScale, page: page };
-                studyPdfPageInfo[pageNumber] = info;
-                var wrapper = document.createElement("section");
-                wrapper.className = "pdf-scroll-page";
-                wrapper.dataset.pageNumber = String(pageNumber);
-                wrapper.style.width = Math.round(base.width * fitScale) + "px";
-                wrapper.style.height = Math.round(base.height * fitScale) + "px";
-                var canvas = document.createElement("canvas");
-                canvas.className = "pdf-scroll-canvas";
-                canvas.setAttribute("aria-label", "PDF page " + pageNumber);
-                var textLayer = document.createElement("div");
-                textLayer.className = "textLayer";
-                wrapper.appendChild(canvas);
-                wrapper.appendChild(textLayer);
-                fragment.appendChild(wrapper);
-            }));
-        })(i);
-    }
-    Promise.all(promises).then(function() {
-        if (token !== studyPdfLoadToken) return;
-        container.appendChild(fragment);
-        loading.hidden = true;
-        setupStudyPdfPageObserver(token);
-        bindStudyPdfScrollZoom(stage, token);
-        // Render the first page immediately; remaining pages render as they enter view.
-        renderStudyPdfScrollPage(1, token);
-    }).catch(function(error) {
-        if (token !== studyPdfLoadToken) return;
-        loading.hidden = true;
-        showStudyPdfError("PDF pages could not be prepared. Please reload and try again.");
-        console.error("PDF page setup error:", error);
-    });
-}
-
-function setupStudyPdfPageObserver(token) {
-    if (studyPdfObserver) studyPdfObserver.disconnect();
-    var stage = document.getElementById("studyPdfBookStage");
-    var pages = document.querySelectorAll("#studyPdfBook .pdf-scroll-page");
-    if ("IntersectionObserver" in window) {
-        studyPdfObserver = new IntersectionObserver(function(entries) {
-            entries.forEach(function(entry) {
-                if (entry.isIntersecting) renderStudyPdfScrollPage(Number(entry.target.dataset.pageNumber), token);
-            });
-        }, { root: stage, rootMargin: "900px 0px" });
-        pages.forEach(function(page) { studyPdfObserver.observe(page); });
-    } else {
-        pages.forEach(function(page) { renderStudyPdfScrollPage(Number(page.dataset.pageNumber), token); });
-    }
-}
-
-function renderStudyPdfScrollPage(pageNumber, token) {
-    var info = studyPdfPageInfo[pageNumber];
-    var wrapper = document.querySelector('#studyPdfBook .pdf-scroll-page[data-page-number="' + pageNumber + '"]');
-    if (!info || !wrapper || wrapper.dataset.rendered === "true") return;
-    if (studyPdfIsPinching) {
-        wrapper.dataset.renderPending = "true";
-        return;
-    }
-    if (studyPdfActiveRenders[pageNumber]) {
-        wrapper.dataset.renderPending = "true";
-        return;
-    }
-    wrapper.dataset.renderPending = "false";
-    studyPdfActiveRenders[pageNumber] = true;
-    var canvas = wrapper.querySelector("canvas");
-    var textLayer = wrapper.querySelector(".textLayer");
-    var cssScale = info.fitScale * studyPdfZoom;
-    var dpr = Math.min(Math.max(1, window.devicePixelRatio || 1), 3);
-    var renderScale = cssScale * dpr;
-    var maxCanvasPixels = 16000000;
-    renderScale = Math.min(renderScale, Math.sqrt(maxCanvasPixels / (info.width * info.height)));
-    var viewport = info.page.getViewport({ scale: renderScale });
-    var cssViewport = info.page.getViewport({ scale: cssScale });
-    wrapper.style.width = Math.ceil(cssViewport.width) + "px";
-    wrapper.style.height = Math.ceil(cssViewport.height) + "px";
-    // Render off-screen first. Keep the previous bitmap visible until the new
-    // high-resolution render completes, avoiding the black flash during zoom.
-    var stagingCanvas = document.createElement("canvas");
-    stagingCanvas.width = Math.ceil(viewport.width);
-    stagingCanvas.height = Math.ceil(viewport.height);
-    var renderTask = info.page.render({
-        canvasContext: stagingCanvas.getContext("2d", { alpha: false }),
-        viewport: viewport
-    });
-    studyPdfActiveRenders[pageNumber] = renderTask;
-    renderTask.promise.then(function() {
-        if (token !== studyPdfLoadToken || !canvas.isConnected) return;
-        canvas.width = stagingCanvas.width;
-        canvas.height = stagingCanvas.height;
-        canvas.style.width = cssViewport.width + "px";
-        canvas.style.height = cssViewport.height + "px";
-        canvas.getContext("2d", { alpha: false }).drawImage(stagingCanvas, 0, 0);
-        textLayer.innerHTML = "";
-        textLayer.style.width = cssViewport.width + "px";
-        textLayer.style.height = cssViewport.height + "px";
-        if (window.pdfjsLib.renderTextLayer) {
-            return info.page.getTextContent().then(function(textContent) {
-                if (token !== studyPdfLoadToken || !textLayer.isConnected) return;
-                var textTask = window.pdfjsLib.renderTextLayer({
-                    textContent: textContent, container: textLayer,
-                    viewport: cssViewport, textDivs: []
-                });
-                return textTask.promise;
-            });
-        }
-    }).then(function() {
-        if (token === studyPdfLoadToken) wrapper.dataset.rendered = "true";
-    }).catch(function(error) {
-        if (error && error.name !== "RenderingCancelledException" && error.name !== "AbortException") {
-            console.error("PDF page render error:", error);
-        }
-    }).finally(function() {
-        delete studyPdfActiveRenders[pageNumber];
-        if (token === studyPdfLoadToken && wrapper.dataset.renderPending === "true") {
-            wrapper.dataset.renderPending = "false";
-            renderStudyPdfScrollPage(pageNumber, token);
-        }
-    });
-}
-
-function setStudyPdfZoom(value, focalX, focalY, instant) {
-    var next = Math.max(0.5, Math.min(4, Math.round(value * 100) / 100));
-    if (Math.abs(next - studyPdfZoom) < 0.01 || !studyPdfDocument) return;
-    var oldZoom = studyPdfZoom;
-    var stage = document.getElementById("studyPdfBookStage");
-    var stageRect = stage ? stage.getBoundingClientRect() : null;
-    var localX = stageRect ? (focalX == null ? stageRect.width / 2 : focalX - stageRect.left) : 0;
-    var localY = stageRect ? (focalY == null ? stageRect.height / 2 : focalY - stageRect.top) : 0;
-    var contentX = stage ? stage.scrollLeft + localX : 0;
-    var contentY = stage ? stage.scrollTop + localY : 0;
-    var ratio = next / oldZoom;
-    studyPdfZoom = next;
-    updateStudyPdfZoomLabel();
-
-    // Update CSS sizes — CSS transition on .pdf-scroll-page handles smooth animation
-    var pages = document.querySelectorAll("#studyPdfBook .pdf-scroll-page");
-    pages.forEach(function(wrapper) {
-        var n = Number(wrapper.dataset.pageNumber);
-        var info = studyPdfPageInfo[n];
-        if (info) {
-            var newW = Math.ceil(info.width * info.fitScale * next);
-            var newH = Math.ceil(info.height * info.fitScale * next);
-            wrapper.style.width = newW + "px";
-            wrapper.style.height = newH + "px";
-            var canvas = wrapper.querySelector("canvas");
-            if (canvas) {
-                canvas.style.width = newW + "px";
-                canvas.style.height = newH + "px";
-            }
-            var textLayer = wrapper.querySelector(".textLayer");
-            if (textLayer) {
-                textLayer.style.width = newW + "px";
-                textLayer.style.height = newH + "px";
-            }
-        }
-    });
-
-    // Keep the exact point under the user's fingers stationary while zooming.
-    if (stage) {
-        requestAnimationFrame(function() {
-            stage.scrollLeft = Math.max(0, contentX * ratio - localX);
-            stage.scrollTop = Math.max(0, contentY * ratio - localY);
-        });
-    }
-
-    // Debounced re-render: wait for CSS transition to finish, then render sharp pages
-    if (studyPdfRenderDebounce) clearTimeout(studyPdfRenderDebounce);
-    var delay = instant ? 80 : 280;
-    studyPdfRenderDebounce = setTimeout(function() {
-        studyPdfRenderDebounce = null;
-        var tk = studyPdfLoadToken;
-        pages.forEach(function(wrapper) {
-            var n = Number(wrapper.dataset.pageNumber);
-            wrapper.dataset.rendered = "false";
-            var oldTask = studyPdfActiveRenders[n];
-            if (oldTask && oldTask.cancel) {
-                wrapper.dataset.renderPending = "true";
-                try { oldTask.cancel(); } catch (e) {}
-            }
-            var r = wrapper.getBoundingClientRect();
-            var sr = stage ? stage.getBoundingClientRect() : null;
-            if (sr && r.bottom >= sr.top - 700 && r.top <= sr.bottom + 700) {
-                renderStudyPdfScrollPage(n, tk);
-            }
-        });
-    }, delay);
-}
-
-function updateStudyPdfZoomLabel() {
-    var label = document.getElementById("studyPdfZoomLabel");
-    if (label) label.textContent = Math.round(studyPdfZoom * 100) + "%";
-}
-
-function bindStudyPdfZoomButtons() {
-    var plus = document.getElementById("studyPdfZoomIn");
-    var minus = document.getElementById("studyPdfZoomOut");
-    var fit = document.getElementById("studyPdfFit");
-    if (plus && plus.dataset.bound !== "true") { plus.dataset.bound = "true"; plus.addEventListener("click", function() { setStudyPdfZoom(studyPdfZoom + 0.15); }); }
-    if (minus && minus.dataset.bound !== "true") { minus.dataset.bound = "true"; minus.addEventListener("click", function() { setStudyPdfZoom(studyPdfZoom - 0.15); }); }
-    if (fit && fit.dataset.bound !== "true") { fit.dataset.bound = "true"; fit.addEventListener("click", function() { setStudyPdfZoom(1); }); }
-}
-
-function bindStudyPdfScrollZoom(stage, token) {
-    if (!stage || stage.dataset.scrollZoomBound === "true") return;
-    stage.dataset.scrollZoomBound = "true";
-    var pinchCenterX = 0, pinchCenterY = 0;
-
-    // Ctrl+Wheel zoom — finer steps for smoothness
-    stage.addEventListener("wheel", function(event) {
-        if (!event.ctrlKey && !event.metaKey) return;
-        event.preventDefault();
-        var factor = event.deltaY < 0 ? 1.06 : 0.94;
-        setStudyPdfZoom(studyPdfZoom * factor, event.clientX, event.clientY, false);
-    }, { passive: false });
-
-    // Pinch-to-zoom — direct zoom during touchmove (no transform preview hack)
-    stage.addEventListener("touchstart", function(event) {
-        if (event.touches.length === 2) {
-            var a = event.touches[0], b = event.touches[1];
-            studyPdfTouchStartDistance = Math.hypot(a.clientX - b.clientX, a.clientY - b.clientY);
-            studyPdfTouchStartZoom = studyPdfZoom;
-            studyPdfIsPinching = true;
-            pinchCenterX = (a.clientX + b.clientX) / 2;
-            pinchCenterY = (a.clientY + b.clientY) / 2;
-        }
-    }, { passive: true });
-
-    stage.addEventListener("touchmove", function(event) {
-        if (event.touches.length !== 2 || !studyPdfTouchStartDistance) return;
-        event.preventDefault();
-        var a = event.touches[0], b = event.touches[1];
-        var distance = Math.hypot(a.clientX - b.clientX, a.clientY - b.clientY);
-        var newZoom = Math.max(0.5, Math.min(4,
-            studyPdfTouchStartZoom * distance / studyPdfTouchStartDistance));
-        pinchCenterX = (a.clientX + b.clientX) / 2;
-        pinchCenterY = (a.clientY + b.clientY) / 2;
-        setStudyPdfZoom(newZoom, pinchCenterX, pinchCenterY, true);
-    }, { passive: false });
-
-    function finishPinch() {
-        if (!studyPdfTouchStartDistance) return;
-        studyPdfTouchStartDistance = 0;
-        studyPdfIsPinching = false;
-        // Trigger final re-render at the settled zoom level
-        if (studyPdfRenderDebounce) clearTimeout(studyPdfRenderDebounce);
-        studyPdfRenderDebounce = setTimeout(function() {
-            studyPdfRenderDebounce = null;
-            var tk = studyPdfLoadToken;
-            var pages = document.querySelectorAll("#studyPdfBook .pdf-scroll-page");
-            var stg = document.getElementById("studyPdfBookStage");
-            pages.forEach(function(wrapper) {
-                var n = Number(wrapper.dataset.pageNumber);
-                wrapper.dataset.rendered = "false";
-                var r = wrapper.getBoundingClientRect();
-                var sr = stg ? stg.getBoundingClientRect() : null;
-                if (sr && r.bottom >= sr.top - 700 && r.top <= sr.bottom + 700) {
-                    renderStudyPdfScrollPage(n, tk);
-                }
-            });
-        }, 100);
-    }
-
-    stage.addEventListener("touchend", function(event) {
-        if (event.touches.length < 2) finishPinch();
-    }, { passive: true });
-    stage.addEventListener("touchcancel", finishPinch, { passive: true });
-}
-
-function cleanupStudyPdfResources() {
-    if (studyPdfRenderDebounce) { clearTimeout(studyPdfRenderDebounce); studyPdfRenderDebounce = null; }
-    studyPdfIsPinching = false;
-    if (studyPdfObserver) { studyPdfObserver.disconnect(); studyPdfObserver = null; }
-    Object.keys(studyPdfActiveRenders).forEach(function(key) {
-        var task = studyPdfActiveRenders[key];
-        if (task && task.cancel) { try { task.cancel(); } catch (e) {} }
-    });
-    studyPdfActiveRenders = {};
-    if (studyPdfLoadingTask) {
-        try { var result = studyPdfLoadingTask.destroy(); if (result && result.catch) result.catch(function() {}); } catch (e) {}
-        studyPdfLoadingTask = null;
-    }
-    if (studyPdfDocument) {
-        try { var destroyResult = studyPdfDocument.destroy(); if (destroyResult && destroyResult.catch) destroyResult.catch(function() {}); } catch (e) {}
-        studyPdfDocument = null;
-    }
-    studyPdfPageInfo = [];
-}
-
-function showStudyPdfError(message) {
-    var errorEl = document.getElementById("studyPdfError");
-    if (errorEl) { errorEl.textContent = message; errorEl.hidden = false; }
-}
-
-function backFromStudyPdf() {
-    studyPdfLoadToken++;
-    cleanupStudyPdfResources();
-    var bookEl = document.getElementById("studyPdfBook");
-    var loadingEl = document.getElementById("studyPdfLoading");
-    var errorEl = document.getElementById("studyPdfError");
-    if (bookEl) bookEl.innerHTML = "";
-    if (loadingEl) loadingEl.hidden = true;
-    if (errorEl) errorEl.hidden = true;
-    switchSubView(currentStudyPdfParentView || "study-pdf-home-view");
-}
-
-function escapeStudyHtml(value) {
-    return String(value == null ? "" : value).replace(/[&<>"']/g, function (ch) {
-        return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[ch];
-    });
-}
-
-function renderStudyMaterial(data, subjectTitle, container, subtitle) {
-    var entries = Array.isArray(data) ? data : null;
-    if (!entries && data && typeof data === "object") {
-        var candidateKeys = ["chapters", "units", "topics", "materials", "notes", "lessons", "data", "content"];
-        for (var i = 0; i < candidateKeys.length; i++) {
-            if (Array.isArray(data[candidateKeys[i]])) { entries = data[candidateKeys[i]]; break; }
-        }
-        if (!entries) entries = [data];
-    }
-    if (!entries || entries.length === 0) {
-        subtitle.textContent = "No study material has been added yet.";
-        container.innerHTML = '<div class="study-empty"><i class="fa-solid fa-book-open"></i><h3>Coming Soon</h3><p>Study material will appear here when it is added.</p></div>';
-        return;
-    }
-
-    subtitle.textContent = entries.length + " material item(s) available in " + subjectTitle + ".";
-    container.innerHTML = "";
-    entries.forEach(function (entry, index) {
-        var card = document.createElement("article");
-        card.className = "study-material-item";
-        var heading = typeof entry === "string" ? entry : (entry.title || entry.name || entry.chapter || entry.topic || (subjectTitle + " Material " + (index + 1)));
-        var body = typeof entry === "string" ? "" : (entry.description || entry.summary || entry.text || entry.content || entry.notes || "");
-        var headingEl = document.createElement("h3");
-        headingEl.textContent = heading;
-        card.appendChild(headingEl);
-        if (body && typeof body === "string") {
-            var bodyEl = document.createElement("p");
-            bodyEl.textContent = body;
-            card.appendChild(bodyEl);
-        }
-        if (entry && typeof entry === "object") {
-            Object.keys(entry).forEach(function (key) {
-                if (["title", "name", "chapter", "topic", "description", "summary", "text", "content", "notes"].indexOf(key) !== -1) return;
-                var value = entry[key];
-                if (value == null || typeof value === "object") return;
-                var detail = document.createElement("p");
-                detail.className = "study-detail-line";
-                var label = document.createElement("strong");
-                label.textContent = key.replace(/[_-]/g, " ") + ": ";
-                detail.appendChild(label);
-                detail.appendChild(document.createTextNode(String(value)));
-                card.appendChild(detail);
-            });
-        }
-        container.appendChild(card);
-    });
-}
-
-/* -------------- LAUNCH TEST -------------- */
-function launchTest(subject) {
-    var studentName = getStudentName();
-
-    if (!studentName) {
-        alert("Session expired! Please login again.");
-        logout();
-        return;
-    }
-
-    sessionStorage.setItem("student_name", studentName);
-    localStorage.setItem("rjStudyUsername", studentName);
-    window.open("test/index.html?subject=" + subject, "_blank");
-}
-
-/* -------------- CHAT SYSTEM -------------- */
-var chatInterval = null;
-var isChatOpen = false;
-var lastChatHash = "";
-var chatPollInFlight = false;
-
-function setChatStatus(text) {
-    var el = document.getElementById("chatStatus");
-    if (el) el.textContent = text || "";
-}
-
-function toggleChat(forceState) {
-    var overlay = document.getElementById("chatOverlay");
-    if (!overlay) return;
-
-    if (typeof forceState === "boolean") {
-        isChatOpen = forceState;
-    } else {
-        isChatOpen = !isChatOpen;
-    }
-
-    if (chatInterval) {
-        clearInterval(chatInterval);
-        chatInterval = null;
-    }
-
-    if (isChatOpen) {
-        overlay.classList.add("active");
-        lastChatHash = "";
-        setChatStatus("Syncing...");
-        pollChat(true);
-        chatInterval = setInterval(function () {
-            if (!document.hidden) pollChat(false);
-        }, 3000);
-        setTimeout(function () {
-            var input = document.getElementById("chatInput");
-            if (input) input.focus();
-        }, 150);
-    } else {
-        overlay.classList.remove("active");
-        setChatStatus("");
-    }
-}
-
-async function pollChat(forceRender) {
-    var studentName = getStudentName();
-    if (!studentName || !isChatOpen) return;
-    if (chatPollInFlight) return;
-
-    chatPollInFlight = true;
-    try {
-        var res = await fetch(WORKER_URL + "/api/chat?ts=" + Date.now(), {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            cache: "no-store",
-            body: JSON.stringify({ action: "get", studentName: studentName })
-        });
-        var data = await res.json();
-        if (data && data.success) {
-            var history = data.history || [];
-            var hash = JSON.stringify(history);
-            if (forceRender || hash !== lastChatHash) {
-                lastChatHash = hash;
-                renderChat(history);
-            }
-            setChatStatus("Live • " + history.length + "/3 • auto-clear 2 min");
-        } else {
-            setChatStatus("Sync failed");
-        }
-    } catch (e) {
-        setChatStatus("Network error");
-    } finally {
-        chatPollInFlight = false;
-    }
-}
-
-async function sendChatMessage() {
-    var input = document.getElementById("chatInput");
-    if (!input) return;
-
-    var msg = input.value.trim();
-    var studentName = getStudentName();
-    if (!msg || !studentName) return;
-
-    input.value = "";
-    input.disabled = true;
-    setChatStatus("Sending...");
-
-    try {
-        var res = await fetch(WORKER_URL + "/api/chat?ts=" + Date.now(), {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            cache: "no-store",
-            body: JSON.stringify({ studentName: studentName, message: msg })
-        });
-        var data = await res.json();
-        if (data && data.success) {
-            lastChatHash = JSON.stringify(data.history || []);
-            renderChat(data.history || []);
-            setChatStatus("Sent • " + (data.history || []).length + "/3");
-        } else {
-            input.value = msg;
-            setChatStatus((data && data.error) || "Send failed");
-        }
-    } catch (e) {
-        input.value = msg;
-        setChatStatus("Network error");
-    } finally {
-        input.disabled = false;
-        input.focus();
-        setTimeout(function () {
-            pollChat(true);
-        }, 400);
-    }
-}
-
-function renderChat(history) {
-    var body = document.getElementById("chatBody");
-    if (!body) return;
-
-    body.innerHTML = "";
-    if (!history || history.length === 0) {
-        body.innerHTML =
-            '<div style="text-align:center; color:' + "var(--text-dim)" + '; font-size:0.84rem; margin-top:30px; line-height:1.7;">' +
-            '<i class="fa-solid fa-message" style="font-size:2rem; color:rgba(32,232,137,0.15); display:block; margin-bottom:12px;"></i>' +
-            "Max 3 messages. Chat clears after 2 min idle.</div>";
-        return;
-    }
-
-    history.forEach(function (msg) {
-        var div = document.createElement("div");
-        var sender = (msg.sender || "student").toLowerCase();
-        div.className = "chat-message " + (sender === "admin" ? "admin" : "student");
-        div.innerText = msg.text || "";
-        body.appendChild(div);
-    });
-
-    body.scrollTop = body.scrollHeight;
-}
-
-/* -------------- INIT PORTAL -------------- */
-function initPortal() {
-    checkExistingSession();
-
-    var form = document.getElementById("loginForm");
-    if (form) {
-        form.addEventListener("submit", handleLogin);
-    }
-
-    window.addEventListener("click", function (e) {
-        if (!e.target.closest(".profile-menu-container")) closeAllDropdowns();
-    });
-
-    document.addEventListener("visibilitychange", function () {
-        if (!document.hidden && isChatOpen) pollChat(true);
-    });
-    window.addEventListener("focus", function () {
-        if (isChatOpen) pollChat(true);
-    });
-
-    // Update greeting every minute
-    setInterval(function () {
-        var greetEl = document.getElementById("greetingText");
-        if (greetEl && document.getElementById("dashboard-view").classList.contains("active")) {
-            greetEl.innerText = getGreeting();
-        }
-    }, 60000);
-}
-
-if (document.readyState === "loading") {
-    document.addEventListener("DOMContentLoaded", initPortal);
-} else {
-    initPortal();
-}
-
-window.handleLogin = handleLogin;
-window.toggleProfileMenu = toggleProfileMenu;
-window.logout = logout;
-window.switchSubView = switchSubView;
-window.goHome = goHome;
-window.launchTest = launchTest;
-window.openStudyMaterial = openStudyMaterial;
-window.openStudyPdf = openStudyPdf;
-window.backFromStudyPdf = backFromStudyPdf;
-window.goBackFromStudyContent = goBackFromStudyContent;
-window.toggleChat = toggleChat;
-window.sendChatMessage = sendChatMessage;
-
-/* -------------- TERMINAL ANIMATION -------------- */
-(function () {
-    var terminal = document.getElementById("terminal-bg");
-    if (!terminal) return;
-    var logs = [
-        "Initializing secure hypervisor environment...",
-        "Loading root credentials for RJ_STUDY_ACADEMY_PORTAL...",
-        "Establishing encrypted handshake... [SECURE]",
-        "Injecting pathways: [ENGLISH, HINDI, MATH, SCIENCE]",
-        "Status: Multi-Subject Test Engine v29.0 ONLINE."
-    ];
-    var li = 0,
-        ci = 0,
-        text = "";
-    function type() {
-        if (li < logs.length) {
-            if (ci < logs[li].length) {
-                text += logs[li].charAt(ci);
-                terminal.innerText = text + "█";
-                ci++;
-                setTimeout(type, 18);
-            } else {
-                text += "\n\n";
-                li++;
-                ci = 0;
-                setTimeout(type, 300);
-            }
-        } else {
-            text += "> root@rj-academy:~$ ";
-            terminal.innerText = text;
-            setTimeout(function () {
-                text = "";
-                li = 0;
-                ci = 0;
-                type();
-            }, 4000);
-        }
-    }
-    type();
-})();
