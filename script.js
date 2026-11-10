@@ -210,17 +210,18 @@ var studyPdfActiveRenders = {};
 var studyPdfRenderDebounce = null;
 var studyPdfIsPinching = false;
 
-// Pinch state (new focal-locked system)
+// Pinch state (focal-locked, scroll-frozen system)
 var pinchState = {
     active: false,
     startDist: 0,
     startZoom: 1,
-    startContentX: 0,  // content point under pinch center at start
-    startContentY: 0,
-    rafId: null,
-    pendingZoom: 1,
-    pendingCenterX: 0,
-    pendingCenterY: 0
+    contentX: 0,
+    contentY: 0,
+    viewportX: 0,
+    viewportY: 0,
+    frozenScrollLeft: 0,
+    frozenScrollTop: 0,
+    currentRatio: 1
 };
 
 function openStudyPdf(pdfPath, title) {
@@ -397,7 +398,7 @@ function renderStudyPdfScrollPage(pageNumber, token) {
     });
 }
 
-// Zoom via buttons/wheel — with CSS transition
+// Zoom via buttons/wheel — keeps focal point stable
 function setStudyPdfZoom(value, focalX, focalY, instant) {
     var next = Math.max(0.5, Math.min(4, Math.round(value * 100) / 100));
     if (Math.abs(next - studyPdfZoom) < 0.005 || !studyPdfDocument) return;
@@ -489,11 +490,12 @@ function bindStudyPdfScrollZoom(stage, token) {
         setStudyPdfZoom(studyPdfZoom * factor, event.clientX, event.clientY, false);
     }, { passive: false });
 
-    // ===== PINCH ZOOM — Focal-locked, GPU accelerated, buttery smooth =====
-    // Approach: Use CSS transform on #studyPdfBook during pinch, calculated
-    // such that the content point under the pinch center stays EXACTLY under
-    // the fingers at all times. On release, bake the transform into real
-    // layout (width/height + scroll position).
+    // ===== PINCH ZOOM — Ultimate Google-Drive-style focal lock =====
+    // Strategy:
+    //   1. On start: freeze scroll (overflow:hidden), record content point under fingers
+    //   2. On move: apply transform: translate(cx*(1-r), cy*(1-r)) scale(r)
+    //      — this math EXACTLY keeps the content point (cx,cy) stationary under fingers
+    //   3. On end: bake transform → real size + scroll in single frame, no jump
 
     function getPinchData(touches) {
         var a = touches[0], b = touches[1];
@@ -516,18 +518,24 @@ function bindStudyPdfScrollZoom(stage, token) {
             studyPdfIsPinching = true;
             pinchState.startDist = p.dist;
             pinchState.startZoom = studyPdfZoom;
-            // Store the CONTENT coordinate under the pinch center (unscaled by current zoom)
-            pinchState.startContentX = stage.scrollLeft + localX;
-            pinchState.startContentY = stage.scrollTop + localY;
-            pinchState.pendingZoom = studyPdfZoom;
-            pinchState.pendingCenterX = p.cx;
-            pinchState.pendingCenterY = p.cy;
+            pinchState.viewportX = localX;
+            pinchState.viewportY = localY;
+            pinchState.contentX = stage.scrollLeft + localX;
+            pinchState.contentY = stage.scrollTop + localY;
+            pinchState.frozenScrollLeft = stage.scrollLeft;
+            pinchState.frozenScrollTop = stage.scrollTop;
+            pinchState.currentRatio = 1;
 
-            // Kill transitions on book during pinch — we drive with transform
+            // Freeze scroll → no interference with transform
+            stage.style.overflow = "hidden";
+            stage.style.touchAction = "none";
+
+            // Kill all transitions on book during pinch
             var book = document.getElementById("studyPdfBook");
             if (book) {
-                book.style.transition = "none";
+                book.classList.add("pinching");
                 book.style.transformOrigin = "0 0";
+                book.style.transition = "none";
             }
         }
     }, { passive: false });
@@ -540,58 +548,44 @@ function bindStudyPdfScrollZoom(stage, token) {
 
         var newZoom = Math.max(0.5, Math.min(4,
             pinchState.startZoom * (p.dist / pinchState.startDist)));
+        var r = newZoom / pinchState.startZoom;
+        pinchState.currentRatio = r;
 
-        pinchState.pendingZoom = newZoom;
-        pinchState.pendingCenterX = p.cx;
-        pinchState.pendingCenterY = p.cy;
-
-        // Throttle to animation frame for 60fps smoothness
-        if (pinchState.rafId) return;
-        pinchState.rafId = requestAnimationFrame(function() {
-            pinchState.rafId = null;
-            applyPinchTransform();
-        });
-    }, { passive: false });
-
-    function applyPinchTransform() {
-        var book = document.getElementById("studyPdfBook");
-        if (!book || !pinchState.active) return;
-
-        var scaleRatio = pinchState.pendingZoom / pinchState.startZoom;
         var stageRect = stage.getBoundingClientRect();
-        var localX = pinchState.pendingCenterX - stageRect.left;
-        var localY = pinchState.pendingCenterY - stageRect.top;
+        var localX = p.cx - stageRect.left;
+        var localY = p.cy - stageRect.top;
 
-        // Math: We want the content point (startContentX, startContentY) to appear
-        // at screen position (localX, localY) after scaling.
-        // After scale with origin (0,0):
-        //   screen_x = (contentX * scaleRatio) - scrollLeft + translateX
-        // We want screen_x = localX, keeping scrollLeft constant (frozen at start):
-        //   translateX = localX + scrollLeft - (contentX * scaleRatio)
-        var tx = localX - (pinchState.startContentX * scaleRatio) + stage.scrollLeft;
-        var ty = localY - (pinchState.startContentY * scaleRatio) + stage.scrollTop;
+        // Focal lock math:
+        // After scale(r) with origin (0,0), content point (cx,cy) moves to (cx*r, cy*r).
+        // We want it to appear at viewport position (localX, localY), accounting for frozen scroll.
+        // Scroll is frozen at (frozenScrollLeft, frozenScrollTop), so screen pos = content_pos - scroll + translate
+        //   localX = pinchState.contentX * r - frozenScrollLeft + tx
+        //   tx = localX + frozenScrollLeft - pinchState.contentX * r
+        var tx = localX + pinchState.frozenScrollLeft - (pinchState.contentX * r);
+        var ty = localY + pinchState.frozenScrollTop - (pinchState.contentY * r);
 
-        // But scrollLeft may have shifted during pinch — lock it to start value
-        // by using the diff. Actually simpler: freeze scroll during pinch.
-        book.style.transform = "translate3d(" + tx + "px, " + ty + "px, 0) scale(" + scaleRatio + ")";
-    }
+        var book = document.getElementById("studyPdfBook");
+        if (book) {
+            book.style.transform = "translate3d(" + tx + "px," + ty + "px,0) scale(" + r + ")";
+        }
+    }, { passive: false });
 
     function finishPinch() {
         if (!pinchState.active) return;
         pinchState.active = false;
         studyPdfIsPinching = false;
-        if (pinchState.rafId) { cancelAnimationFrame(pinchState.rafId); pinchState.rafId = null; }
+
+        var r = pinchState.currentRatio;
+        var finalZoom = Math.max(0.5, Math.min(4, Math.round(pinchState.startZoom * r * 100) / 100));
+        studyPdfZoom = finalZoom;
+        updateStudyPdfZoomLabel();
+
+        // Calculate target scroll so focal point stays locked
+        var actualRatio = finalZoom / pinchState.startZoom;
+        var targetScrollLeft = (pinchState.contentX * actualRatio) - pinchState.viewportX;
+        var targetScrollTop = (pinchState.contentY * actualRatio) - pinchState.viewportY;
 
         var book = document.getElementById("studyPdfBook");
-        var finalZoom = pinchState.pendingZoom;
-        var scaleRatio = finalZoom / pinchState.startZoom;
-        var stageRect = stage.getBoundingClientRect();
-        var localX = pinchState.pendingCenterX - stageRect.left;
-        var localY = pinchState.pendingCenterY - stageRect.top;
-
-        // Calculate target scroll position so content point stays under finger
-        var targetScrollLeft = (pinchState.startContentX * scaleRatio) - localX;
-        var targetScrollTop = (pinchState.startContentY * scaleRatio) - localY;
 
         // Remove transform
         if (book) {
@@ -599,11 +593,7 @@ function bindStudyPdfScrollZoom(stage, token) {
             book.style.transformOrigin = "";
         }
 
-        // Apply real zoom (resize pages)
-        var oldZoom = studyPdfZoom;
-        studyPdfZoom = Math.max(0.5, Math.min(4, Math.round(finalZoom * 100) / 100));
-        updateStudyPdfZoomLabel();
-
+        // Set real page sizes (no transition for instant bake)
         var pages = document.querySelectorAll("#studyPdfBook .pdf-scroll-page");
         pages.forEach(function(wrapper) {
             var n = Number(wrapper.dataset.pageNumber);
@@ -611,43 +601,37 @@ function bindStudyPdfScrollZoom(stage, token) {
             if (info) {
                 var newW = Math.ceil(info.width * info.fitScale * studyPdfZoom);
                 var newH = Math.ceil(info.height * info.fitScale * studyPdfZoom);
-                // Kill transition for instant resize (no visual jump)
-                wrapper.style.transition = "none";
                 wrapper.style.width = newW + "px";
                 wrapper.style.height = newH + "px";
                 var canvas = wrapper.querySelector("canvas");
                 if (canvas) {
-                    canvas.style.transition = "none";
                     canvas.style.width = newW + "px";
                     canvas.style.height = newH + "px";
                 }
                 var textLayer = wrapper.querySelector(".textLayer");
                 if (textLayer) {
-                    textLayer.style.transition = "none";
                     textLayer.style.width = newW + "px";
                     textLayer.style.height = newH + "px";
                 }
             }
         });
 
-        // Set scroll to keep focal point locked
+        // Single-frame bake: restore scroll + overflow + transitions
         requestAnimationFrame(function() {
+            stage.style.overflow = "";
+            stage.style.touchAction = "";
             stage.scrollLeft = Math.max(0, targetScrollLeft);
             stage.scrollTop = Math.max(0, targetScrollTop);
 
-            // Restore transitions after paint
             requestAnimationFrame(function() {
-                pages.forEach(function(w) {
-                    w.style.transition = "";
-                    var c = w.querySelector("canvas");
-                    if (c) c.style.transition = "";
-                    var t = w.querySelector(".textLayer");
-                    if (t) t.style.transition = "";
-                });
+                if (book) {
+                    book.classList.remove("pinching");
+                    book.style.transition = "";
+                }
             });
         });
 
-        // Debounced re-render for sharp pages
+        // Debounced sharp re-render
         if (studyPdfRenderDebounce) clearTimeout(studyPdfRenderDebounce);
         studyPdfRenderDebounce = setTimeout(function() {
             studyPdfRenderDebounce = null;
@@ -660,13 +644,13 @@ function bindStudyPdfScrollZoom(stage, token) {
                     wrapper.dataset.renderPending = "true";
                     try { oldTask.cancel(); } catch (e) {}
                 }
-                var r = wrapper.getBoundingClientRect();
+                var rect = wrapper.getBoundingClientRect();
                 var sr = stage.getBoundingClientRect();
-                if (r.bottom >= sr.top - 700 && r.top <= sr.bottom + 700) {
+                if (rect.bottom >= sr.top - 700 && rect.top <= sr.bottom + 700) {
                     renderStudyPdfScrollPage(n, tk);
                 }
             });
-        }, 120);
+        }, 140);
     }
 
     stage.addEventListener("touchend", function(event) {
@@ -681,7 +665,6 @@ function cleanupStudyPdfResources() {
     if (studyPdfRenderDebounce) { clearTimeout(studyPdfRenderDebounce); studyPdfRenderDebounce = null; }
     studyPdfIsPinching = false;
     pinchState.active = false;
-    if (pinchState.rafId) { cancelAnimationFrame(pinchState.rafId); pinchState.rafId = null; }
     if (studyPdfObserver) { studyPdfObserver.disconnect(); studyPdfObserver = null; }
     Object.keys(studyPdfActiveRenders).forEach(function(key) {
         var task = studyPdfActiveRenders[key];
