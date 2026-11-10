@@ -214,6 +214,14 @@
                     <span class="dash-action-btn">Open PDF Library <i class="fa-solid fa-arrow-right"></i></span>
                 </div>
 
+                <div class="dash-card glass-dash-card" onclick="switchSubView('worksheets-home-view')">
+                    <div class="card-glow-line"></div>
+                    <div class="dash-icon icon-study"><i class="fa-solid fa-images"></i></div>
+                    <h3>Worksheets for Exam</h3>
+                    <p>Chapter-wise image worksheets for competitive and board exams.</p>
+                    <span class="dash-action-btn">Open Worksheets <i class="fa-solid fa-arrow-right"></i></span>
+                </div>
+
                 <div class="dash-card glass-dash-card" onclick="toggleChat()">
                     <div class="card-glow-line"></div>
                     <div class="dash-icon icon-chat"><i class="fa-solid fa-comments"></i></div>
@@ -669,6 +677,98 @@
                 <div class="pdf-book-loading" id="studyPdfLoading"><i class="fa-solid fa-spinner fa-spin"></i><span>Opening your book...</span></div>
                 <div class="pdf-scroll-document" id="studyPdfBook" aria-label="Scrollable PDF document"></div>
                 <div id="studyPdfError" class="pdf-error" hidden></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ===================== WORKSHEETS IMAGE LIBRARY ===================== -->
+    <div id="worksheets-home-view" class="page-view">
+        <div class="dashboard-topbar glass-topbar"><div class="logo" onclick="goHome()"><div class="logo-icon pulse-ring">🎯</div><span class="logo-text">Surya <span class="accent">Study Academy</span></span></div></div>
+        <div class="dashboard-container">
+            <button class="back-btn glass-back-btn" onclick="goHome()"><i class="fa-solid fa-arrow-left"></i> Back to Dashboard</button>
+            <div class="section-header"><div class="section-icon-wrap"><i class="fa-solid fa-images"></i></div><h2>Worksheets for Exam</h2><p>Choose your study category.</p></div>
+            <div class="sub-grid">
+                <div class="sub-card glass-sub-card study-nav-card" onclick="switchSubView('worksheets-competitive-view')"><div class="sub-card-shine"></div><div class="sub-card-icon"><i class="fa-solid fa-trophy"></i></div><h4>Competitive</h4><p>Subject-wise image worksheets for competitive exams.</p><span class="sub-card-arrow"><i class="fa-solid fa-arrow-right"></i></span></div>
+                <div class="sub-card glass-sub-card study-nav-card" onclick="switchSubView('worksheets-board-view')"><div class="sub-card-shine"></div><div class="sub-card-icon"><i class="fa-solid fa-school"></i></div><h4>Board</h4><p>Class 9th and 10th image worksheets.</p><span class="sub-card-arrow"><i class="fa-solid fa-arrow-right"></i></span></div>
+            </div>
+        </div>
+    </div>
+
+    <div id="worksheets-competitive-view" class="page-view">
+        <div class="dashboard-topbar glass-topbar"><div class="logo" onclick="goHome()"><div class="logo-icon pulse-ring">🎯</div><span class="logo-text">Surya <span class="accent">Study Academy</span></span></div></div>
+        <div class="dashboard-container">
+            <button class="back-btn glass-back-btn" onclick="switchSubView('worksheets-home-view')"><i class="fa-solid fa-arrow-left"></i> Back to Worksheets</button>
+            <div class="section-header"><div class="section-icon-wrap"><i class="fa-solid fa-trophy"></i></div><h2>Competitive Worksheets</h2><p>Select a subject.</p></div>
+            <div class="sub-grid">
+                <div class="sub-card glass-sub-card study-nav-card" onclick="openWorksheets('competitive','English','English')"><div class="sub-card-icon"><i class="fa-solid fa-language"></i></div><h4>English</h4><p>English worksheets.</p></div>
+                <div class="sub-card glass-sub-card study-nav-card" onclick="openWorksheets('competitive','Math','Math')"><div class="sub-card-icon"><i class="fa-solid fa-calculator"></i></div><h4>Math</h4><p>Mathematics worksheets.</p></div>
+                <div class="sub-card glass-sub-card study-nav-card" onclick="openWorksheets('competitive','Hindi','Hindi')"><div class="sub-card-icon">📙</div><h4>Hindi</h4><p>Hindi worksheets.</p></div>
+                <div class="sub-card glass-sub-card study-nav-card" onclick="openWorksheets('competitive','Reasoning','Reasoning')"><div class="sub-card-icon"><i class="fa-solid fa-brain"></i></div><h4>Reasoning</h4><p>Reasoning worksheets.</p></div>
+                <div class="sub-card glass-sub-card study-nav-card" onclick="openWorksheets('competitive','GS','GS')"><div class="sub-card-icon"><i class="fa-solid fa-earth-asia"></i></div><h4>GS</h4><p>General Studies worksheets.</p></div>
+            </div>
+        </div>
+    </div>
+
+    <div id="worksheets-board-view" class="page-view">
+        <div class="dashboard-topbar glass-topbar"><div class="logo" onclick="goHome()"><div class="logo-icon pulse-ring">🎯</div><span class="logo-text">Surya <span class="accent">Study Academy</span></span></div></div>
+        <div class="dashboard-container">
+            <button class="back-btn glass-back-btn" onclick="switchSubView('worksheets-home-view')"><i class="fa-solid fa-arrow-left"></i> Back to Worksheets</button>
+            <div class="section-header"><div class="section-icon-wrap"><i class="fa-solid fa-school"></i></div><h2>Board Worksheets</h2><p>Select your class.</p></div>
+            <div class="sub-grid">
+                <div class="sub-card glass-sub-card study-nav-card" onclick="switchSubView('worksheets-class-9-view')"><div class="sub-card-icon"><i class="fa-solid fa-9"></i></div><h4>Class 9th</h4><p>Class 9th subject-wise worksheets.</p></div>
+                <div class="sub-card glass-sub-card study-nav-card" onclick="switchSubView('worksheets-class-10-view')"><div class="sub-card-icon"><i class="fa-solid fa-1"></i><i class="fa-solid fa-0"></i></div><h4>Class 10th</h4><p>Class 10th subject-wise worksheets.</p></div>
+            </div>
+        </div>
+    </div>
+
+    <div id="worksheets-class-9-view" class="page-view">
+        <div class="dashboard-topbar glass-topbar"><div class="logo" onclick="goHome()"><div class="logo-icon pulse-ring">🎯</div><span class="logo-text">Surya <span class="accent">Study Academy</span></span></div></div>
+        <div class="dashboard-container">
+            <button class="back-btn glass-back-btn" onclick="switchSubView('worksheets-board-view')"><i class="fa-solid fa-arrow-left"></i> Back to Board Classes</button>
+            <div class="section-header"><div class="section-icon-wrap"><i class="fa-solid fa-9"></i></div><h2>Class 9th Worksheets</h2><p>Select a subject.</p></div>
+            <div class="sub-grid">
+                <div class="sub-card glass-sub-card study-nav-card" onclick="openWorksheets('board/9th-class','Hindi','Class 9th Hindi')"><div class="sub-card-icon">📙</div><h4>Hindi</h4><p>Hindi worksheets.</p></div>
+                <div class="sub-card glass-sub-card study-nav-card" onclick="openWorksheets('board/9th-class','English','Class 9th English')"><div class="sub-card-icon">📘</div><h4>English</h4><p>English worksheets.</p></div>
+                <div class="sub-card glass-sub-card study-nav-card" onclick="openWorksheets('board/9th-class','Math','Class 9th Math')"><div class="sub-card-icon">📐</div><h4>Math</h4><p>Mathematics worksheets.</p></div>
+                <div class="sub-card glass-sub-card study-nav-card" onclick="openWorksheets('board/9th-class','Science','Class 9th Science')"><div class="sub-card-icon">🔬</div><h4>Science</h4><p>Science worksheets.</p></div>
+                <div class="sub-card glass-sub-card study-nav-card" onclick="openWorksheets('board/9th-class','Geography','Class 9th Geography')"><div class="sub-card-icon"><i class="fa-solid fa-earth-asia"></i></div><h4>Geography</h4><p>Geography worksheets.</p></div>
+            </div>
+        </div>
+    </div>
+
+    <div id="worksheets-class-10-view" class="page-view">
+        <div class="dashboard-topbar glass-topbar"><div class="logo" onclick="goHome()"><div class="logo-icon pulse-ring">🎯</div><span class="logo-text">Surya <span class="accent">Study Academy</span></span></div></div>
+        <div class="dashboard-container">
+            <button class="back-btn glass-back-btn" onclick="switchSubView('worksheets-board-view')"><i class="fa-solid fa-arrow-left"></i> Back to Board Classes</button>
+            <div class="section-header"><div class="section-icon-wrap"><i class="fa-solid fa-1"></i><i class="fa-solid fa-0"></i></div><h2>Class 10th Worksheets</h2><p>Select a subject.</p></div>
+            <div class="sub-grid">
+                <div class="sub-card glass-sub-card study-nav-card" onclick="openWorksheets('board/10th-class','Hindi','Class 10th Hindi')"><div class="sub-card-icon">📙</div><h4>Hindi</h4><p>Hindi worksheets.</p></div>
+                <div class="sub-card glass-sub-card study-nav-card" onclick="openWorksheets('board/10th-class','English','Class 10th English')"><div class="sub-card-icon">📘</div><h4>English</h4><p>English worksheets.</p></div>
+                <div class="sub-card glass-sub-card study-nav-card" onclick="openWorksheets('board/10th-class','Math','Class 10th Math')"><div class="sub-card-icon">📐</div><h4>Math</h4><p>Mathematics worksheets.</p></div>
+                <div class="sub-card glass-sub-card study-nav-card" onclick="openWorksheets('board/10th-class','Science','Class 10th Science')"><div class="sub-card-icon">🔬</div><h4>Science</h4><p>Science worksheets.</p></div>
+                <div class="sub-card glass-sub-card study-nav-card" onclick="openWorksheets('board/10th-class','Geography','Class 10th Geography')"><div class="sub-card-icon"><i class="fa-solid fa-earth-asia"></i></div><h4>Geography</h4><p>Geography worksheets.</p></div>
+            </div>
+        </div>
+    </div>
+
+    <div id="worksheets-reader-view" class="page-view worksheets-reader-view">
+        <div class="dashboard-topbar glass-topbar"><div class="logo" onclick="goHome()"><div class="logo-icon pulse-ring">🎯</div><span class="logo-text">Surya <span class="accent">Study Academy</span></span></div></div>
+        <div class="worksheets-reader-container">
+            <div class="worksheets-reader-nav">
+                <button class="back-btn glass-back-btn" onclick="backFromWorksheets()"><i class="fa-solid fa-arrow-left"></i> Back to Subjects</button>
+                <span id="worksheetsReaderTitle" class="pdf-reader-book-title">Worksheets</span>
+            </div>
+            <div class="worksheets-toolbar">
+                <div class="worksheet-search-wrap"><i class="fa-solid fa-magnifying-glass"></i><input id="worksheetSearch" type="search" placeholder="Search page ID (e.g. Tenses12)" autocomplete="off"><button type="button" onclick="searchWorksheetPage()">Go</button></div>
+                <button type="button" id="worksheetZoomOut" title="Zoom out" aria-label="Zoom out"><i class="fa-solid fa-minus"></i></button>
+                <span id="worksheetZoomLabel">100%</span>
+                <button type="button" id="worksheetZoomIn" title="Zoom in" aria-label="Zoom in"><i class="fa-solid fa-plus"></i></button>
+                <span id="worksheetPageCount" class="worksheet-page-count" aria-live="polite">0 pages</span>
+            </div>
+            <div id="worksheetsReaderStage" class="worksheets-reader-stage">
+                <div id="worksheetsReaderLoading" class="worksheet-state"><i class="fa-solid fa-spinner fa-spin"></i> Loading worksheets...</div>
+                <div id="worksheetsReaderList" class="worksheets-reader-list"></div>
+                <div id="worksheetsReaderEmpty" class="worksheet-state" hidden></div>
             </div>
         </div>
     </div>

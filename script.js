@@ -3,6 +3,19 @@
 
 const VALID_PASSWORDS = ["04783", "padhlo", "4181723"];
 const WORKER_URL = "https://rj-test-backen.internationalbgi.workers.dev";
+const PAGE_STATE_KEY = "rj_portal_page_state_v1";
+var isRestoringPortalState = false;
+var currentStudyMaterialState = null;
+var currentStudyPdfPath = "";
+var currentStudyPdfTitle = "";
+var pendingPdfRestore = null;
+var worksheetManifest = null;
+var currentWorksheetCategory = "competitive";
+var currentWorksheetSubject = "";
+var currentWorksheetTitle = "Worksheets";
+var currentWorksheetParentView = "worksheets-competitive-view";
+var worksheetZoom = 1;
+var worksheetSaveTimer = null;
 
 /* -------------- LOGIN SYSTEM -------------- */
 function handleLogin(e) {
@@ -31,6 +44,7 @@ function handleLogin(e) {
     if (VALID_PASSWORDS.includes(enteredPass)) {
         if (errorMsg) errorMsg.style.display = "none";
 
+        localStorage.removeItem(PAGE_STATE_KEY);
         localStorage.setItem("rj_student_name", enteredName);
         localStorage.setItem("rj_login_time", Date.now().toString());
         localStorage.setItem("rjStudyUsername", enteredName);
@@ -56,10 +70,14 @@ function checkExistingSession() {
         const hoursPassed = (Date.now() - Number(loginTime)) / (1000 * 60 * 60);
         if (hoursPassed < 24) {
             activateDashboard(savedName);
+            restorePortalPageState(savedName);
             return true;
         }
         localStorage.removeItem("rj_student_name");
         localStorage.removeItem("rj_login_time");
+        localStorage.removeItem(PAGE_STATE_KEY);
+    } else {
+        localStorage.removeItem(PAGE_STATE_KEY);
     }
     return false;
 }
@@ -102,7 +120,7 @@ function activateDashboard(studentName) {
 }
 
 function hideAllViews() {
-    ["login-view", "dashboard-view", "competitive-view", "boards-view", "notifications-view", "subjects-view", "study-material-view", "study-competitive-view", "study-board-view", "study-class-9-view", "study-class-10-view", "study-content-view", "study-pdf-home-view", "study-pdf-competitive-view", "study-pdf-board-view", "study-pdf-class-9-view", "study-pdf-class-10-view", "study-pdf-reader-view"].forEach(function (id) {
+    ["login-view", "dashboard-view", "competitive-view", "boards-view", "notifications-view", "subjects-view", "study-material-view", "study-competitive-view", "study-board-view", "study-class-9-view", "study-class-10-view", "study-content-view", "study-pdf-home-view", "study-pdf-competitive-view", "study-pdf-board-view", "study-pdf-class-9-view", "study-pdf-class-10-view", "study-pdf-reader-view", "worksheets-home-view", "worksheets-competitive-view", "worksheets-board-view", "worksheets-class-9-view", "worksheets-class-10-view", "worksheets-reader-view"].forEach(function (id) {
         var v = document.getElementById(id);
         if (v) v.classList.remove("active");
     });
@@ -126,6 +144,7 @@ function logout() {
     localStorage.removeItem("rj_student_name");
     localStorage.removeItem("rj_login_time");
     localStorage.removeItem("rjStudyUsername");
+    localStorage.removeItem(PAGE_STATE_KEY);
     sessionStorage.removeItem("student_name");
 
     var u = document.getElementById("usernameInput");
@@ -146,6 +165,7 @@ function switchSubView(viewId) {
     var target = document.getElementById(viewId);
     if (target) target.classList.add("active");
     window.scrollTo({ top: 0, behavior: "smooth" });
+    savePortalPageState();
 }
 
 function goHome() {
@@ -154,6 +174,7 @@ function goHome() {
     var dash = document.getElementById("dashboard-view");
     if (dash) dash.classList.add("active");
     window.scrollTo({ top: 0, behavior: "smooth" });
+    savePortalPageState();
 }
 
 function getStudentName() {
@@ -172,7 +193,8 @@ function goBackFromStudyContent() {
     switchSubView(currentStudyParentView);
 }
 
-async function openStudyMaterial(folder, fileName, subjectTitle) {
+async function openStudyMaterial(folder, fileName, subjectTitle, isRestore) {
+    currentStudyMaterialState = { folder: folder, fileName: fileName, subjectTitle: subjectTitle };
     currentStudyParentView = folder === "Competitive" ? "study-competitive-view" :
         (folder === "Board/9th class" ? "study-class-9-view" : "study-class-10-view");
 
@@ -184,7 +206,14 @@ async function openStudyMaterial(folder, fileName, subjectTitle) {
     title.textContent = subjectTitle + " Study Material";
     subtitle.textContent = "Loading material...";
     list.innerHTML = '<div class="study-loading"><i class="fa-solid fa-spinner fa-spin"></i> Loading study material...</div>';
-    switchSubView("study-content-view");
+    if (isRestore) {
+        isRestoringPortalState = true;
+        hideAllViews();
+        document.getElementById("study-content-view").classList.add("active");
+        isRestoringPortalState = false;
+    } else {
+        switchSubView("study-content-view");
+    }
 
     var filePath = "Study%20material/" + folder.split("/").map(encodeURIComponent).join("/") + "/" + encodeURIComponent(fileName) + ".json";
     try {
@@ -224,24 +253,35 @@ var pinchState = {
     currentRatio: 1
 };
 
-function openStudyPdf(pdfPath, title) {
+function openStudyPdf(pdfPath, title, isRestore, restoreData) {
     var titleEl = document.getElementById("studyPdfTitle");
     var bookEl = document.getElementById("studyPdfBook");
     var loadingEl = document.getElementById("studyPdfLoading");
     var errorEl = document.getElementById("studyPdfError");
     if (!titleEl || !bookEl || !loadingEl || !errorEl) return;
     var activeView = document.querySelector(".page-view.active");
-    if (activeView && activeView.id !== "study-pdf-reader-view") currentStudyPdfParentView = activeView.id;
+    if (!isRestore && activeView && activeView.id !== "study-pdf-reader-view") currentStudyPdfParentView = activeView.id;
+    currentStudyPdfPath = String(pdfPath || "");
+    currentStudyPdfTitle = title || "Study PDF";
+    pendingPdfRestore = isRestore && restoreData ? restoreData : null;
     var token = ++studyPdfLoadToken;
     cleanupStudyPdfResources();
-    studyPdfZoom = 1;
+    studyPdfZoom = (pendingPdfRestore && Number(pendingPdfRestore.zoom)) || 1;
     updateStudyPdfZoomLabel();
-    titleEl.textContent = title || "Study PDF";
+    titleEl.textContent = currentStudyPdfTitle;
     bookEl.innerHTML = "";
+    var pdfStageReset = document.getElementById("studyPdfBookStage");
+    if (pdfStageReset && !isRestore) { pdfStageReset.scrollTop = 0; pdfStageReset.scrollLeft = 0; }
     errorEl.hidden = true;
     errorEl.textContent = "";
     loadingEl.hidden = false;
-    switchSubView("study-pdf-reader-view");
+    if (isRestore) {
+        hideAllViews();
+        document.getElementById("study-pdf-reader-view").classList.add("active");
+    } else {
+        switchSubView("study-pdf-reader-view");
+    }
+    savePortalPageState();
     bindStudyPdfZoomButtons();
     if (!window.pdfjsLib) {
         showStudyPdfError("PDF reading library could not be loaded. Please check your internet connection and refresh the page.");
@@ -286,8 +326,8 @@ function buildStudyPdfScrollDocument(pdf, token) {
                 var wrapper = document.createElement("section");
                 wrapper.className = "pdf-scroll-page";
                 wrapper.dataset.pageNumber = String(pageNumber);
-                wrapper.style.width = Math.round(base.width * fitScale) + "px";
-                wrapper.style.height = Math.round(base.height * fitScale) + "px";
+                wrapper.style.width = Math.round(base.width * fitScale * studyPdfZoom) + "px";
+                wrapper.style.height = Math.round(base.height * fitScale * studyPdfZoom) + "px";
                 var canvas = document.createElement("canvas");
                 canvas.className = "pdf-scroll-canvas";
                 canvas.setAttribute("aria-label", "PDF page " + pageNumber);
@@ -305,7 +345,16 @@ function buildStudyPdfScrollDocument(pdf, token) {
         loading.hidden = true;
         setupStudyPdfPageObserver(token);
         bindStudyPdfScrollZoom(stage, token);
-        renderStudyPdfScrollPage(1, token);
+        var restore = pendingPdfRestore;
+        if (restore) {
+            stage.scrollTop = Math.max(0, Number(restore.scrollTop) || 0);
+            stage.scrollLeft = Math.max(0, Number(restore.scrollLeft) || 0);
+            var restorePage = Math.max(1, Number(restore.page) || 1);
+            renderStudyPdfScrollPage(restorePage, token);
+            pendingPdfRestore = null;
+        } else {
+            renderStudyPdfScrollPage(1, token);
+        }
     }).catch(function(error) {
         if (token !== studyPdfLoadToken) return;
         loading.hidden = true;
@@ -462,6 +511,7 @@ function setStudyPdfZoom(value, focalX, focalY, instant) {
             }
         });
     }, delay);
+    savePortalPageState();
 }
 
 function updateStudyPdfZoomLabel() {
@@ -699,6 +749,314 @@ function backFromStudyPdf() {
     switchSubView(currentStudyPdfParentView || "study-pdf-home-view");
 }
 
+/* -------------- SESSION-SAFE PAGE RESTORE -------------- */
+function getActivePortalViewId() {
+    var active = document.querySelector(".page-view.active");
+    return active ? active.id : "dashboard-view";
+}
+
+function readPortalPageState() {
+    try { return JSON.parse(localStorage.getItem(PAGE_STATE_KEY) || "null"); }
+    catch (e) { return null; }
+}
+
+function savePortalPageState() {
+    if (isRestoringPortalState || !getStudentName()) return;
+    var viewId = getActivePortalViewId();
+    if (!viewId || viewId === "login-view") return;
+    var state = {
+        user: getStudentName(), viewId: viewId, scrollY: window.scrollY || 0,
+        savedAt: Date.now(), studyMaterial: currentStudyMaterialState
+    };
+    if (viewId === "study-pdf-reader-view") {
+        var pdfStage = document.getElementById("studyPdfBookStage");
+        state.pdf = { path: currentStudyPdfPath, title: currentStudyPdfTitle,
+            parentView: currentStudyPdfParentView, scrollTop: pdfStage ? pdfStage.scrollTop : 0,
+            scrollLeft: pdfStage ? pdfStage.scrollLeft : 0, zoom: studyPdfZoom,
+            page: getVisiblePdfPageNumber() };
+    }
+    if (viewId === "worksheets-reader-view") {
+        var imageStage = document.getElementById("worksheetsReaderStage");
+        state.worksheets = { category: currentWorksheetCategory, subject: currentWorksheetSubject,
+            title: currentWorksheetTitle, parentView: currentWorksheetParentView,
+            scrollTop: imageStage ? imageStage.scrollTop : 0, zoom: worksheetZoom };
+    }
+    try { localStorage.setItem(PAGE_STATE_KEY, JSON.stringify(state)); } catch (e) {}
+}
+
+function schedulePortalStateSave() {
+    if (worksheetSaveTimer) clearTimeout(worksheetSaveTimer);
+    worksheetSaveTimer = setTimeout(savePortalPageState, 280);
+}
+
+function getVisiblePdfPageNumber() {
+    var stage = document.getElementById("studyPdfBookStage");
+    if (!stage) return 1;
+    var pages = document.querySelectorAll("#studyPdfBook .pdf-scroll-page");
+    var best = 1, distance = Infinity, sr = stage.getBoundingClientRect();
+    pages.forEach(function (page) {
+        var r = page.getBoundingClientRect();
+        var d = Math.abs(r.top - sr.top);
+        if (d < distance) { distance = d; best = Number(page.dataset.pageNumber) || 1; }
+    });
+    return best;
+}
+
+function restorePortalPageState(studentName) {
+    var state = readPortalPageState();
+    if (!state || state.user !== studentName || !state.viewId || !document.getElementById(state.viewId)) return;
+    isRestoringPortalState = true;
+    if (state.viewId === "study-pdf-reader-view" && state.pdf && state.pdf.path) {
+        currentStudyPdfParentView = state.pdf.parentView || "study-pdf-home-view";
+        openStudyPdf(state.pdf.path, state.pdf.title || "Study PDF", true, state.pdf);
+        isRestoringPortalState = false;
+        return;
+    }
+    if (state.viewId === "worksheets-reader-view" && state.worksheets) {
+        var w = state.worksheets;
+        isRestoringPortalState = false;
+        openWorksheets(w.category, w.subject, w.title, true, w);
+        return;
+    }
+    if (state.viewId === "study-content-view" && state.studyMaterial) {
+        var sm = state.studyMaterial;
+        isRestoringPortalState = false;
+        openStudyMaterial(sm.folder, sm.fileName, sm.subjectTitle, true);
+        return;
+    }
+    hideAllViews();
+    document.getElementById(state.viewId).classList.add("active");
+    isRestoringPortalState = false;
+    requestAnimationFrame(function () {
+        window.scrollTo(0, Math.max(0, Number(state.scrollY) || 0));
+        savePortalPageState();
+    });
+}
+
+/* -------------- WORKSHEETS IMAGE READER -------------- */
+async function loadWorksheetManifest() {
+    if (worksheetManifest) return worksheetManifest;
+    var response = await fetch("worksheets.json", { cache: "no-store" });
+    if (!response.ok) throw new Error("worksheets.json could not be loaded (HTTP " + response.status + ")");
+    var data = await response.json();
+    if (!data || typeof data !== "object") throw new Error("Invalid worksheets.json format");
+    worksheetManifest = data;
+    return data;
+}
+
+function getWorksheetPages(category, subject) {
+    var root = worksheetManifest || {};
+    var parts = String(category || "competitive").split("/");
+    var section = root[parts[0]] || root[parts[0].toLowerCase()] || {};
+    if (parts.length > 1) section = section[parts[1]] || section[parts[1].toLowerCase()] || {};
+    var pages = section[subject] || section[String(subject || "").toLowerCase()];
+    if (Array.isArray(pages)) return pages;
+    if (pages && Array.isArray(pages.pages)) return pages.pages;
+    if (pages && Array.isArray(pages.images)) return pages.images;
+    return [];
+}
+
+function getWorksheetPageSource(page) {
+    if (typeof page === "string") return page;
+    if (!page || typeof page !== "object") return "";
+    return page.src || page.path || page.file || page.image || page.url || "";
+}
+
+function getWorksheetPageId(page, src) {
+    if (typeof page === "string") page = {};
+    page = page || {};
+    var fileName = String(src || "").split(/[?#]/)[0].split("/").pop() || "";
+    var fileStem = fileName.replace(/\.[^.]+$/, "");
+    return String(page.id || page.name || page.pageId || page.key || fileStem || "Worksheet");
+}
+
+function normalizeWorksheetSearch(value) {
+    return String(value || "").toLowerCase().replace(/\.[a-z0-9]+$/i, "").replace(/[\s_\-]+/g, "").replace(/[^a-z0-9]/g, "");
+}
+
+async function openWorksheets(category, subject, title, isRestore, restoreData) {
+    var activeView = document.querySelector(".page-view.active");
+    if (!isRestore && activeView && activeView.id !== "worksheets-reader-view") currentWorksheetParentView = activeView.id;
+    currentWorksheetCategory = String(category || "competitive").toLowerCase();
+    currentWorksheetSubject = String(subject || "");
+    currentWorksheetTitle = title || subject || "Worksheets";
+    if (restoreData && restoreData.parentView) currentWorksheetParentView = restoreData.parentView;
+    worksheetZoom = restoreData && Number(restoreData.zoom) ? Number(restoreData.zoom) : 1;
+    var titleEl = document.getElementById("worksheetsReaderTitle");
+    var list = document.getElementById("worksheetsReaderList");
+    var loading = document.getElementById("worksheetsReaderLoading");
+    var empty = document.getElementById("worksheetsReaderEmpty");
+    if (!titleEl || !list || !loading || !empty) return;
+    titleEl.textContent = currentWorksheetTitle + " Worksheets";
+    list.innerHTML = ""; empty.hidden = true; loading.hidden = false;
+    if (isRestore) { hideAllViews(); document.getElementById("worksheets-reader-view").classList.add("active"); }
+    else switchSubView("worksheets-reader-view");
+    updateWorksheetZoomLabel();
+    try {
+        await loadWorksheetManifest();
+        var pages = getWorksheetPages(currentWorksheetCategory, currentWorksheetSubject);
+        loading.hidden = true;
+        if (!pages.length) {
+            empty.hidden = false;
+            empty.innerHTML = '<i class="fa-regular fa-images"></i><strong>Worksheets coming soon</strong><span>Is subject ke images abhi worksheets.json mein add nahi kiye gaye hain.</span>';
+            updateWorksheetPageCount(0);
+            savePortalPageState();
+            return;
+        }
+        var fragment = document.createDocumentFragment();
+        var renderedCount = 0;
+        pages.forEach(function (page, index) {
+            var pageSrc = getWorksheetPageSource(page);
+            if (!pageSrc) return;
+            var pageId = getWorksheetPageId(page, pageSrc);
+            var pageTitle = (page && typeof page === "object" && (page.title || page.label)) || pageId;
+            var wrapper = document.createElement("article");
+            wrapper.className = "worksheet-image-page";
+            wrapper.id = "worksheet-page-" + pageId.replace(/[^a-zA-Z0-9_-]/g, "-") + "-" + index;
+            wrapper.dataset.pageId = pageId;
+            wrapper.dataset.pageTitle = pageTitle;
+            wrapper.dataset.pageSrc = pageSrc;
+            var label = document.createElement("div"); label.className = "worksheet-image-label";
+            label.textContent = pageTitle;
+            var img = document.createElement("img");
+            img.loading = renderedCount < 2 ? "eager" : "lazy";
+            img.alt = pageTitle;
+            img.src = pageSrc;
+            img.draggable = false;
+            img.addEventListener("error", function () {
+                wrapper.classList.add("worksheet-image-error");
+                img.remove();
+                var err = document.createElement("span"); err.textContent = "Image not found: " + pageSrc;
+                wrapper.appendChild(err);
+            });
+            wrapper.appendChild(label); wrapper.appendChild(img); fragment.appendChild(wrapper);
+            renderedCount++;
+        });
+        list.appendChild(fragment);
+        updateWorksheetZoomLabel();
+        updateWorksheetPageCount(renderedCount);
+        updateWorksheetActivePage();
+        var search = document.getElementById("worksheetSearch"); if (search) search.value = "";
+        if (restoreData) {
+            var stage = document.getElementById("worksheetsReaderStage");
+            requestAnimationFrame(function () { if (stage) stage.scrollTop = Math.max(0, Number(restoreData.scrollTop) || 0); savePortalPageState(); });
+        } else savePortalPageState();
+    } catch (error) {
+        loading.hidden = true; empty.hidden = false;
+        empty.innerHTML = '<i class="fa-solid fa-triangle-exclamation"></i><strong>Worksheets load nahi ho paayin</strong><span>' + escapeStudyHtml(error.message) + '</span>';
+        updateWorksheetPageCount(0);
+    }
+}
+
+function updateWorksheetPageCount(count) {
+    var el = document.getElementById("worksheetPageCount");
+    if (el) { el.dataset.total = String(count); el.textContent = count + (count === 1 ? " page" : " pages"); }
+}
+
+function updateWorksheetActivePage() {
+    var stage = document.getElementById("worksheetsReaderStage");
+    var label = document.getElementById("worksheetPageCount");
+    var pages = document.querySelectorAll(".worksheet-image-page");
+    if (!stage || !label || !pages.length) return;
+    var stageTop = stage.getBoundingClientRect().top;
+    var best = 0, distance = Infinity;
+    pages.forEach(function (page, index) {
+        var d = Math.abs(page.getBoundingClientRect().top - stageTop);
+        if (d < distance) { distance = d; best = index; }
+    });
+    label.textContent = "Page " + (best + 1) + " / " + pages.length;
+}
+
+function handleWorksheetKeyboardNavigation(event) {
+    var view = document.getElementById("worksheets-reader-view");
+    if (!view || !view.classList.contains("active")) return;
+    if (event.target && /INPUT|TEXTAREA|SELECT/.test(event.target.tagName)) return;
+    if (["ArrowDown", "PageDown", "ArrowUp", "PageUp"].indexOf(event.key) === -1) return;
+    var pages = document.querySelectorAll(".worksheet-image-page");
+    if (!pages.length) return;
+    event.preventDefault();
+    var stage = document.getElementById("worksheetsReaderStage");
+    var top = stage ? stage.getBoundingClientRect().top : 0;
+    var current = 0, distance = Infinity;
+    pages.forEach(function (page, index) { var d = Math.abs(page.getBoundingClientRect().top - top); if (d < distance) { distance = d; current = index; } });
+    var next = Math.max(0, Math.min(pages.length - 1, current + ((event.key === "ArrowDown" || event.key === "PageDown") ? 1 : -1)));
+    pages[next].scrollIntoView({ behavior: "smooth", block: "start" });
+}
+
+function updateWorksheetZoomLabel() {
+    var label = document.getElementById("worksheetZoomLabel");
+    if (label) label.textContent = Math.round(worksheetZoom * 100) + "%";
+    var list = document.getElementById("worksheetsReaderList");
+    if (list) {
+        list.style.setProperty("--worksheet-zoom", String(worksheetZoom));
+        list.querySelectorAll(".worksheet-image-page img").forEach(function (img) { img.style.width = (worksheetZoom * 100) + "%"; });
+    }
+}
+
+function changeWorksheetZoom(delta) {
+    worksheetZoom = Math.max(0.6, Math.min(3, Math.round((worksheetZoom + delta) * 100) / 100));
+    updateWorksheetZoomLabel(); savePortalPageState();
+}
+
+function searchWorksheetPage() {
+    var input = document.getElementById("worksheetSearch");
+    var rawQuery = input ? input.value.trim() : "";
+    var query = normalizeWorksheetSearch(rawQuery);
+    if (!query) return;
+    var pages = document.querySelectorAll(".worksheet-image-page");
+    var match = null, partial = null;
+    pages.forEach(function (page) {
+        var id = normalizeWorksheetSearch(page.dataset.pageId || "");
+        var title = normalizeWorksheetSearch(page.dataset.pageTitle || "");
+        var src = normalizeWorksheetSearch((page.dataset.pageSrc || "").split("/").pop() || "");
+        if (id === query || src === query || title === query) match = match || page;
+        else if (!partial && (id.indexOf(query) !== -1 || title.indexOf(query) !== -1 || src.indexOf(query) !== -1)) partial = page;
+    });
+    match = match || partial;
+    if (match) {
+        match.scrollIntoView({ behavior: "smooth", block: "start" });
+        match.classList.add("worksheet-search-hit");
+        setTimeout(function () { match.classList.remove("worksheet-search-hit"); }, 1600);
+        savePortalPageState();
+    } else if (input) {
+        input.setCustomValidity("Page nahi mila. Tenses12, Synonyms1 ya image ka filename try karein."); input.reportValidity();
+        input.addEventListener("input", function clearValidity() { input.setCustomValidity(""); input.removeEventListener("input", clearValidity); }, { once: true });
+    }
+}
+
+function backFromWorksheets() {
+    switchSubView(currentWorksheetParentView || "worksheets-competitive-view");
+}
+
+function bindWorksheetControls() {
+    var minus = document.getElementById("worksheetZoomOut");
+    var plus = document.getElementById("worksheetZoomIn");
+    var search = document.getElementById("worksheetSearch");
+    if (minus && !minus.dataset.bound) { minus.dataset.bound = "1"; minus.addEventListener("click", function () { changeWorksheetZoom(-0.1); }); }
+    if (plus && !plus.dataset.bound) { plus.dataset.bound = "1"; plus.addEventListener("click", function () { changeWorksheetZoom(0.1); }); }
+    if (search && !search.dataset.bound) { search.dataset.bound = "1"; search.addEventListener("keydown", function (e) { if (e.key === "Enter") searchWorksheetPage(); }); }
+    var stage = document.getElementById("worksheetsReaderStage");
+    if (stage && !stage.dataset.pinchBound) {
+        stage.dataset.pinchBound = "1";
+        var startDistance = 0, startZoom = 1;
+        stage.addEventListener("touchstart", function (e) {
+            if (e.touches.length === 2) { startDistance = Math.hypot(e.touches[0].clientX-e.touches[1].clientX, e.touches[0].clientY-e.touches[1].clientY); startZoom = worksheetZoom; }
+        }, { passive: true });
+        stage.addEventListener("touchmove", function (e) {
+            if (e.touches.length === 2 && startDistance > 0) {
+                e.preventDefault();
+                var d = Math.hypot(e.touches[0].clientX-e.touches[1].clientX, e.touches[0].clientY-e.touches[1].clientY);
+                worksheetZoom = Math.max(0.6, Math.min(3, startZoom * d / startDistance));
+                updateWorksheetZoomLabel();
+            }
+        }, { passive: false });
+        stage.addEventListener("touchend", function (e) { if (e.touches.length < 2 && startDistance) { startDistance = 0; savePortalPageState(); } }, { passive: true });
+        stage.addEventListener("wheel", function (e) {
+            if (e.ctrlKey || e.metaKey) { e.preventDefault(); changeWorksheetZoom(e.deltaY < 0 ? 0.08 : -0.08); }
+        }, { passive: false });
+    }
+}
+
 function escapeStudyHtml(value) {
     return String(value == null ? "" : value).replace(/[&<>"']/g, function (ch) {
         return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[ch];
@@ -910,6 +1268,14 @@ function renderChat(history) {
 
 /* -------------- INIT PORTAL -------------- */
 function initPortal() {
+    var pdfStage = document.getElementById("studyPdfBookStage");
+    if (pdfStage) pdfStage.addEventListener("scroll", schedulePortalStateSave, { passive: true });
+    var worksheetStage = document.getElementById("worksheetsReaderStage");
+    if (worksheetStage) worksheetStage.addEventListener("scroll", function () { schedulePortalStateSave(); updateWorksheetActivePage(); }, { passive: true });
+    bindWorksheetControls();
+    document.addEventListener("keydown", handleWorksheetKeyboardNavigation);
+    window.addEventListener("scroll", schedulePortalStateSave, { passive: true });
+    window.addEventListener("beforeunload", savePortalPageState);
     checkExistingSession();
 
     var form = document.getElementById("loginForm");
@@ -954,6 +1320,9 @@ window.backFromStudyPdf = backFromStudyPdf;
 window.goBackFromStudyContent = goBackFromStudyContent;
 window.toggleChat = toggleChat;
 window.sendChatMessage = sendChatMessage;
+window.openWorksheets = openWorksheets;
+window.searchWorksheetPage = searchWorksheetPage;
+window.backFromWorksheets = backFromWorksheets;
 
 /* -------------- TERMINAL ANIMATION -------------- */
 (function () {

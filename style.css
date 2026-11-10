@@ -997,3 +997,69 @@ body {
 }
 
 /* ===== BUTTER-SMOOTH
+
+/* ===== WORKSHEETS IMAGE LIBRARY — isolated styles ===== */
+#worksheets-reader-view {
+    min-height: 100dvh !important;
+    height: auto !important;
+    overflow: visible !important;
+}
+#worksheets-reader-view .dashboard-topbar { position: relative; z-index: 5; }
+#worksheets-reader-view .worksheets-reader-container {
+    width: 100%; max-width: 1200px; height: calc(100dvh - 82px); min-height: 420px;
+    margin: 0 auto; display: flex; flex-direction: column; padding: 0 12px 12px;
+}
+.worksheets-reader-nav { display:flex; align-items:center; gap:12px; flex:0 0 auto; min-height:48px; }
+.worksheets-reader-nav .pdf-reader-book-title { overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.worksheets-toolbar {
+    display:flex; align-items:center; justify-content:center; flex-wrap:wrap; gap:7px;
+    padding:7px 8px; flex:0 0 auto; border:1px solid rgba(110,190,230,.16);
+    border-radius:12px 12px 0 0; background:rgba(9,24,42,.72); backdrop-filter:blur(14px);
+}
+.worksheets-toolbar > button, .worksheet-search-wrap button {
+    border:1px solid rgba(100,190,220,.35); border-radius:8px; color:#eaf6ff;
+    background:rgba(18,43,66,.9); min-width:34px; height:32px; padding:0 10px; cursor:pointer;
+}
+.worksheets-toolbar > button:hover, .worksheet-search-wrap button:hover { border-color:var(--primary); background:rgba(0,229,255,.16); }
+#worksheetZoomLabel { min-width:42px; text-align:center; color:var(--primary); font-size:12px; font-weight:800; }
+.worksheet-page-count { color:var(--text-secondary,#9fb3c8); font-size:11px; white-space:nowrap; }
+.worksheet-search-wrap {
+    display:flex; align-items:center; gap:7px; min-width:190px; flex:1 1 260px; max-width:440px;
+    padding-left:10px; border:1px solid rgba(100,190,220,.24); border-radius:9px;
+    background:rgba(3,12,24,.78); color:var(--text-secondary,#9fb3c8);
+}
+.worksheet-search-wrap input { width:100%; min-width:0; height:32px; color:#eff8ff; background:transparent; border:0; outline:0; font:inherit; font-size:12px; }
+.worksheet-search-wrap button { border-radius:0 8px 8px 0; flex:0 0 auto; }
+.worksheets-reader-stage {
+    flex:1 1 auto; min-height:0; overflow:auto; overscroll-behavior:contain;
+    -webkit-overflow-scrolling:touch; touch-action:pan-x pan-y; padding:14px 10px 30px;
+    border:1px solid rgba(110,190,230,.14); border-top:0; border-radius:0 0 14px 14px;
+    background:rgba(2,8,18,.86);
+}
+.worksheets-reader-list { width:100%; max-width:900px; margin:0 auto; display:flex; flex-direction:column; align-items:center; gap:18px; --worksheet-zoom:1; }
+.worksheet-image-page {
+    width:100%; display:flex; flex-direction:column; align-items:center; gap:7px;
+    padding:8px; border:1px solid rgba(125,190,220,.13); border-radius:10px;
+    background:rgba(13,25,42,.92); box-shadow:0 12px 34px rgba(0,0,0,.22); scroll-margin-top:12px;
+    transition:border-color .2s, box-shadow .2s;
+}
+.worksheet-image-label { width:100%; color:rgba(200,225,242,.7); font-size:11px; text-align:left; overflow-wrap:anywhere; }
+.worksheet-image-page img {
+    display:block; width:100%; max-width:none; height:auto;
+    object-fit:contain; border-radius:4px; user-select:none; -webkit-user-drag:none;
+}
+.worksheet-search-hit { border-color:rgba(0,220,255,.9); box-shadow:0 0 0 2px rgba(0,220,255,.2),0 0 28px rgba(0,220,255,.2); }
+.worksheet-image-error { min-height:90px; justify-content:center; color:#ffb7b7; font-size:12px; }
+.worksheet-state { min-height:160px; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:10px; color:var(--text-secondary,#9fb3c8); text-align:center; font-size:13px; }
+.worksheet-state i { font-size:28px; color:var(--primary,#53d7f5); }
+.worksheet-state strong { color:#edf8ff; font-size:15px; }
+.worksheet-state span { max-width:440px; line-height:1.6; }
+@media(max-width:600px) {
+    #worksheets-reader-view .worksheets-reader-container { height:calc(100dvh - 72px); min-height:360px; padding:0 7px 8px; }
+    .worksheets-reader-nav { gap:7px; min-height:44px; }
+    .worksheets-reader-nav .back-btn { padding:8px 10px; font-size:11px; }
+    .worksheets-toolbar { gap:5px; padding:6px; }
+    .worksheet-search-wrap { flex-basis:100%; max-width:none; order:-1; }
+    .worksheets-reader-stage { padding:9px 5px 20px; }
+    .worksheet-image-page { padding:5px; gap:5px; }
+}

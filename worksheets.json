@@ -1,0 +1,25 @@
+{
+  "competitive": {
+    "English": [],
+    "Math": [],
+    "Hindi": [],
+    "Reasoning": [],
+    "GS": []
+  },
+  "board": {
+    "9th-class": {
+      "Hindi": [],
+      "English": [],
+      "Math": [],
+      "Science": [],
+      "Geography": []
+    },
+    "10th-class": {
+      "Hindi": [],
+      "English": [],
+      "Math": [],
+      "Science": [],
+      "Geography": []
+    }
+  }
+}
