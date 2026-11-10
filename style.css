@@ -1051,6 +1051,8 @@ body {
 .worksheet-search-hit { border-color:rgba(0,220,255,.9); box-shadow:0 0 0 2px rgba(0,220,255,.2),0 0 28px rgba(0,220,255,.2); }
 .worksheet-image-error { min-height:90px; justify-content:center; color:#ffb7b7; font-size:12px; }
 .worksheet-state { min-height:160px; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:10px; color:var(--text-secondary,#9fb3c8); text-align:center; font-size:13px; }
+/* The reader uses display:flex for its status panels; explicitly honour the hidden attribute. */
+.worksheet-state[hidden] { display:none !important; }
 .worksheet-state i { font-size:28px; color:var(--primary,#53d7f5); }
 .worksheet-state strong { color:#edf8ff; font-size:15px; }
 .worksheet-state span { max-width:440px; line-height:1.6; }

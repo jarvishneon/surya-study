@@ -894,7 +894,7 @@ async function openWorksheets(category, subject, title, isRestore, restoreData) 
     currentWorksheetSubject = String(subject || "");
     currentWorksheetTitle = title || subject || "Worksheets";
     if (restoreData && restoreData.parentView) currentWorksheetParentView = restoreData.parentView;
-    worksheetZoom = restoreData && Number(restoreData.zoom) ? Number(restoreData.zoom) : 1;
+    worksheetZoom = restoreData && Number(restoreData.zoom) ? Math.max(1, Math.min(3, Number(restoreData.zoom))) : 1;
     var titleEl = document.getElementById("worksheetsReaderTitle");
     var list = document.getElementById("worksheetsReaderList");
     var loading = document.getElementById("worksheetsReaderLoading");
