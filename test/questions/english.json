@@ -2,551 +2,541 @@
   {
     "id": "e1",
     "type": "mcq",
-    "question": "Translate to English: 'राम अखबार पढ़ता है।'",
+    "question": "Translate to English: 'वह हर सुबह जल्दी उठता है।'",
     "options": [
-      "Ram reads a newspaper.",
-      "Ram is reading a newspaper.",
-      "Ram read a newspaper.",
-      "Ram reading a newspaper."
+      "He gets up early every morning.",
+      "He is getting up early every morning.",
+      "He get up early every morning.",
+      "He got up early every morning."
     ],
     "answer": 0
   },
   {
     "id": "e2",
     "type": "mcq",
-    "question": "Translate to English: 'सीता कपड़े नहीं धो रही है।'",
+    "question": "Translate to English: 'मेरी बहन गिटार बजाती है।'",
     "options": [
-      "Sita does not wash clothes.",
-      "Sita is not washing clothes.",
-      "Sita not washing clothes.",
-      "Sita is not wash clothes."
+      "My sister is playing the guitar.",
+      "My sister play the guitar.",
+      "My sister plays the guitar.",
+      "My sister played the guitar."
     ],
-    "answer": 1
+    "answer": 2
   },
   {
     "id": "e3",
     "type": "mcq",
-    "question": "Fill in the blank: ___ the children eat fruits?",
-    "options": ["Does", "Is", "Do", "Are"],
-    "answer": 2
+    "question": "Translate to Hindi: 'The doctor treats patients.'",
+    "options": [
+      "डॉक्टर मरीजों का इलाज कर रहा है।",
+      "डॉक्टर मरीजों का इलाज करता है।",
+      "डॉक्टर मरीजों का इलाज नहीं करता है।",
+      "क्या डॉक्टर मरीजों का इलाज करता है?"
+    ],
+    "answer": 1
   },
   {
     "id": "e4",
     "type": "mcq",
-    "question": "Translate to English: 'क्या वे मंदिर नहीं जा रहे हैं?'",
-    "options": [
-      "Don't they go to the temple?",
-      "Are they not going to the temple?",
-      "Is they not going to the temple?",
-      "Do they not going to the temple?"
-    ],
+    "question": "Fill in the blank: The earth ___ around the sun.",
+    "options": ["revolve", "revolves", "revolving", "is revolving"],
     "answer": 1
   },
   {
     "id": "e5",
     "type": "mcq",
-    "question": "Translate to English: 'किसान कहाँ काम करता है?'",
+    "question": "Translate to English: 'वे रोज़ सुबह टहलते हैं।'",
     "options": [
-      "Where is the farmer working?",
-      "Where the farmer works?",
-      "Where does the farmer work?",
-      "Where do the farmer work?"
+      "They are walking every morning.",
+      "They walks every morning.",
+      "They walk every morning.",
+      "They walked every morning."
     ],
     "answer": 2
   },
   {
     "id": "e6",
     "type": "mcq",
-    "question": "Translate to English: 'वह चाय नहीं पीता है।'",
+    "question": "Translate to English: 'वह मांस नहीं खाता है।'",
     "options": [
-      "He is not drinking tea.",
-      "He do not drink tea.",
-      "He not drink tea.",
-      "He does not drink tea."
+      "He is not eating meat.",
+      "He do not eat meat.",
+      "He not eat meat.",
+      "He does not eat meat."
     ],
     "answer": 3
   },
   {
     "id": "e7",
     "type": "mcq",
-    "question": "Fill in the blank: The farmer ___ working in the field.",
-    "options": ["am", "are", "is", "does"],
-    "answer": 2
-  },
-  {
-    "id": "e8",
-    "type": "mcq",
-    "question": "Translate to English: 'क्या सीता कपड़े नहीं धोती है?'",
+    "question": "Translate to Hindi: 'I do not tell lies.'",
     "options": [
-      "Is Sita not washing clothes?",
-      "Doesn't Sita wash clothes?",
-      "Don't Sita wash clothes?",
-      "Sita doesn't wash clothes?"
+      "मैं झूठ नहीं बोल रहा हूँ।",
+      "मैं झूठ नहीं बोलता हूँ।",
+      "क्या मैं झूठ नहीं बोलता हूँ?",
+      "मैं झूठ बोलता हूँ।"
     ],
     "answer": 1
   },
   {
+    "id": "e8",
+    "type": "mcq",
+    "question": "Fill in the blank: They ___ not drink alcohol.",
+    "options": ["does", "is", "do", "are"],
+    "answer": 2
+  },
+  {
     "id": "e9",
     "type": "mcq",
-    "question": "Translate to English: 'क्या बच्चे फल खा रहे हैं?'",
+    "question": "Translate to English: 'सीता गिटार नहीं बजाती है।'",
     "options": [
-      "Do the children eat fruits?",
-      "Is the children eating fruits?",
-      "Are the children eating fruits?",
-      "The children are eating fruits?"
+      "Sita is not playing the guitar.",
+      "Sita do not play the guitar.",
+      "Sita does not play the guitar.",
+      "Sita not play the guitar."
     ],
     "answer": 2
   },
   {
     "id": "e10",
     "type": "mcq",
-    "question": "Translate to English: 'बच्चे फल क्यों नहीं खाते हैं?'",
+    "question": "Translate to English: 'क्या वह हर सुबह टहलता है?'",
     "options": [
-      "Why are the children not eating fruits?",
-      "Why the children do not eat fruits?",
-      "Why don't the children eat fruits?",
-      "Why does the children not eat fruits?"
+      "Is he walking every morning?",
+      "Does he walk every morning?",
+      "Do he walk every morning?",
+      "He walks every morning?"
     ],
-    "answer": 2
+    "answer": 1
   },
   {
     "id": "e11",
     "type": "mcq",
-    "question": "Translate to Hindi: 'They go to the temple.'",
+    "question": "Translate to Hindi: 'Do you play the guitar?'",
     "options": [
-      "वे मंदिर जा रहे हैं।",
-      "वे मंदिर जाते हैं।",
-      "वे मंदिर नहीं जाते हैं।",
-      "क्या वे मंदिर जाते हैं?"
+      "क्या तुम गिटार बजा रहे हो?",
+      "तुम गिटार बजाते हो।",
+      "क्या तुम गिटार बजाते हो?",
+      "क्या तुम गिटार नहीं बजाते हो?"
     ],
-    "answer": 1
+    "answer": 2
   },
   {
     "id": "e12",
     "type": "mcq",
-    "question": "Translate to Hindi: 'He is not drinking tea.'",
-    "options": [
-      "वह चाय नहीं पीता है।",
-      "वह चाय नहीं पी रहा है।",
-      "क्या वह चाय नहीं पी रहा है?",
-      "वह चाय पी रहा है।"
-    ],
-    "answer": 1
+    "question": "Fill in the blank: ___ they eat meat?",
+    "options": ["Does", "Is", "Do", "Are"],
+    "answer": 2
   },
   {
     "id": "e13",
     "type": "mcq",
-    "question": "Translate to English: 'क्या राम अखबार पढ़ता है?'",
+    "question": "Translate to English: 'क्या डॉक्टर मरीजों का इलाज करता है?'",
     "options": [
-      "Is Ram reading a newspaper?",
-      "Does Ram read a newspaper?",
-      "Do Ram read a newspaper?",
-      "Ram reads a newspaper?"
+      "Is the doctor treating patients?",
+      "Does the doctor treat patients?",
+      "Do the doctor treat patients?",
+      "The doctor treats patients?"
     ],
     "answer": 1
   },
   {
     "id": "e14",
     "type": "mcq",
-    "question": "Translate to Hindi: \"Isn't Sita washing clothes?\"",
+    "question": "Translate to English: 'क्या वह झूठ नहीं बोलता है?'",
     "options": [
-      "क्या सीता कपड़े धोती है?",
-      "सीता कपड़े नहीं धो रही है।",
-      "क्या सीता कपड़े नहीं धो रही है?",
-      "क्या सीता कपड़े नहीं धोती है?"
-    ],
-    "answer": 2
-  },
-  {
-    "id": "e15",
-    "type": "mcq",
-    "question": "Translate to Hindi: 'Where does Sita go?'",
-    "options": [
-      "सीता कहाँ जा रही है?",
-      "सीता कहाँ जाती है?",
-      "सीता कहाँ नहीं जाती है?",
-      "क्या सीता कहाँ जाती है?"
+      "Is he not telling lies?",
+      "Does he not tell lies?",
+      "Do he not tell lies?",
+      "He does not tell lies?"
     ],
     "answer": 1
   },
   {
+    "id": "e15",
+    "type": "mcq",
+    "question": "Translate to Hindi: \"Don't they walk every morning?\"",
+    "options": [
+      "क्या वे हर सुबह टहलते हैं?",
+      "वे हर सुबह नहीं टहलते हैं।",
+      "क्या वे हर सुबह नहीं टहलते हैं?",
+      "क्या वे हर सुबह नहीं टहल रहे हैं?"
+    ],
+    "answer": 2
+  },
+  {
     "id": "e16",
     "type": "mcq",
-    "question": "Fill in the blank: The farmer ___ not work in the field.",
-    "options": ["do", "is", "does", "are"],
+    "question": "Fill in the blank: ___ Sita not play the guitar?",
+    "options": ["Do", "Is", "Does", "Are"],
     "answer": 2
   },
   {
     "id": "e17",
     "type": "mcq",
-    "question": "Translate to English: 'वे मंदिर जा रहे हैं।'",
+    "question": "Translate to English: 'क्या तुम मांस नहीं खाते हो?'",
     "options": [
-      "They go to the temple.",
-      "They is going to the temple.",
-      "They are going to the temple.",
-      "They are go to the temple."
+      "Are you not eating meat?",
+      "Does you not eat meat?",
+      "Don't you eat meat?",
+      "You do not eat meat?"
     ],
     "answer": 2
   },
   {
     "id": "e18",
     "type": "mcq",
-    "question": "Translate to Hindi: \"Don't they go to the temple?\"",
+    "question": "Translate to English: 'वह कहाँ काम करता है?'",
     "options": [
-      "क्या वे मंदिर जाते हैं?",
-      "वे मंदिर नहीं जाते हैं।",
-      "क्या वे मंदिर नहीं जा रहे हैं?",
-      "क्या वे मंदिर नहीं जाते हैं?"
+      "Where is he working?",
+      "Where he works?",
+      "Where does he work?",
+      "Where do he work?"
     ],
-    "answer": 3
+    "answer": 2
   },
   {
     "id": "e19",
     "type": "mcq",
-    "question": "Fill in the blank: ___ the children eating fruits?",
-    "options": ["Does", "Do", "Is", "Are"],
-    "answer": 3
-  },
-  {
-    "id": "e20",
-    "type": "mcq",
-    "question": "Translate to Hindi: 'Why does he not drink tea?'",
+    "question": "Translate to Hindi: 'What do you play?'",
     "options": [
-      "वह चाय क्यों पीता है?",
-      "वह चाय क्यों नहीं पीता है?",
-      "क्या वह चाय क्यों नहीं पीता है?",
-      "वह चाय क्यों नहीं पी रहा है?"
+      "तुम क्या बजा रहे हो?",
+      "तुम क्या बजाते हो?",
+      "तुम क्या नहीं बजाते हो?",
+      "क्या तुम क्या बजाते हो?"
     ],
     "answer": 1
   },
   {
+    "id": "e20",
+    "type": "mcq",
+    "question": "Fill in the blank: When ___ they walk?",
+    "options": ["do", "is", "does", "are"],
+    "answer": 0
+  },
+  {
     "id": "e21",
     "type": "mcq",
-    "question": "Translate to English: 'बच्चे फल खाते हैं।'",
+    "question": "Translate to English: 'डॉक्टर कैसे इलाज करता है?'",
     "options": [
-      "The children are eating fruits.",
-      "The children eats fruits.",
-      "The children eat fruits.",
-      "The children eating fruits."
+      "How is the doctor treating?",
+      "How the doctor treats?",
+      "How does the doctor treat?",
+      "How do the doctor treat?"
     ],
     "answer": 2
   },
   {
     "id": "e22",
     "type": "mcq",
-    "question": "Translate to English: 'बच्चे फल नहीं खा रहे हैं।'",
+    "question": "Translate to English: 'वह मांस क्यों नहीं खाता है?'",
     "options": [
-      "The children do not eat fruits.",
-      "The children is not eating fruits.",
-      "The children are not eating fruits.",
-      "The children not eating fruits."
+      "Why is he not eating meat?",
+      "Why he does not eat meat?",
+      "Why does he not eat meat?",
+      "Why do he not eat meat?"
     ],
     "answer": 2
   },
   {
     "id": "e23",
     "type": "mcq",
-    "question": "Translate to Hindi: 'Do the children eat fruits?'",
+    "question": "Translate to Hindi: 'Why don't you drink alcohol?'",
     "options": [
-      "क्या बच्चे फल खा रहे हैं?",
-      "बच्चे फल खाते हैं।",
-      "क्या बच्चे फल खाते हैं?",
-      "क्या बच्चे फल नहीं खाते हैं?"
-    ],
-    "answer": 2
-  },
-  {
-    "id": "e24",
-    "type": "mcq",
-    "question": "Translate to English: 'क्या किसान खेत में काम नहीं कर रहा है?'",
-    "options": [
-      "Doesn't the farmer work in the field?",
-      "Is the farmer not working in the field?",
-      "Are the farmer not working in the field?",
-      "The farmer is not working in the field?"
+      "तुम शराब क्यों पीते हो?",
+      "तुम शराब क्यों नहीं पीते हो?",
+      "क्या तुम शराब क्यों नहीं पीते हो?",
+      "तुम शराब क्यों नहीं पी रहे हो?"
     ],
     "answer": 1
   },
   {
+    "id": "e24",
+    "type": "mcq",
+    "question": "Fill in the blank: Where ___ they not go?",
+    "options": ["do", "is", "does", "are"],
+    "answer": 0
+  },
+  {
     "id": "e25",
     "type": "mcq",
-    "question": "Translate to English: 'राम क्या पढ़ता है?'",
+    "question": "Translate to English: 'सीता गिटार कब नहीं बजाती है?'",
     "options": [
-      "What is Ram reading?",
-      "What Ram reads?",
-      "What does Ram read?",
-      "What do Ram read?"
+      "When is Sita not playing the guitar?",
+      "When Sita does not play the guitar?",
+      "When does Sita not play the guitar?",
+      "When do Sita not play the guitar?"
     ],
     "answer": 2
   },
   {
     "id": "e26",
     "type": "mcq",
-    "question": "Translate to Hindi: 'Sita does not wash clothes.'",
+    "question": "Translate to English: 'वह गिटार बजा रहा है।'",
     "options": [
-      "सीता कपड़े नहीं धो रही है।",
-      "सीता कपड़े नहीं धोती है।",
-      "क्या सीता कपड़े नहीं धोती है?",
-      "सीता कपड़े धोती है।"
+      "He plays the guitar.",
+      "He is playing the guitar.",
+      "He is play the guitar.",
+      "He are playing the guitar."
     ],
     "answer": 1
   },
   {
     "id": "e27",
     "type": "mcq",
-    "question": "Translate to Hindi: 'Ram is reading a newspaper.'",
+    "question": "Translate to Hindi: 'The children are playing in the garden.'",
     "options": [
-      "राम अखबार पढ़ता है।",
-      "राम अखबार पढ़ रहा है।",
-      "राम अखबार नहीं पढ़ रहा है।",
-      "क्या राम अखबार पढ़ रहा है?"
+      "बच्चे बगीचे में खेलते हैं।",
+      "बच्चे बगीचे में खेल रहे हैं।",
+      "बच्चे बगीचे में नहीं खेल रहे हैं।",
+      "क्या बच्चे बगीचे में खेल रहे हैं?"
     ],
     "answer": 1
   },
   {
     "id": "e28",
     "type": "mcq",
-    "question": "Fill in the blank: ___ he not drink tea?",
-    "options": ["Do", "Is", "Does", "Are"],
+    "question": "Fill in the blank: I ___ writing a letter.",
+    "options": ["is", "are", "am", "do"],
     "answer": 2
   },
   {
     "id": "e29",
     "type": "mcq",
-    "question": "Translate to Hindi: 'Is Sita making tea?'",
+    "question": "Translate to English: 'माँ केक बना रही है।'",
     "options": [
-      "क्या सीता चाय बनाती है?",
-      "सीता चाय बना रही है।",
-      "क्या सीता चाय बना रही है?",
-      "क्या सीता चाय नहीं बना रही है?"
+      "Mother bakes a cake.",
+      "Mother is bake a cake.",
+      "Mother is baking a cake.",
+      "Mother are baking a cake."
     ],
     "answer": 2
   },
   {
     "id": "e30",
     "type": "mcq",
-    "question": "Translate to English: 'वे मंदिर क्यों नहीं जाते हैं?'",
+    "question": "Translate to English: 'वे नदी में तैर रहे हैं।'",
     "options": [
-      "Why are they not going to the temple?",
-      "Why they do not go to the temple?",
-      "Why don't they go to the temple?",
-      "Why does they not go to the temple?"
+      "They swim in the river.",
+      "They is swimming in the river.",
+      "They are swimming in the river.",
+      "They are swim in the river."
     ],
     "answer": 2
   },
   {
     "id": "e31",
     "type": "mcq",
-    "question": "Fill in the blank: Sita ___ tea every morning.",
-    "options": ["make", "making", "makes", "is making"],
-    "answer": 2
+    "question": "Translate to English: 'वह पत्र नहीं लिख रहा है।'",
+    "options": [
+      "He does not write a letter.",
+      "He is not writing a letter.",
+      "He not writing a letter.",
+      "He is not write a letter."
+    ],
+    "answer": 1
   },
   {
     "id": "e32",
     "type": "mcq",
-    "question": "Fill in the blank: They are not ___ to the temple.",
-    "options": ["go", "goes", "going", "gone"],
-    "answer": 2
+    "question": "Translate to Hindi: 'The children are not playing in the garden.'",
+    "options": [
+      "बच्चे बगीचे में नहीं खेलते हैं।",
+      "बच्चे बगीचे में नहीं खेल रहे हैं।",
+      "क्या बच्चे बगीचे में नहीं खेल रहे हैं?",
+      "बच्चे बगीचे में खेल रहे हैं।"
+    ],
+    "answer": 1
   },
   {
     "id": "e33",
     "type": "mcq",
-    "question": "Fill in the blank: ___ Ram read a newspaper?",
-    "options": ["Do", "Is", "Does", "Are"],
+    "question": "Fill in the blank: I am not ___ a cake.",
+    "options": ["bake", "bakes", "baking", "baked"],
     "answer": 2
   },
   {
     "id": "e34",
     "type": "mcq",
-    "question": "Fill in the blank: ___ they not going to the temple?",
-    "options": ["Is", "Does", "Do", "Are"],
-    "answer": 3
+    "question": "Translate to English: 'वे नदी में नहीं तैर रहे हैं।'",
+    "options": [
+      "They do not swim in the river.",
+      "They is not swimming in the river.",
+      "They are not swimming in the river.",
+      "They not swimming in the river."
+    ],
+    "answer": 2
   },
   {
     "id": "e35",
     "type": "mcq",
-    "question": "Fill in the blank: What ___ Ram read?",
-    "options": ["do", "is", "does", "are"],
-    "answer": 2
+    "question": "Translate to English: 'क्या वह गिटार बजा रहा है?'",
+    "options": [
+      "Does he play the guitar?",
+      "Is he playing the guitar?",
+      "Are he playing the guitar?",
+      "He is playing the guitar?"
+    ],
+    "answer": 1
   },
   {
     "id": "e36",
     "type": "mcq",
-    "question": "Translate to English: 'किसान खेत में काम नहीं करता है।'",
+    "question": "Translate to Hindi: 'Are the children playing in the garden?'",
     "options": [
-      "The farmer is not working in the field.",
-      "The farmer do not work in the field.",
-      "The farmer not work in the field.",
-      "The farmer does not work in the field."
-    ],
-    "answer": 3
-  },
-  {
-    "id": "e37",
-    "type": "mcq",
-    "question": "Translate to English: 'सीता चाय बना रही है।'",
-    "options": [
-      "Sita makes tea.",
-      "Sita is make tea.",
-      "Sita is making tea.",
-      "Sita are making tea."
+      "क्या बच्चे बगीचे में खेलते हैं?",
+      "बच्चे बगीचे में खेल रहे हैं।",
+      "क्या बच्चे बगीचे में खेल रहे हैं?",
+      "क्या बच्चे बगीचे में नहीं खेल रहे हैं?"
     ],
     "answer": 2
   },
   {
+    "id": "e37",
+    "type": "mcq",
+    "question": "Fill in the blank: ___ you writing a letter?",
+    "options": ["Is", "Does", "Do", "Are"],
+    "answer": 3
+  },
+  {
     "id": "e38",
     "type": "mcq",
-    "question": "Translate to English: 'क्या बच्चे फल नहीं खाते हैं?'",
+    "question": "Translate to English: 'क्या वे नदी में तैर रहे हैं?'",
     "options": [
-      "Are the children not eating fruits?",
-      "Does the children not eat fruits?",
-      "Don't the children eat fruits?",
-      "The children don't eat fruits?"
+      "Do they swim in the river?",
+      "Is they swimming in the river?",
+      "Are they swimming in the river?",
+      "They are swimming in the river?"
     ],
     "answer": 2
   },
   {
     "id": "e39",
     "type": "mcq",
-    "question": "Translate to English: 'क्या किसान खेत में काम कर रहा है?'",
+    "question": "Translate to English: 'क्या वह पत्र नहीं लिख रहा है?'",
     "options": [
-      "Does the farmer work in the field?",
-      "Is the farmer working in the field?",
-      "Are the farmer working in the field?",
-      "The farmer is working in the field?"
+      "Does he not write a letter?",
+      "Is he not writing a letter?",
+      "Are he not writing a letter?",
+      "He is not writing a letter?"
     ],
     "answer": 1
   },
   {
     "id": "e40",
     "type": "mcq",
-    "question": "Translate to English: 'किसान खेत में काम क्यों नहीं करता है?'",
+    "question": "Translate to Hindi: \"Aren't the children playing in the garden?\"",
     "options": [
-      "Why is the farmer not working in the field?",
-      "Why the farmer does not work in the field?",
-      "Why doesn't the farmer work in the field?",
-      "Why do the farmer not work in the field?"
+      "क्या बच्चे बगीचे में खेलते हैं?",
+      "बच्चे बगीचे में नहीं खेल रहे हैं।",
+      "क्या बच्चे बगीचे में नहीं खेल रहे हैं?",
+      "क्या बच्चे बगीचे में नहीं खेलते हैं?"
     ],
     "answer": 2
   },
   {
     "id": "e41",
     "type": "mcq",
-    "question": "Translate to Hindi: 'The farmer works in the field.'",
-    "options": [
-      "किसान खेत में काम कर रहा है।",
-      "किसान खेत में काम करता है।",
-      "किसान खेत में काम नहीं करता है।",
-      "क्या किसान खेत में काम करता है?"
-    ],
-    "answer": 1
+    "question": "Fill in the blank: ___ you not baking a cake?",
+    "options": ["Is", "Does", "Do", "Are"],
+    "answer": 3
   },
   {
     "id": "e42",
     "type": "mcq",
-    "question": "Translate to Hindi: 'The farmer is not working in the field.'",
+    "question": "Translate to English: 'क्या वे नदी में नहीं तैर रहे हैं?'",
     "options": [
-      "किसान खेत में काम नहीं करता है।",
-      "किसान खेत में काम नहीं कर रहा है।",
-      "क्या किसान खेत में काम नहीं कर रहा है?",
-      "किसान खेत में काम कर रहा है।"
+      "Don't they swim in the river?",
+      "Is they not swimming in the river?",
+      "Aren't they swimming in the river?",
+      "They are not swimming in the river?"
     ],
-    "answer": 1
+    "answer": 2
   },
   {
     "id": "e43",
     "type": "mcq",
-    "question": "Translate to Hindi: 'Does Sita make tea?'",
+    "question": "Translate to English: 'वह क्या बजा रहा है?'",
     "options": [
-      "क्या सीता चाय बना रही है?",
-      "सीता चाय बनाती है।",
-      "क्या सीता चाय बनाती है?",
-      "क्या सीता चाय नहीं बनाती है?"
+      "What does he play?",
+      "What he is playing?",
+      "What is he playing?",
+      "What do he play?"
     ],
     "answer": 2
   },
   {
     "id": "e44",
     "type": "mcq",
-    "question": "Translate to Hindi: \"Aren't the children eating fruits?\"",
+    "question": "Translate to Hindi: 'Where are the children playing?'",
     "options": [
-      "क्या बच्चे फल खाते हैं?",
-      "बच्चे फल नहीं खा रहे हैं।",
-      "क्या बच्चे फल नहीं खा रहे हैं?",
-      "क्या बच्चे फल नहीं खाते हैं?"
-    ],
-    "answer": 2
-  },
-  {
-    "id": "e45",
-    "type": "mcq",
-    "question": "Translate to Hindi: 'When do they go to the temple?'",
-    "options": [
-      "वे मंदिर कब जा रहे हैं?",
-      "वे मंदिर कब जाते हैं?",
-      "वे मंदिर कब नहीं जाते हैं?",
-      "क्या वे मंदिर कब जाते हैं?"
+      "बच्चे कहाँ खेलते हैं?",
+      "बच्चे कहाँ खेल रहे हैं?",
+      "बच्चे कहाँ नहीं खेल रहे हैं?",
+      "क्या बच्चे कहाँ खेल रहे हैं?"
     ],
     "answer": 1
   },
   {
+    "id": "e45",
+    "type": "mcq",
+    "question": "Fill in the blank: What ___ you writing?",
+    "options": ["do", "is", "does", "are"],
+    "answer": 3
+  },
+  {
     "id": "e46",
     "type": "mcq",
-    "question": "Translate to English: 'वे मंदिर नहीं जाते हैं।'",
+    "question": "Translate to English: 'वे कहाँ तैर रहे हैं?'",
     "options": [
-      "They are not going to the temple.",
-      "They does not go to the temple.",
-      "They not go to the temple.",
-      "They do not go to the temple."
+      "Where do they swim?",
+      "Where they are swimming?",
+      "Where are they swimming?",
+      "Where is they swimming?"
     ],
-    "answer": 3
+    "answer": 2
   },
   {
     "id": "e47",
     "type": "mcq",
-    "question": "Translate to English: 'किसान खेत में काम कर रहा है।'",
+    "question": "Translate to English: 'वह पत्र क्यों नहीं लिख रहा है?'",
     "options": [
-      "The farmer works in the field.",
-      "The farmer is work in the field.",
-      "The farmer is working in the field.",
-      "The farmer are working in the field."
+      "Why does he not write a letter?",
+      "Why he is not writing a letter?",
+      "Why is he not writing a letter?",
+      "Why do he not write a letter?"
     ],
     "answer": 2
   },
   {
     "id": "e48",
     "type": "mcq",
-    "question": "Translate to English: 'क्या किसान खेत में काम नहीं करता है?'",
+    "question": "Translate to Hindi: 'Why are the children not playing in the garden?'",
     "options": [
-      "Is the farmer not working in the field?",
-      "Doesn't the farmer work in the field?",
-      "Don't the farmer work in the field?",
-      "The farmer doesn't work in the field?"
+      "बच्चे बगीचे में क्यों खेल रहे हैं?",
+      "बच्चे बगीचे में क्यों नहीं खेल रहे हैं?",
+      "क्या बच्चे बगीचे में क्यों नहीं खेल रहे हैं?",
+      "बच्चे बगीचे में क्यों नहीं खेलते हैं?"
     ],
     "answer": 1
   },
   {
     "id": "e49",
     "type": "mcq",
-    "question": "Translate to English: 'क्या राम अखबार पढ़ रहा है?'",
-    "options": [
-      "Does Ram read a newspaper?",
-      "Is Ram reading a newspaper?",
-      "Are Ram reading a newspaper?",
-      "Ram is reading a newspaper?"
-    ],
-    "answer": 1
+    "question": "Fill in the blank: Why ___ you not baking a cake?",
+    "options": ["is", "does", "do", "are"],
+    "answer": 3
   },
   {
     "id": "e50",
     "type": "mcq",
-    "question": "Translate to English: 'सीता कपड़े कब नहीं धोती है?'",
+    "question": "Translate to English: 'वे नदी में क्यों नहीं तैर रहे हैं?'",
     "options": [
-      "When is Sita not washing clothes?",
-      "When Sita does not wash clothes?",
-      "When does Sita not wash clothes?",
-      "When do Sita not wash clothes?"
+      "Why do they not swim in the river?",
+      "Why they are not swimming in the river?",
+      "Why are they not swimming in the river?",
+      "Why is they not swimming in the river?"
     ],
     "answer": 2
   }
-]
+]s
