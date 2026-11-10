@@ -846,7 +846,7 @@ body {
 
 
 /* ============================================
-   STUDY PDF - immersive book reader with realistic page turning
+   STUDY PDF - immersive reader
    ============================================ */
 .icon-study-pdf { color: #ff7777; background: linear-gradient(135deg, rgba(255, 80, 80, 0.17), rgba(124, 77, 255, 0.16)); }
 #study-pdf-reader-view { min-height: 100dvh; overflow: hidden; }
@@ -856,123 +856,14 @@ body {
 .pdf-reader-nav { flex: 0 0 auto; min-height: 44px; display: flex; align-items: center; justify-content: space-between; gap: 12px; }
 .pdf-reader-nav .back-btn { margin: 0; flex: 0 0 auto; }
 .pdf-reader-book-title { min-width: 0; color: var(--text-primary); font-size: 14px; font-weight: 800; text-align: right; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.pdf-book-stage {
-    position: relative;
-    flex: 1 1 auto;
-    min-height: 0;
-    width: 100%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    overflow: hidden;
-    padding: 4px;
-    border: 1px solid rgba(67, 205, 235, .22);
-    border-radius: 15px;
-    background:
-        radial-gradient(ellipse at 50% 38%, rgba(20, 77, 103, .42), rgba(8, 16, 34, .96) 75%);
-    box-shadow:
-        inset 0 0 36px rgba(0,0,0,.28),
-        0 0 24px rgba(0, 210, 255, .06);
-    perspective: 2200px;
-}
-.pdf-book { position: relative; z-index: 1; width: 100%; height: 100%; margin: auto; }
-.pdf-book .stf__parent { margin: auto !important; }
-
-/* ====== REAL EBOOK PAGE FEEL ====== */
-.pdf-book-page {
-    position: relative;
-    overflow: hidden;
-    background: #f8f5ee;
-    color: #222;
-    border-radius: 3px;
-    box-shadow:
-        inset 0 0 10px rgba(0,0,0,.08),
-        inset 0 1px 0 rgba(255,255,255,.4);
-}
-.pdf-book-page canvas {
-    display: block;
-    width: 100%;
-    height: 100%;
-    object-fit: contain;
-    background: #f8f5ee;
-    position: relative;
-    z-index: 1;
-}
-/* Paper texture overlay */
-.pdf-book-page::before {
-    content: '';
-    position: absolute;
-    inset: 0;
-    background:
-        repeating-linear-gradient(
-            90deg,
-            rgba(0,0,0,0.012) 0px,
-            rgba(0,0,0,0.012) 1px,
-            transparent 1px,
-            transparent 3px
-        ),
-        repeating-linear-gradient(
-            0deg,
-            rgba(139,115,85,0.015) 0px,
-            rgba(139,115,85,0.015) 1px,
-            transparent 1px,
-            transparent 4px
-        );
-    pointer-events: none;
-    z-index: 2;
-    mix-blend-mode: multiply;
-    opacity: .6;
-}
-/* Subtle warm vignette for ebook warmth */
-.pdf-book-page::after {
-    content: '';
-    position: absolute;
-    inset: 0;
-    background: radial-gradient(ellipse at center, transparent 55%, rgba(120,80,40,0.06) 100%);
-    pointer-events: none;
-    z-index: 3;
-}
-/* Enhanced spine shadow — left page (shadow on right edge near spine) */
-.pdf-book-page.--left {
-    box-shadow:
-        inset -18px 0 24px -14px rgba(0,0,0,.55),
-        inset -2px 0 4px -1px rgba(0,0,0,.35),
-        inset 0 0 10px rgba(0,0,0,.08);
-}
-/* Enhanced spine shadow — right page (shadow on left edge near spine) */
-.pdf-book-page.--right {
-    box-shadow:
-        inset 18px 0 24px -14px rgba(0,0,0,.55),
-        inset 2px 0 4px -1px rgba(0,0,0,.35),
-        inset 0 0 10px rgba(0,0,0,.08);
-}
-/* Hard cover enhanced look */
-.pdf-book-page[data-density="hard"] {
-    background: linear-gradient(145deg, #3a2817, #1f1409);
-    box-shadow:
-        inset 0 0 60px rgba(0,0,0,.6),
-        inset 0 2px 0 rgba(255,255,255,.08),
-        0 8px 24px rgba(0,0,0,.4);
-}
 
 .pdf-book-loading { position: absolute; z-index: 4; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 12px; color: #dbeafe; background: rgba(8, 16, 34, .94); font-size: 13px; }
 .pdf-book-loading[hidden], .pdf-error[hidden] { display: none !important; }
 .pdf-book-loading i { color: #38bdf8; font-size: 30px; }
 .pdf-error { position: absolute; z-index: 6; inset: 20px; display: flex; align-items: center; justify-content: center; margin: auto; padding: 24px; max-width: 560px; color: #fecaca; text-align: center; line-height: 1.7; background: rgba(17,24,39,.96); border-radius: 14px; }
-.pdf-book-hint { position: absolute; z-index: 3; left: 50%; bottom: 12px; transform: translate(-50%, 8px); padding: 8px 13px; border: 1px solid rgba(255,255,255,.16); border-radius: 20px; color: #e8f4ff; background: rgba(7,15,30,.78); font-size: 11px; opacity: 0; pointer-events: none; transition: opacity .35s, transform .35s; white-space: nowrap; }
-.pdf-book-hint.visible { opacity: 1; transform: translate(-50%, 0); }
-@media (max-width: 600px) {
-  .pdf-reader-container { height: calc(100dvh - 78px); min-height: 360px; padding: 6px 8px 8px; gap: 6px; }
-  .pdf-reader-nav { min-height: 40px; }
-  .pdf-reader-nav .back-btn { padding: 9px 12px; font-size: 12px; }
-  .pdf-reader-book-title { font-size: 12px; }
-  .pdf-book-stage { padding: 2px; border-radius: 11px; }
-  .pdf-book-hint { bottom: 8px; font-size: 10px; }
-}
 
 /* ============================================
    SCROLL RESTORE + NATURAL TOUCH BEHAVIOUR
-   Keep document scrolling native on desktop and mobile.
    ============================================ */
 html {
     height: auto;
@@ -1012,77 +903,12 @@ body {
     touch-action: pan-y pinch-zoom;
 }
 
-/* The book itself owns touch gestures while the rest of the site stays scrollable. */
-#study-pdf-reader-view {
-    min-height: 100dvh;
-    overflow: hidden;
-    touch-action: pan-y pinch-zoom;
-}
-
-.pdf-book-stage,
-.pdf-book,
-.pdf-book .stf__parent,
-.pdf-book .stf__item {
-    touch-action: pan-y pinch-zoom;
-}
-
-.pdf-book-stage {
-    -webkit-user-select: none;
-    user-select: none;
-}
-
 @media (prefers-reduced-motion: reduce) {
     html { scroll-behavior: auto; }
     .page-view { animation-duration: 0.01ms; }
 }
 
-/* PDF-only zoom isolation: gestures inside the reader never zoom the website. */
-#study-pdf-reader-view .pdf-book-stage {
-    touch-action: none;
-    overscroll-behavior: contain;
-    -webkit-user-select: none;
-    user-select: none;
-}
-#study-pdf-reader-view .pdf-book {
-    transform: translateZ(0);
-    transform-origin: center center;
-    transition: transform 180ms cubic-bezier(.2,.75,.25,1);
-    will-change: transform;
-}
-#study-pdf-reader-view .pdf-book-stage.pdf-is-zoomed {
-    overflow: auto;
-    align-items: flex-start;
-    justify-content: flex-start;
-    cursor: zoom-in;
-}
-#study-pdf-reader-view .pdf-book-stage.pdf-is-zoomed .pdf-book {
-    flex: 0 0 auto;
-    margin: auto;
-}
-
-
-/* PDF fidelity + touch gesture isolation */
-#study-pdf-reader-view .pdf-book-page::before,
-#study-pdf-reader-view .pdf-book-page::after {
-    display: none !important; /* Do not tint or wash out the source PDF. */
-}
-#study-pdf-reader-view .pdf-book-page canvas {
-    opacity: 1 !important;
-    filter: none !important;
-    image-rendering: auto;
-    object-fit: fill;
-}
-#study-pdf-reader-view .pdf-book {
-    transition: none !important; /* Avoid delayed, temporarily soft zoom frames. */
-}
-#study-pdf-reader-view .pdf-book-stage,
-#study-pdf-reader-view .pdf-book,
-#study-pdf-reader-view .pdf-book .stf__parent,
-#study-pdf-reader-view .pdf-book .stf__item {
-    touch-action: none !important;
-}
-
-/* ===== PDF SCROLL READER: native vertical reading + selectable text ===== */
+/* ===== PDF SCROLL READER: Google-Drive-style smooth zoom ===== */
 #study-pdf-reader-view {
     min-height: 100dvh !important;
     height: auto !important;
@@ -1097,29 +923,55 @@ body {
     display: flex;
     flex-direction: column;
 }
+
+/* Toolbar with zoom controls */
 .pdf-toolbar {
     flex: 0 0 auto;
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: 9px;
-    min-height: 42px;
-    padding: 4px 8px;
+    gap: 6px;
+    min-height: 38px;
+    padding: 2px 8px;
     color: var(--text-primary);
 }
 .pdf-toolbar button {
-    min-width: 36px;
-    height: 34px;
-    padding: 0 10px;
-    border: 1px solid rgba(100, 190, 220, .3);
+    min-width: 34px;
+    height: 32px;
+    padding: 0 9px;
+    border: 1px solid rgba(100, 190, 220, .35);
     border-radius: 8px;
     color: #eaf6ff;
-    background: rgba(18, 43, 66, .88);
+    background: rgba(18, 43, 66, .9);
     cursor: pointer;
+    font-size: 13px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.2s, border-color 0.2s, transform 0.1s;
 }
-.pdf-toolbar button:active { transform: scale(.96); }
-#studyPdfZoomLabel { min-width: 48px; text-align: center; font-size: 12px; font-weight: 800; }
-.pdf-copy-hint { margin-left: 8px; color: var(--text-secondary, #9fb3c8); font-size: 11px; }
+.pdf-toolbar button:hover {
+    background: rgba(0, 229, 255, .18);
+    border-color: var(--primary);
+}
+.pdf-toolbar button:active {
+    transform: scale(.93);
+}
+#studyPdfZoomLabel {
+    min-width: 46px;
+    text-align: center;
+    font-size: 12px;
+    font-weight: 800;
+    color: var(--primary);
+    user-select: none;
+}
+.pdf-copy-hint {
+    margin-left: 8px;
+    color: var(--text-secondary, #9fb3c8);
+    font-size: 11px;
+}
+
+/* Scroll stage — native pan + pinch zoom allowed */
 .pdf-scroll-stage {
     display: block !important;
     flex: 1 1 auto;
@@ -1127,13 +979,16 @@ body {
     width: 100%;
     overflow: auto !important;
     padding: 14px 10px 32px !important;
-    border-radius: 12px;
+    border-radius: 0 !important;
+    border: 0 !important;
+    box-shadow: none !important;
     perspective: none !important;
     overscroll-behavior: contain;
     -webkit-overflow-scrolling: touch;
-    touch-action: pan-x pan-y !important; /* Native vertical scroll; JS handles pinch zoom. */
-    background: rgba(8, 16, 34, .92) !important;
+    touch-action: pan-x pan-y pinch-zoom !important; /* Allow both scroll + pinch */
+    background: #343a40 !important;
 }
+
 .pdf-scroll-document {
     width: max-content;
     min-width: 100%;
@@ -1143,22 +998,31 @@ body {
     align-items: center;
     gap: 14px;
 }
+
+/* SMOOTH ZOOM: Transition on resize for Google-Drive feel */
 .pdf-scroll-page {
     position: relative;
     flex: 0 0 auto;
     overflow: hidden;
-    background: #fff;
-    border-radius: 0;
-    box-shadow: none;
+    background: #fff !important;
+    border-radius: 0 !important;
+    box-shadow: none !important;
     isolation: isolate;
+    transition: width 0.18s ease-out, height 0.18s ease-out;
+    will-change: width, height;
 }
+
 .pdf-scroll-canvas {
     position: absolute;
     inset: 0;
     display: block;
     max-width: none;
-    background: #fff;
+    background: #fff !important;
+    opacity: 1 !important;
+    filter: none !important;
+    transition: width 0.18s ease-out, height 0.18s ease-out;
 }
+
 .pdf-scroll-page .textLayer {
     position: absolute;
     inset: 0;
@@ -1174,6 +1038,7 @@ body {
     user-select: text !important;
     -webkit-user-select: text !important;
     cursor: text;
+    transition: width 0.18s ease-out, height 0.18s ease-out;
 }
 .pdf-scroll-page .textLayer span,
 .pdf-scroll-page .textLayer br {
@@ -1184,40 +1049,22 @@ body {
     cursor: text;
 }
 .pdf-scroll-page .textLayer ::selection { background: rgba(65, 145, 255, .35); }
+
 .pdf-book-loading { position: sticky; top: 0; min-height: 100%; }
+
 @media (max-width: 600px) {
     #study-pdf-reader-view .pdf-reader-container {
         height: calc(100dvh - 76px);
         min-height: 360px;
         padding: 6px 7px 8px;
     }
-    .pdf-toolbar { gap: 6px; min-height: 40px; }
-    .pdf-toolbar button { min-width: 32px; height: 32px; padding: 0 8px; }
-    .pdf-copy-hint { font-size: 10px; margin-left: 2px; }
+    .pdf-reader-nav { min-height: 40px; }
+    .pdf-reader-nav .back-btn { padding: 9px 12px; font-size: 12px; }
+    .pdf-reader-book-title { font-size: 12px; }
+    .pdf-toolbar { gap: 5px; min-height: 36px; }
+    .pdf-toolbar button { min-width: 32px; height: 30px; padding: 0 7px; }
+    .pdf-copy-hint { display: none; } /* Hide on mobile to save space */
+    #studyPdfZoomLabel { min-width: 40px; font-size: 11px; }
     .pdf-scroll-stage { padding: 10px 5px 24px !important; }
     .pdf-scroll-document { gap: 10px; }
-}
-
-
-/* Flat document presentation: no ebook paper texture, page shadow, or zoom buttons. */
-#study-pdf-reader-view .pdf-scroll-stage {
-    border: 0 !important;
-    border-radius: 0 !important;
-    box-shadow: none !important;
-    background: #343a40 !important;
-}
-#study-pdf-reader-view .pdf-scroll-page {
-    border: 0 !important;
-    border-radius: 0 !important;
-    box-shadow: none !important;
-    background: #fff !important;
-}
-#study-pdf-reader-view .pdf-scroll-canvas {
-    background: #fff !important;
-    opacity: 1 !important;
-    filter: none !important;
-}
-#study-pdf-reader-view .pdf-toolbar {
-    min-height: 26px;
-    padding: 0 4px;
 }
