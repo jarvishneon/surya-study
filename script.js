@@ -983,6 +983,10 @@ function updateWorksheetActivePage() {
 function handleWorksheetKeyboardNavigation(event) {
     var view = document.getElementById("worksheets-reader-view");
     if (!view || !view.classList.contains("active")) return;
+    if (event.key === "Escape" && view.classList.contains("worksheet-fullscreen")) {
+        toggleWorksheetFullscreen(true);
+        return;
+    }
     if (event.target && /INPUT|TEXTAREA|SELECT/.test(event.target.tagName)) return;
     if (["ArrowDown", "PageDown", "ArrowUp", "PageUp"].indexOf(event.key) === -1) return;
     var pages = document.querySelectorAll(".worksheet-image-page");
@@ -1056,7 +1060,37 @@ function searchWorksheetPage() {
     }
 }
 
+function toggleWorksheetFullscreen(forceExit) {
+    var view = document.getElementById("worksheets-reader-view");
+    var button = document.getElementById("worksheetFullscreenToggle");
+    if (!view) return;
+
+    var shouldExit = typeof forceExit === "boolean" ? forceExit : view.classList.contains("worksheet-fullscreen");
+    if (shouldExit) {
+        view.classList.remove("worksheet-fullscreen");
+        if (document.fullscreenElement && document.exitFullscreen) {
+            document.exitFullscreen().catch(function () {});
+        }
+    } else {
+        view.classList.add("worksheet-fullscreen");
+        if (view.requestFullscreen) {
+            var request = view.requestFullscreen();
+            if (request && typeof request.catch === "function") request.catch(function () { /* CSS full-screen fallback remains active. */ });
+        }
+    }
+
+    if (button) {
+        var active = view.classList.contains("worksheet-fullscreen");
+        button.setAttribute("aria-pressed", active ? "true" : "false");
+        button.setAttribute("aria-label", active ? "Exit full screen" : "Open full screen");
+        button.title = active ? "Exit full screen" : "Open full screen";
+        button.innerHTML = active ? '<i class="fa-solid fa-compress"></i>' : '<i class="fa-solid fa-expand"></i>';
+    }
+    requestAnimationFrame(function () { updateWorksheetZoomLabel(); updateWorksheetActivePage(); });
+}
+
 function backFromWorksheets() {
+    toggleWorksheetFullscreen(true);
     switchSubView(currentWorksheetParentView || "worksheets-competitive-view");
 }
 
@@ -1064,10 +1098,31 @@ function bindWorksheetControls() {
     var minus = document.getElementById("worksheetZoomOut");
     var plus = document.getElementById("worksheetZoomIn");
     var search = document.getElementById("worksheetSearch");
+    var fullscreen = document.getElementById("worksheetFullscreenToggle");
+    if (fullscreen && !fullscreen.dataset.bound) {
+        fullscreen.dataset.bound = "1";
+        fullscreen.addEventListener("click", function () { toggleWorksheetFullscreen(); });
+    }
     if (minus && !minus.dataset.bound) { minus.dataset.bound = "1"; minus.addEventListener("click", function () { changeWorksheetZoom(-0.1); }); }
     if (plus && !plus.dataset.bound) { plus.dataset.bound = "1"; plus.addEventListener("click", function () { changeWorksheetZoom(0.1); }); }
     if (search && !search.dataset.bound) { search.dataset.bound = "1"; search.addEventListener("keydown", function (e) { if (e.key === "Enter") searchWorksheetPage(); }); }
-    var stage = document.getElementById("worksheetsReaderStage");
+    var view = document.getElementById("worksheets-reader-view");
+    if (view && !view.dataset.fullscreenBound) {
+        view.dataset.fullscreenBound = "1";
+        document.addEventListener("fullscreenchange", function () {
+            if (!document.fullscreenElement && view.classList.contains("worksheet-fullscreen")) {
+                view.classList.remove("worksheet-fullscreen");
+                var button = document.getElementById("worksheetFullscreenToggle");
+                if (button) {
+                    button.setAttribute("aria-pressed", "false");
+                    button.setAttribute("aria-label", "Open full screen");
+                    button.title = "Open full screen";
+                    button.innerHTML = '<i class="fa-solid fa-expand"></i>';
+                }
+                requestAnimationFrame(function () { updateWorksheetZoomLabel(); updateWorksheetActivePage(); });
+            }
+        });
+    }
     if (stage && !stage.dataset.resizeBound) {
         stage.dataset.resizeBound = "1";
         window.addEventListener("resize", updateWorksheetZoomLabel, { passive: true });

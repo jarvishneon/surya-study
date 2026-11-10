@@ -1054,6 +1054,32 @@ body {
 .worksheet-state i { font-size:28px; color:var(--primary,#53d7f5); }
 .worksheet-state strong { color:#edf8ff; font-size:15px; }
 .worksheet-state span { max-width:440px; line-height:1.6; }
+/* Full-screen worksheet reader: preserves the existing image list, scroll and zoom logic. */
+#worksheets-reader-view.worksheet-fullscreen {
+    position:fixed !important; inset:0 !important; z-index:99999 !important;
+    width:100vw !important; height:100dvh !important; min-height:0 !important;
+    overflow:hidden !important; background:#020812 !important;
+    padding:env(safe-area-inset-top) 0 env(safe-area-inset-bottom) !important;
+    box-sizing:border-box !important;
+}
+#worksheets-reader-view.worksheet-fullscreen .dashboard-topbar,
+#worksheets-reader-view.worksheet-fullscreen .worksheets-reader-nav { display:none !important; }
+#worksheets-reader-view.worksheet-fullscreen .worksheets-reader-container {
+    width:100% !important; max-width:none !important; height:100% !important; min-height:0 !important;
+    padding:0 !important; margin:0 !important;
+}
+#worksheets-reader-view.worksheet-fullscreen .worksheets-toolbar {
+    border-radius:0 !important; padding:8px 10px !important;
+    padding-top:max(8px, env(safe-area-inset-top)) !important;
+}
+#worksheets-reader-view.worksheet-fullscreen .worksheet-search-wrap { display:none !important; }
+#worksheets-reader-view.worksheet-fullscreen .worksheets-reader-stage {
+    flex:1 1 auto !important; min-height:0 !important; height:auto !important;
+    border-radius:0 !important; padding:12px 8px max(18px, env(safe-area-inset-bottom)) !important;
+}
+#worksheets-reader-view.worksheet-fullscreen .worksheet-image-page { scroll-margin-top:8px; }
+#worksheetFullscreenToggle { min-width:38px !important; font-size:15px; }
+
 @media(max-width:600px) {
     #worksheets-reader-view .worksheets-reader-container { height:calc(100dvh - 72px); min-height:360px; padding:0 7px 8px; }
     .worksheets-reader-nav { gap:7px; min-height:44px; }
