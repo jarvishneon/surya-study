@@ -834,12 +834,25 @@ function restorePortalPageState(studentName) {
 }
 
 /* -------------- WORKSHEETS IMAGE READER -------------- */
-async function loadWorksheetManifest() {
-    if (worksheetManifest) return worksheetManifest;
-    var response = await fetch("worksheets.json", { cache: "no-store" });
-    if (!response.ok) throw new Error("worksheets.json could not be loaded (HTTP " + response.status + ")");
+async function loadWorksheetManifest(forceRefresh) {
+    if (worksheetManifest && !forceRefresh) return worksheetManifest;
+
+    // Cache-busting ensures the latest auto-generated manifest is requested.
+    var manifestUrl = "worksheets.json?v=" + Date.now();
+    var response = await fetch(manifestUrl, {
+        cache: "no-store",
+        headers: { "Cache-Control": "no-cache" }
+    });
+
+    if (!response.ok) {
+        throw new Error("worksheets.json could not be loaded (HTTP " + response.status + ")");
+    }
+
     var data = await response.json();
-    if (!data || typeof data !== "object") throw new Error("Invalid worksheets.json format");
+    if (!data || typeof data !== "object" || Array.isArray(data)) {
+        throw new Error("Invalid worksheets.json format");
+    }
+
     worksheetManifest = data;
     return data;
 }
@@ -898,7 +911,7 @@ async function openWorksheets(category, subject, title, isRestore, restoreData) 
         loading.hidden = true;
         if (!pages.length) {
             empty.hidden = false;
-            empty.innerHTML = '<i class="fa-regular fa-images"></i><strong>Worksheets coming soon</strong><span>Is subject ke images abhi worksheets.json mein add nahi kiye gaye hain.</span>';
+            empty.innerHTML = '<i class="fa-regular fa-images"></i><strong>Worksheets coming soon</strong><span>Is folder mein abhi koi worksheet image nahi mili. GitHub par image upload karne ke baad automatic update ka wait karein.</span>';
             updateWorksheetPageCount(0);
             savePortalPageState();
             return;
