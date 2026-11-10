@@ -84,18 +84,15 @@ function activateDashboard(studentName) {
 
     var initial = studentName.charAt(0).toUpperCase();
 
-    // Update profile circles
     ["profileInitial", "profileInitial2", "profileInitial3", "profileInitial4", "profileInitial5"].forEach(function (id) {
         var el = document.getElementById(id);
         if (el) el.innerText = initial;
     });
 
-    // Update dropdown avatars
     document.querySelectorAll(".dropdown-avatar").forEach(function (el) {
         el.innerText = initial;
     });
 
-    // Update greeting
     var greetEl = document.getElementById("greetingText");
     if (greetEl) greetEl.innerText = getGreeting();
 
@@ -210,11 +207,21 @@ var studyPdfZoom = 1;
 var studyPdfPageInfo = [];
 var studyPdfObserver = null;
 var studyPdfActiveRenders = {};
-var studyPdfTouchStartDistance = 0;
-var studyPdfTouchStartZoom = 1;
-var studyPdfTouchPreviewZoom = 1;
 var studyPdfRenderDebounce = null;
 var studyPdfIsPinching = false;
+
+// Pinch state (new focal-locked system)
+var pinchState = {
+    active: false,
+    startDist: 0,
+    startZoom: 1,
+    startContentX: 0,  // content point under pinch center at start
+    startContentY: 0,
+    rafId: null,
+    pendingZoom: 1,
+    pendingCenterX: 0,
+    pendingCenterY: 0
+};
 
 function openStudyPdf(pdfPath, title) {
     var titleEl = document.getElementById("studyPdfTitle");
@@ -297,7 +304,6 @@ function buildStudyPdfScrollDocument(pdf, token) {
         loading.hidden = true;
         setupStudyPdfPageObserver(token);
         bindStudyPdfScrollZoom(stage, token);
-        // Render the first page immediately; remaining pages render as they enter view.
         renderStudyPdfScrollPage(1, token);
     }).catch(function(error) {
         if (token !== studyPdfLoadToken) return;
@@ -348,8 +354,6 @@ function renderStudyPdfScrollPage(pageNumber, token) {
     var cssViewport = info.page.getViewport({ scale: cssScale });
     wrapper.style.width = Math.ceil(cssViewport.width) + "px";
     wrapper.style.height = Math.ceil(cssViewport.height) + "px";
-    // Render off-screen first. Keep the previous bitmap visible until the new
-    // high-resolution render completes, avoiding the black flash during zoom.
     var stagingCanvas = document.createElement("canvas");
     stagingCanvas.width = Math.ceil(viewport.width);
     stagingCanvas.height = Math.ceil(viewport.height);
@@ -393,6 +397,7 @@ function renderStudyPdfScrollPage(pageNumber, token) {
     });
 }
 
+// Zoom via buttons/wheel — with CSS transition
 function setStudyPdfZoom(value, focalX, focalY, instant) {
     var next = Math.max(0.5, Math.min(4, Math.round(value * 100) / 100));
     if (Math.abs(next - studyPdfZoom) < 0.005 || !studyPdfDocument) return;
@@ -407,7 +412,6 @@ function setStudyPdfZoom(value, focalX, focalY, instant) {
     studyPdfZoom = next;
     updateStudyPdfZoomLabel();
 
-    // Update CSS sizes — CSS transition on .pdf-scroll-page handles smooth animation
     var pages = document.querySelectorAll("#studyPdfBook .pdf-scroll-page");
     pages.forEach(function(wrapper) {
         var n = Number(wrapper.dataset.pageNumber);
@@ -430,7 +434,6 @@ function setStudyPdfZoom(value, focalX, focalY, instant) {
         }
     });
 
-    // Keep the exact point under the user's fingers stationary while zooming.
     if (stage) {
         requestAnimationFrame(function() {
             stage.scrollLeft = Math.max(0, contentX * ratio - localX);
@@ -438,7 +441,6 @@ function setStudyPdfZoom(value, focalX, focalY, instant) {
         });
     }
 
-    // Debounced re-render: wait for CSS transition to finish, then render sharp pages
     if (studyPdfRenderDebounce) clearTimeout(studyPdfRenderDebounce);
     var delay = instant ? 60 : 200;
     studyPdfRenderDebounce = setTimeout(function() {
@@ -478,9 +480,8 @@ function bindStudyPdfZoomButtons() {
 function bindStudyPdfScrollZoom(stage, token) {
     if (!stage || stage.dataset.scrollZoomBound === "true") return;
     stage.dataset.scrollZoomBound = "true";
-    var pinchCenterX = 0, pinchCenterY = 0;
 
-    // Ctrl+Wheel — ultra fine steps for butter smooth zoom
+    // ===== Ctrl+Wheel zoom =====
     stage.addEventListener("wheel", function(event) {
         if (!event.ctrlKey && !event.metaKey) return;
         event.preventDefault();
@@ -488,64 +489,153 @@ function bindStudyPdfScrollZoom(stage, token) {
         setStudyPdfZoom(studyPdfZoom * factor, event.clientX, event.clientY, false);
     }, { passive: false });
 
-    // Pinch — GPU transform preview (no layout thrash = butter smooth)
+    // ===== PINCH ZOOM — Focal-locked, GPU accelerated, buttery smooth =====
+    // Approach: Use CSS transform on #studyPdfBook during pinch, calculated
+    // such that the content point under the pinch center stays EXACTLY under
+    // the fingers at all times. On release, bake the transform into real
+    // layout (width/height + scroll position).
+
+    function getPinchData(touches) {
+        var a = touches[0], b = touches[1];
+        return {
+            dist: Math.hypot(a.clientX - b.clientX, a.clientY - b.clientY),
+            cx: (a.clientX + b.clientX) / 2,
+            cy: (a.clientY + b.clientY) / 2
+        };
+    }
+
     stage.addEventListener("touchstart", function(event) {
         if (event.touches.length === 2) {
-            var a = event.touches[0], b = event.touches[1];
-            studyPdfTouchStartDistance = Math.hypot(a.clientX - b.clientX, a.clientY - b.clientY);
-            studyPdfTouchStartZoom = studyPdfZoom;
-            studyPdfTouchPreviewZoom = studyPdfZoom;
+            event.preventDefault();
+            var p = getPinchData(event.touches);
+            var stageRect = stage.getBoundingClientRect();
+            var localX = p.cx - stageRect.left;
+            var localY = p.cy - stageRect.top;
+
+            pinchState.active = true;
             studyPdfIsPinching = true;
-            pinchCenterX = (a.clientX + b.clientX) / 2;
-            pinchCenterY = (a.clientY + b.clientY) / 2;
-        }
-    }, { passive: true });
+            pinchState.startDist = p.dist;
+            pinchState.startZoom = studyPdfZoom;
+            // Store the CONTENT coordinate under the pinch center (unscaled by current zoom)
+            pinchState.startContentX = stage.scrollLeft + localX;
+            pinchState.startContentY = stage.scrollTop + localY;
+            pinchState.pendingZoom = studyPdfZoom;
+            pinchState.pendingCenterX = p.cx;
+            pinchState.pendingCenterY = p.cy;
 
-    stage.addEventListener("touchmove", function(event) {
-        if (event.touches.length !== 2 || !studyPdfTouchStartDistance) return;
-        event.preventDefault();
-        var a = event.touches[0], b = event.touches[1];
-        var distance = Math.hypot(a.clientX - b.clientX, a.clientY - b.clientY);
-        studyPdfTouchPreviewZoom = Math.max(0.5, Math.min(4,
-            studyPdfTouchStartZoom * distance / studyPdfTouchStartDistance));
-        pinchCenterX = (a.clientX + b.clientX) / 2;
-        pinchCenterY = (a.clientY + b.clientY) / 2;
-
-        // GPU-accelerated transform = 60fps smooth, no layout recalc
-        var book = document.getElementById("studyPdfBook");
-        if (book) {
-            var rect = book.getBoundingClientRect();
-            book.style.transformOrigin =
-                (pinchCenterX - rect.left) + "px " + (pinchCenterY - rect.top) + "px";
-            book.style.transform = "scale(" + (studyPdfTouchPreviewZoom / studyPdfZoom) + ")";
+            // Kill transitions on book during pinch — we drive with transform
+            var book = document.getElementById("studyPdfBook");
+            if (book) {
+                book.style.transition = "none";
+                book.style.transformOrigin = "0 0";
+            }
         }
     }, { passive: false });
 
-    function finishPinch() {
-        if (!studyPdfTouchStartDistance) return;
-        var finalZoom = studyPdfTouchPreviewZoom;
-        studyPdfTouchStartDistance = 0;
-        studyPdfIsPinching = false;
+    stage.addEventListener("touchmove", function(event) {
+        if (!pinchState.active || event.touches.length !== 2) return;
+        event.preventDefault();
+        var p = getPinchData(event.touches);
+        if (pinchState.startDist < 1) return;
 
-        // Step 1: Kill CSS transitions temporarily (no visual jump)
+        var newZoom = Math.max(0.5, Math.min(4,
+            pinchState.startZoom * (p.dist / pinchState.startDist)));
+
+        pinchState.pendingZoom = newZoom;
+        pinchState.pendingCenterX = p.cx;
+        pinchState.pendingCenterY = p.cy;
+
+        // Throttle to animation frame for 60fps smoothness
+        if (pinchState.rafId) return;
+        pinchState.rafId = requestAnimationFrame(function() {
+            pinchState.rafId = null;
+            applyPinchTransform();
+        });
+    }, { passive: false });
+
+    function applyPinchTransform() {
+        var book = document.getElementById("studyPdfBook");
+        if (!book || !pinchState.active) return;
+
+        var scaleRatio = pinchState.pendingZoom / pinchState.startZoom;
+        var stageRect = stage.getBoundingClientRect();
+        var localX = pinchState.pendingCenterX - stageRect.left;
+        var localY = pinchState.pendingCenterY - stageRect.top;
+
+        // Math: We want the content point (startContentX, startContentY) to appear
+        // at screen position (localX, localY) after scaling.
+        // After scale with origin (0,0):
+        //   screen_x = (contentX * scaleRatio) - scrollLeft + translateX
+        // We want screen_x = localX, keeping scrollLeft constant (frozen at start):
+        //   translateX = localX + scrollLeft - (contentX * scaleRatio)
+        var tx = localX - (pinchState.startContentX * scaleRatio) + stage.scrollLeft;
+        var ty = localY - (pinchState.startContentY * scaleRatio) + stage.scrollTop;
+
+        // But scrollLeft may have shifted during pinch — lock it to start value
+        // by using the diff. Actually simpler: freeze scroll during pinch.
+        book.style.transform = "translate3d(" + tx + "px, " + ty + "px, 0) scale(" + scaleRatio + ")";
+    }
+
+    function finishPinch() {
+        if (!pinchState.active) return;
+        pinchState.active = false;
+        studyPdfIsPinching = false;
+        if (pinchState.rafId) { cancelAnimationFrame(pinchState.rafId); pinchState.rafId = null; }
+
+        var book = document.getElementById("studyPdfBook");
+        var finalZoom = pinchState.pendingZoom;
+        var scaleRatio = finalZoom / pinchState.startZoom;
+        var stageRect = stage.getBoundingClientRect();
+        var localX = pinchState.pendingCenterX - stageRect.left;
+        var localY = pinchState.pendingCenterY - stageRect.top;
+
+        // Calculate target scroll position so content point stays under finger
+        var targetScrollLeft = (pinchState.startContentX * scaleRatio) - localX;
+        var targetScrollTop = (pinchState.startContentY * scaleRatio) - localY;
+
+        // Remove transform
+        if (book) {
+            book.style.transform = "";
+            book.style.transformOrigin = "";
+        }
+
+        // Apply real zoom (resize pages)
+        var oldZoom = studyPdfZoom;
+        studyPdfZoom = Math.max(0.5, Math.min(4, Math.round(finalZoom * 100) / 100));
+        updateStudyPdfZoomLabel();
+
         var pages = document.querySelectorAll("#studyPdfBook .pdf-scroll-page");
-        pages.forEach(function(w) {
-            w.style.transition = "none";
-            var c = w.querySelector("canvas");
-            if (c) c.style.transition = "none";
-            var t = w.querySelector(".textLayer");
-            if (t) t.style.transition = "none";
+        pages.forEach(function(wrapper) {
+            var n = Number(wrapper.dataset.pageNumber);
+            var info = studyPdfPageInfo[n];
+            if (info) {
+                var newW = Math.ceil(info.width * info.fitScale * studyPdfZoom);
+                var newH = Math.ceil(info.height * info.fitScale * studyPdfZoom);
+                // Kill transition for instant resize (no visual jump)
+                wrapper.style.transition = "none";
+                wrapper.style.width = newW + "px";
+                wrapper.style.height = newH + "px";
+                var canvas = wrapper.querySelector("canvas");
+                if (canvas) {
+                    canvas.style.transition = "none";
+                    canvas.style.width = newW + "px";
+                    canvas.style.height = newH + "px";
+                }
+                var textLayer = wrapper.querySelector(".textLayer");
+                if (textLayer) {
+                    textLayer.style.transition = "none";
+                    textLayer.style.width = newW + "px";
+                    textLayer.style.height = newH + "px";
+                }
+            }
         });
 
-        // Step 2: Remove transform
-        var book = document.getElementById("studyPdfBook");
-        if (book) { book.style.transform = ""; book.style.transformOrigin = ""; }
-
-        // Step 3: Apply real zoom instantly (matches the visual transform size)
-        setStudyPdfZoom(finalZoom, pinchCenterX, pinchCenterY, true);
-
-        // Step 4: Re-enable transitions after browser paints
+        // Set scroll to keep focal point locked
         requestAnimationFrame(function() {
+            stage.scrollLeft = Math.max(0, targetScrollLeft);
+            stage.scrollTop = Math.max(0, targetScrollTop);
+
+            // Restore transitions after paint
             requestAnimationFrame(function() {
                 pages.forEach(function(w) {
                     w.style.transition = "";
@@ -556,17 +646,42 @@ function bindStudyPdfScrollZoom(stage, token) {
                 });
             });
         });
+
+        // Debounced re-render for sharp pages
+        if (studyPdfRenderDebounce) clearTimeout(studyPdfRenderDebounce);
+        studyPdfRenderDebounce = setTimeout(function() {
+            studyPdfRenderDebounce = null;
+            var tk = studyPdfLoadToken;
+            pages.forEach(function(wrapper) {
+                var n = Number(wrapper.dataset.pageNumber);
+                wrapper.dataset.rendered = "false";
+                var oldTask = studyPdfActiveRenders[n];
+                if (oldTask && oldTask.cancel) {
+                    wrapper.dataset.renderPending = "true";
+                    try { oldTask.cancel(); } catch (e) {}
+                }
+                var r = wrapper.getBoundingClientRect();
+                var sr = stage.getBoundingClientRect();
+                if (r.bottom >= sr.top - 700 && r.top <= sr.bottom + 700) {
+                    renderStudyPdfScrollPage(n, tk);
+                }
+            });
+        }, 120);
     }
 
     stage.addEventListener("touchend", function(event) {
-        if (event.touches.length < 2) finishPinch();
+        if (event.touches.length < 2 && pinchState.active) finishPinch();
     }, { passive: true });
-    stage.addEventListener("touchcancel", finishPinch, { passive: true });
+    stage.addEventListener("touchcancel", function() {
+        if (pinchState.active) finishPinch();
+    }, { passive: true });
 }
 
 function cleanupStudyPdfResources() {
     if (studyPdfRenderDebounce) { clearTimeout(studyPdfRenderDebounce); studyPdfRenderDebounce = null; }
     studyPdfIsPinching = false;
+    pinchState.active = false;
+    if (pinchState.rafId) { cancelAnimationFrame(pinchState.rafId); pinchState.rafId = null; }
     if (studyPdfObserver) { studyPdfObserver.disconnect(); studyPdfObserver = null; }
     Object.keys(studyPdfActiveRenders).forEach(function(key) {
         var task = studyPdfActiveRenders[key];
@@ -830,7 +945,6 @@ function initPortal() {
         if (isChatOpen) pollChat(true);
     });
 
-    // Update greeting every minute
     setInterval(function () {
         var greetEl = document.getElementById("greetingText");
         if (greetEl && document.getElementById("dashboard-view").classList.contains("active")) {
