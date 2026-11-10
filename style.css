@@ -1036,16 +1036,16 @@ body {
     border:1px solid rgba(110,190,230,.14); border-top:0; border-radius:0 0 14px 14px;
     background:rgba(2,8,18,.86);
 }
-.worksheets-reader-list { width:100%; max-width:900px; margin:0 auto; display:flex; flex-direction:column; align-items:center; gap:18px; --worksheet-zoom:1; }
+.worksheets-reader-list { width:100%; max-width:none; margin:0 auto; display:flex; flex-direction:column; align-items:center; gap:18px; --worksheet-zoom:1; }
 .worksheet-image-page {
-    width:100%; display:flex; flex-direction:column; align-items:center; gap:7px;
+    width:100%; box-sizing:border-box; display:flex; flex:0 0 auto; flex-direction:column; align-items:center; gap:7px;
     padding:8px; border:1px solid rgba(125,190,220,.13); border-radius:10px;
     background:rgba(13,25,42,.92); box-shadow:0 12px 34px rgba(0,0,0,.22); scroll-margin-top:12px;
     transition:border-color .2s, box-shadow .2s;
 }
 .worksheet-image-label { width:100%; color:rgba(200,225,242,.7); font-size:11px; text-align:left; overflow-wrap:anywhere; }
 .worksheet-image-page img {
-    display:block; width:100%; max-width:none; height:auto;
+    display:block; flex:0 0 auto; width:100%; max-width:none; height:auto;
     object-fit:contain; border-radius:4px; user-select:none; -webkit-user-drag:none;
 }
 .worksheet-search-hit { border-color:rgba(0,220,255,.9); box-shadow:0 0 0 2px rgba(0,220,255,.2),0 0 28px rgba(0,220,255,.2); }
