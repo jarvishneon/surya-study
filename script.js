@@ -254,6 +254,7 @@ var pinchState = {
 };
 
 function openStudyPdf(pdfPath, title, isRestore, restoreData) {
+    toggleStudyPdfFullscreen(true);
     var titleEl = document.getElementById("studyPdfTitle");
     var bookEl = document.getElementById("studyPdfBook");
     var loadingEl = document.getElementById("studyPdfLoading");
@@ -523,9 +524,64 @@ function bindStudyPdfZoomButtons() {
     var plus = document.getElementById("studyPdfZoomIn");
     var minus = document.getElementById("studyPdfZoomOut");
     var fit = document.getElementById("studyPdfFit");
+    var fullscreen = document.getElementById("studyPdfFullscreenToggle");
     if (plus && plus.dataset.bound !== "true") { plus.dataset.bound = "true"; plus.addEventListener("click", function() { setStudyPdfZoom(studyPdfZoom + 0.12); }); }
     if (minus && minus.dataset.bound !== "true") { minus.dataset.bound = "true"; minus.addEventListener("click", function() { setStudyPdfZoom(studyPdfZoom - 0.12); }); }
     if (fit && fit.dataset.bound !== "true") { fit.dataset.bound = "true"; fit.addEventListener("click", function() { setStudyPdfZoom(1); }); }
+    if (fullscreen && fullscreen.dataset.bound !== "true") {
+        fullscreen.dataset.bound = "true";
+        fullscreen.addEventListener("click", function() { toggleStudyPdfFullscreen(); });
+    }
+    var view = document.getElementById("study-pdf-reader-view");
+    if (view && view.dataset.fullscreenBound !== "true") {
+        view.dataset.fullscreenBound = "true";
+        document.addEventListener("fullscreenchange", function() {
+            if (!document.fullscreenElement && view.classList.contains("pdf-fullscreen")) setStudyPdfFullscreenState(false);
+        });
+        document.addEventListener("keydown", function(event) {
+            if (event.key === "Escape" && view.classList.contains("pdf-fullscreen") && !document.fullscreenElement) setStudyPdfFullscreenState(false);
+        });
+    }
+}
+
+function setStudyPdfFullscreenState(active) {
+    var view = document.getElementById("study-pdf-reader-view");
+    var button = document.getElementById("studyPdfFullscreenToggle");
+    if (!view) return;
+    view.classList.toggle("pdf-fullscreen", !!active);
+    if (button) {
+        button.setAttribute("aria-pressed", active ? "true" : "false");
+        button.setAttribute("aria-label", active ? "Exit full screen" : "Open full screen");
+        button.title = active ? "Exit full screen" : "Open full screen";
+        button.innerHTML = active ? '<i class="fa-solid fa-compress"></i>' : '<i class="fa-solid fa-expand"></i>';
+    }
+    requestAnimationFrame(function() {
+        var token = studyPdfLoadToken;
+        document.querySelectorAll("#studyPdfBook .pdf-scroll-page").forEach(function(wrapper) {
+            var n = Number(wrapper.dataset.pageNumber);
+            if (wrapper.dataset.rendered !== "true") renderStudyPdfScrollPage(n, token);
+        });
+        savePortalPageState();
+    });
+}
+
+function toggleStudyPdfFullscreen(forceExit) {
+    var view = document.getElementById("study-pdf-reader-view");
+    if (!view) return;
+    var shouldExit = typeof forceExit === "boolean" ? forceExit : view.classList.contains("pdf-fullscreen");
+    if (shouldExit) {
+        setStudyPdfFullscreenState(false);
+        if (document.fullscreenElement && document.exitFullscreen) {
+            var exitResult = document.exitFullscreen();
+            if (exitResult && exitResult.catch) exitResult.catch(function() {});
+        }
+    } else {
+        setStudyPdfFullscreenState(true);
+        if (view.requestFullscreen) {
+            var requestResult = view.requestFullscreen();
+            if (requestResult && requestResult.catch) requestResult.catch(function() { /* CSS full-screen fallback remains active. */ });
+        }
+    }
 }
 
 function bindStudyPdfScrollZoom(stage, token) {
@@ -738,6 +794,7 @@ function showStudyPdfError(message) {
 }
 
 function backFromStudyPdf() {
+    toggleStudyPdfFullscreen(true);
     studyPdfLoadToken++;
     cleanupStudyPdfResources();
     var bookEl = document.getElementById("studyPdfBook");

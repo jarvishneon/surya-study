@@ -1091,3 +1091,31 @@ body {
     .worksheets-reader-stage { padding:9px 5px 20px; }
     .worksheet-image-page { padding:5px; gap:5px; }
 }
+
+
+/* PDF full-screen reader: keep the PDF.js canvas/text layers and native scroll/zoom engine. */
+#study-pdf-reader-view.pdf-fullscreen {
+    position:fixed !important; inset:0 !important; z-index:100000 !important;
+    width:100vw !important; height:100dvh !important; min-height:0 !important;
+    overflow:hidden !important; background:#020812 !important;
+    padding:env(safe-area-inset-top) 0 env(safe-area-inset-bottom) !important;
+    box-sizing:border-box !important;
+}
+#study-pdf-reader-view.pdf-fullscreen .pdf-reader-topbar,
+#study-pdf-reader-view.pdf-fullscreen .pdf-reader-nav { display:none !important; }
+#study-pdf-reader-view.pdf-fullscreen .pdf-reader-container {
+    width:100% !important; max-width:none !important; height:100% !important;
+    min-height:0 !important; padding:0 !important; margin:0 !important; gap:0 !important;
+}
+#study-pdf-reader-view.pdf-fullscreen .pdf-toolbar {
+    min-height:42px !important; flex-wrap:wrap; justify-content:center; gap:7px;
+    padding:8px 10px !important; padding-top:max(8px, env(safe-area-inset-top)) !important;
+    background:rgba(9,24,42,.96); border-bottom:1px solid rgba(110,190,230,.18);
+}
+#study-pdf-reader-view.pdf-fullscreen .pdf-copy-hint { display:none !important; }
+#study-pdf-reader-view.pdf-fullscreen .pdf-scroll-stage {
+    flex:1 1 auto !important; min-height:0 !important; height:auto !important;
+    width:100% !important; padding:12px 8px max(18px, env(safe-area-inset-bottom)) !important;
+    border-radius:0 !important;
+}
+#studyPdfFullscreenToggle { min-width:38px !important; font-size:15px; }
