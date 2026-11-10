@@ -395,7 +395,7 @@ function renderStudyPdfScrollPage(pageNumber, token) {
 
 function setStudyPdfZoom(value, focalX, focalY, instant) {
     var next = Math.max(0.5, Math.min(4, Math.round(value * 100) / 100));
-    if (Math.abs(next - studyPdfZoom) < 0.01 || !studyPdfDocument) return;
+    if (Math.abs(next - studyPdfZoom) < 0.005 || !studyPdfDocument) return;
     var oldZoom = studyPdfZoom;
     var stage = document.getElementById("studyPdfBookStage");
     var stageRect = stage ? stage.getBoundingClientRect() : null;
@@ -440,7 +440,7 @@ function setStudyPdfZoom(value, focalX, focalY, instant) {
 
     // Debounced re-render: wait for CSS transition to finish, then render sharp pages
     if (studyPdfRenderDebounce) clearTimeout(studyPdfRenderDebounce);
-    var delay = instant ? 80 : 280;
+    var delay = instant ? 60 : 200;
     studyPdfRenderDebounce = setTimeout(function() {
         studyPdfRenderDebounce = null;
         var tk = studyPdfLoadToken;
@@ -470,8 +470,8 @@ function bindStudyPdfZoomButtons() {
     var plus = document.getElementById("studyPdfZoomIn");
     var minus = document.getElementById("studyPdfZoomOut");
     var fit = document.getElementById("studyPdfFit");
-    if (plus && plus.dataset.bound !== "true") { plus.dataset.bound = "true"; plus.addEventListener("click", function() { setStudyPdfZoom(studyPdfZoom + 0.15); }); }
-    if (minus && minus.dataset.bound !== "true") { minus.dataset.bound = "true"; minus.addEventListener("click", function() { setStudyPdfZoom(studyPdfZoom - 0.15); }); }
+    if (plus && plus.dataset.bound !== "true") { plus.dataset.bound = "true"; plus.addEventListener("click", function() { setStudyPdfZoom(studyPdfZoom + 0.12); }); }
+    if (minus && minus.dataset.bound !== "true") { minus.dataset.bound = "true"; minus.addEventListener("click", function() { setStudyPdfZoom(studyPdfZoom - 0.12); }); }
     if (fit && fit.dataset.bound !== "true") { fit.dataset.bound = "true"; fit.addEventListener("click", function() { setStudyPdfZoom(1); }); }
 }
 
@@ -480,20 +480,21 @@ function bindStudyPdfScrollZoom(stage, token) {
     stage.dataset.scrollZoomBound = "true";
     var pinchCenterX = 0, pinchCenterY = 0;
 
-    // Ctrl+Wheel zoom — finer steps for smoothness
+    // Ctrl+Wheel — ultra fine steps for butter smooth zoom
     stage.addEventListener("wheel", function(event) {
         if (!event.ctrlKey && !event.metaKey) return;
         event.preventDefault();
-        var factor = event.deltaY < 0 ? 1.06 : 0.94;
+        var factor = event.deltaY < 0 ? 1.045 : 0.957;
         setStudyPdfZoom(studyPdfZoom * factor, event.clientX, event.clientY, false);
     }, { passive: false });
 
-    // Pinch-to-zoom — direct zoom during touchmove (no transform preview hack)
+    // Pinch — GPU transform preview (no layout thrash = butter smooth)
     stage.addEventListener("touchstart", function(event) {
         if (event.touches.length === 2) {
             var a = event.touches[0], b = event.touches[1];
             studyPdfTouchStartDistance = Math.hypot(a.clientX - b.clientX, a.clientY - b.clientY);
             studyPdfTouchStartZoom = studyPdfZoom;
+            studyPdfTouchPreviewZoom = studyPdfZoom;
             studyPdfIsPinching = true;
             pinchCenterX = (a.clientX + b.clientX) / 2;
             pinchCenterY = (a.clientY + b.clientY) / 2;
@@ -505,34 +506,56 @@ function bindStudyPdfScrollZoom(stage, token) {
         event.preventDefault();
         var a = event.touches[0], b = event.touches[1];
         var distance = Math.hypot(a.clientX - b.clientX, a.clientY - b.clientY);
-        var newZoom = Math.max(0.5, Math.min(4,
+        studyPdfTouchPreviewZoom = Math.max(0.5, Math.min(4,
             studyPdfTouchStartZoom * distance / studyPdfTouchStartDistance));
         pinchCenterX = (a.clientX + b.clientX) / 2;
         pinchCenterY = (a.clientY + b.clientY) / 2;
-        setStudyPdfZoom(newZoom, pinchCenterX, pinchCenterY, true);
+
+        // GPU-accelerated transform = 60fps smooth, no layout recalc
+        var book = document.getElementById("studyPdfBook");
+        if (book) {
+            var rect = book.getBoundingClientRect();
+            book.style.transformOrigin =
+                (pinchCenterX - rect.left) + "px " + (pinchCenterY - rect.top) + "px";
+            book.style.transform = "scale(" + (studyPdfTouchPreviewZoom / studyPdfZoom) + ")";
+        }
     }, { passive: false });
 
     function finishPinch() {
         if (!studyPdfTouchStartDistance) return;
+        var finalZoom = studyPdfTouchPreviewZoom;
         studyPdfTouchStartDistance = 0;
         studyPdfIsPinching = false;
-        // Trigger final re-render at the settled zoom level
-        if (studyPdfRenderDebounce) clearTimeout(studyPdfRenderDebounce);
-        studyPdfRenderDebounce = setTimeout(function() {
-            studyPdfRenderDebounce = null;
-            var tk = studyPdfLoadToken;
-            var pages = document.querySelectorAll("#studyPdfBook .pdf-scroll-page");
-            var stg = document.getElementById("studyPdfBookStage");
-            pages.forEach(function(wrapper) {
-                var n = Number(wrapper.dataset.pageNumber);
-                wrapper.dataset.rendered = "false";
-                var r = wrapper.getBoundingClientRect();
-                var sr = stg ? stg.getBoundingClientRect() : null;
-                if (sr && r.bottom >= sr.top - 700 && r.top <= sr.bottom + 700) {
-                    renderStudyPdfScrollPage(n, tk);
-                }
+
+        // Step 1: Kill CSS transitions temporarily (no visual jump)
+        var pages = document.querySelectorAll("#studyPdfBook .pdf-scroll-page");
+        pages.forEach(function(w) {
+            w.style.transition = "none";
+            var c = w.querySelector("canvas");
+            if (c) c.style.transition = "none";
+            var t = w.querySelector(".textLayer");
+            if (t) t.style.transition = "none";
+        });
+
+        // Step 2: Remove transform
+        var book = document.getElementById("studyPdfBook");
+        if (book) { book.style.transform = ""; book.style.transformOrigin = ""; }
+
+        // Step 3: Apply real zoom instantly (matches the visual transform size)
+        setStudyPdfZoom(finalZoom, pinchCenterX, pinchCenterY, true);
+
+        // Step 4: Re-enable transitions after browser paints
+        requestAnimationFrame(function() {
+            requestAnimationFrame(function() {
+                pages.forEach(function(w) {
+                    w.style.transition = "";
+                    var c = w.querySelector("canvas");
+                    if (c) c.style.transition = "";
+                    var t = w.querySelector(".textLayer");
+                    if (t) t.style.transition = "";
+                });
             });
-        }, 100);
+        });
     }
 
     stage.addEventListener("touchend", function(event) {
