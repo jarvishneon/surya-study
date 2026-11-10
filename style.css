@@ -1,8 +1,4 @@
-/* RJ STUDY ACADEMY - FULL PRO STYLES
-   Glass + 3D + Neon | 100% Mobile Friendly
-   ============================================ */
-
-* {
+{
     margin: 0;
     padding: 0;
     box-sizing: border-box;
@@ -25,6 +21,7 @@
     --text-primary: #e8f0ff;
     --text-secondary: #8da3c7;
     --text-muted: #5a7090;
+    --text-dim: rgba(141, 163, 199, 0.6);
     --shadow-glow: 0 0 40px rgba(0, 229, 255, 0.15);
     --shadow-deep: 0 20px 60px rgba(0, 0, 0, 0.5);
     --shadow-card: 0 8px 32px rgba(0, 0, 0, 0.4);
@@ -996,7 +993,7 @@ body {
     gap: 14px;
 }
 
-/* ===== BUTTER-SMOOTH
+/* ===== BUTTER-SMOOTH ===== */
 
 /* ===== WORKSHEETS IMAGE LIBRARY — isolated styles ===== */
 #worksheets-reader-view {
@@ -1054,6 +1051,45 @@ body {
 .worksheet-state i { font-size:28px; color:var(--primary,#53d7f5); }
 .worksheet-state strong { color:#edf8ff; font-size:15px; }
 .worksheet-state span { max-width:440px; line-height:1.6; }
+
+/* ===== WORKSHEETS FULLSCREEN NATIVE STYLES ===== */
+.worksheets-reader-container:fullscreen {
+    height: 100vh !important;
+    max-width: 100% !important;
+    padding: 0 !important;
+    background: var(--bg-darker) !important;
+}
+.worksheets-reader-container:fullscreen .worksheets-toolbar {
+    border-radius: 0;
+    border-left: 0; border-right: 0; border-top: 0;
+}
+.worksheets-reader-container:fullscreen .worksheets-reader-stage {
+    border-radius: 0;
+    border: 0;
+}
+.worksheets-reader-container:fullscreen .worksheets-reader-nav {
+    padding: 0 16px;
+    margin-top: 10px;
+}
+.worksheets-reader-container:-webkit-full-screen {
+    height: 100vh !important;
+    max-width: 100% !important;
+    padding: 0 !important;
+    background: var(--bg-darker) !important;
+}
+.worksheets-reader-container:-webkit-full-screen .worksheets-toolbar {
+    border-radius: 0;
+    border-left: 0; border-right: 0; border-top: 0;
+}
+.worksheets-reader-container:-webkit-full-screen .worksheets-reader-stage {
+    border-radius: 0;
+    border: 0;
+}
+.worksheets-reader-container:-webkit-full-screen .worksheets-reader-nav {
+    padding: 0 16px;
+    margin-top: 10px;
+}
+
 @media(max-width:600px) {
     #worksheets-reader-view .worksheets-reader-container { height:calc(100dvh - 72px); min-height:360px; padding:0 7px 8px; }
     .worksheets-reader-nav { gap:7px; min-height:44px; }
@@ -1063,3 +1099,4 @@ body {
     .worksheets-reader-stage { padding:9px 5px 20px; }
     .worksheet-image-page { padding:5px; gap:5px; }
 }
+Copy-paste karke **"Done"** bhej, phir `script.js` ka wo jadoo wala code (3rd file) dunga jisse click karte hi button zinda ho jayega aur image full screen fekega! 🚀
