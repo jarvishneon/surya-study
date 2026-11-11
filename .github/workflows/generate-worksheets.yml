@@ -1,6 +1,3 @@
-
-    
-  
 name: Generate Worksheet Manifest
 
 on:
@@ -71,30 +68,58 @@ jobs:
 
           def natural_key(value):
               import re
-              # Type-tag each part so names beginning with digits and letters
-              # can safely be compared (for example, 2.jpg and page-a.jpg).
               return [
-                  (0, int(part)) if part.isdigit() else (1, part.lower())
+                  int(part) if part.isdigit() else part.lower()
                   for part in re.split(r"(\d+)", value)
               ]
 
-          # Get the add-event time for each tracked worksheet image from Git
-          # history. Sorting by this timestamp keeps older uploads first and
-          # places images added in newer commits at the bottom of the reader.
-          history = subprocess.check_output(
-              [
-                  "git", "log", "--diff-filter=A", "--format=COMMIT:%ct",
-                  "--name-only", "--", "Worksheets"
-              ],
-              text=True
-          )
-          added_at = {}
-          commit_time = 0
-          for line in history.splitlines():
-              if line.startswith("COMMIT:"):
-                  commit_time = int(line.split(":", 1)[1])
-              elif line.strip() and commit_time:
-                  # Git returns newest commits first; setdefault preserves the
-                  # latest add event if a path was deleted and later re-added.
-                  added_at.setdefault(line.strip(), commit_time)
+          for raw_path in tracked:
+              if not raw_path:
+                  continue
 
+              path = PurePosixPath(raw_path)
+              parts = path.parts
+
+              # Worksheets/Competitive/English/image.jpg
+              # Worksheets/Board/9th-class/English/image.jpg
+              if len(parts) < 4 or parts[0].lower() != "worksheets":
+                  continue
+              if path.suffix.lower() not in IMAGE_EXTENSIONS:
+                  continue
+
+              section = parts[1].lower()
+              if section == "competitive" and len(parts) == 4:
+                  subject = parts[2]
+                  manifest["competitive"].setdefault(subject, []).append(raw_path)
+              elif section == "board" and len(parts) == 5:
+                  class_name = parts[2]
+                  subject = parts[3]
+                  manifest["board"].setdefault(class_name, {}).setdefault(subject, []).append(raw_path)
+
+          for pages in manifest["competitive"].values():
+              if isinstance(pages, list):
+                  pages.sort(key=lambda item: natural_key(PurePosixPath(item).name))
+
+          for subjects in manifest["board"].values():
+              for pages in subjects.values():
+                  if isinstance(pages, list):
+                      pages.sort(key=lambda item: natural_key(PurePosixPath(item).name))
+
+          with open("worksheets.json", "w", encoding="utf-8") as file:
+              json.dump(manifest, file, ensure_ascii=False, indent=2)
+              file.write("\n")
+
+          print("Generated worksheets.json from tracked worksheet images.")
+          PY
+
+      - name: Commit updated manifest
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add worksheets.json
+          if git diff --cached --quiet; then
+            echo "worksheets.json is already up to date."
+            exit 0
+          fi
+          git commit -m "chore: auto-update worksheet manifest"
+          git push
