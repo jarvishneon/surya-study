@@ -1,8 +1,35 @@
+name: Generate Worksheet Manifest
 
+on:
+  push:
+    paths:
+      - "Worksheets/**"
+      - "worksheets.json"
+      - ".github/workflows/generate-worksheets.yml"
+  workflow_dispatch:
 
+permissions:
+  contents: write
 
-    
-  
+concurrency:
+  group: worksheet-manifest
+  cancel-in-progress: false
+
+jobs:
+  generate:
+    # Avoid running again for the bot's own manifest commit.
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Generate worksheets.json (keep old images first)
+        shell: bash
+        run: |
           python3 <<'PY'
           import json
           import re
@@ -106,4 +133,3 @@
           fi
           git commit -m "chore: append new worksheet images"
           git push
-
