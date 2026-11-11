@@ -1,56 +1,25 @@
 {
   "competitive": {
-    "English": [
-      "Worksheets/Competitive/English/Tenses1.png"
-    ],
-    "Math": [
-      "Worksheets/Competitive/Math/chapter1.png"
-    ],
-    "Hindi": [
-      "Worksheets/Competitive/Hindi/chapter1.png"
-    ],
-    "Reasoning": [
-      "Worksheets/Competitive/Reasoning/chapter1.png"
-    ],
-    "GS": [
-      "Worksheets/Competitive/GS/chapter1.png"
-    ]
+    "English": [],
+    "Math": [],
+    "Hindi": [],
+    "Reasoning": [],
+    "GS": []
   },
   "board": {
     "9th-class": {
-      "Hindi": [
-        "Worksheets/Board/9th-class/Hindi/1.png"
-      ],
-      "English": [
-        "Worksheets/Board/9th-class/English/persent Indefinite.png",
-        "Worksheets/Board/9th-class/English/Tenses.png"
-      ],
-      "Math": [
-        "Worksheets/Board/9th-class/Math/1.png"
-      ],
-      "Science": [
-        "Worksheets/Board/9th-class/Science/1.png"
-      ],
-      "Geography": [
-        "Worksheets/Board/9th-class/Geography/1.png"
-      ]
+      "Hindi": [],
+      "English": [],
+      "Math": [],
+      "Science": [],
+      "Geography": []
     },
     "10th-class": {
-      "Hindi": [
-        "Worksheets/Board/10th-class/Hindi/1.png"
-      ],
-      "English": [
-        "Worksheets/Board/10th-class/English/1.png"
-      ],
-      "Math": [
-        "Worksheets/Board/10th-class/Math/1.png"
-      ],
-      "Science": [
-        "Worksheets/Board/10th-class/Science/1.png"
-      ],
-      "Geography": [
-        "Worksheets/Board/10th-class/Geography/1.png"
-      ]
+      "Hindi": [],
+      "English": [],
+      "Math": [],
+      "Science": [],
+      "Geography": []
     }
   }
 }
