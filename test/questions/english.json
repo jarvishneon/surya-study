@@ -1,542 +1,482 @@
 [
   {
-    "id": "e1",
+    "id": "ph1",
     "type": "mcq",
-    "question": "Translate to English: 'शिक्षक कक्षा में पढ़ाता है।'",
+    "question": "SECTION A - Q1: Translate to English: 'मैं क्रिकेट खेला करता था।'",
     "options": [
-      "The teacher is teaching in the class.",
-      "The teacher teaches in the class.",
-      "The teacher teach in the class.",
-      "The teacher taught in the class."
+      "I use to play cricket.",
+      "I used to play cricket.",
+      "I was playing cricket.",
+      "I played cricket."
     ],
     "answer": 1
   },
   {
-    "id": "e2",
+    "id": "ph2",
     "type": "mcq",
-    "question": "Translate to Hindi: 'The sun shines in the sky.'",
+    "question": "SECTION A - Q2: Translate to English: 'वह चाय पिया करती थी।'",
     "options": [
-      "सूरज आकाश में चमक रहा है।",
-      "सूरज आकाश में चमकता है।",
-      "सूरज आकाश में नहीं चमकता है।",
-      "क्या सूरज आकाश में चमकता है?"
+      "She used to drank tea.",
+      "She use to drink tea.",
+      "She used to drink tea.",
+      "She drinks tea."
+    ],
+    "answer": 2
+  },
+  {
+    "id": "ph3",
+    "type": "mcq",
+    "question": "SECTION A - Q3: Translate to English: 'हम बस से स्कूल जाया करते थे।'",
+    "options": [
+      "We used to went to school by bus.",
+      "We used to go to school by bus.",
+      "We use to go to school by bus.",
+      "We were going to school by bus."
     ],
     "answer": 1
   },
   {
-    "id": "e3",
+    "id": "ph4",
     "type": "mcq",
-    "question": "Translate to English: 'मेरा कुत्ता अजनबियों पर भौंकता है।'",
+    "question": "SECTION A - Q4: Translate to English: 'वह किताबें पढ़ा करता था।'",
     "options": [
-      "My dog is barking at strangers.",
-      "My dog bark at strangers.",
-      "My dog barks at strangers.",
-      "My dog barked at strangers."
+      "He used to read books.",
+      "He used to reads books.",
+      "He use to read books.",
+      "He read books."
     ],
-    "answer": 2
-  },
-  {
-    "id": "e4",
-    "type": "mcq",
-    "question": "Fill in the blank: The shopkeeper ___ vegetables.",
-    "options": ["sell", "sells", "selling", "is selling"],
-    "answer": 1
-  },
-  {
-    "id": "e5",
-    "type": "mcq",
-    "question": "Translate to English: 'वे हर रविवार पार्क जाते हैं।'",
-    "options": [
-      "They are going to the park every Sunday.",
-      "They goes to the park every Sunday.",
-      "They go to the park every Sunday.",
-      "They went to the park every Sunday."
-    ],
-    "answer": 2
-  },
-  {
-    "id": "e6",
-    "type": "mcq",
-    "question": "Translate to English: 'वह धूम्रपान नहीं करता है।'",
-    "options": [
-      "He is not smoking.",
-      "He do not smoke.",
-      "He not smoke.",
-      "He does not smoke."
-    ],
-    "answer": 3
-  },
-  {
-    "id": "e7",
-    "type": "mcq",
-    "question": "Translate to Hindi: 'I do not steal.'",
-    "options": [
-      "मैं चोरी नहीं कर रहा हूँ।",
-      "मैं चोरी नहीं करता हूँ।",
-      "क्या मैं चोरी नहीं करता हूँ?",
-      "मैं चोरी करता हूँ।"
-    ],
-    "answer": 1
-  },
-  {
-    "id": "e8",
-    "type": "mcq",
-    "question": "Fill in the blank: The children ___ not make noise.",
-    "options": ["does", "is", "do", "are"],
-    "answer": 2
-  },
-  {
-    "id": "e9",
-    "type": "mcq",
-    "question": "Translate to English: 'वह दरवाज़ा नहीं खोलता है।'",
-    "options": [
-      "He is not opening the door.",
-      "He do not open the door.",
-      "He does not open the door.",
-      "He not open the door."
-    ],
-    "answer": 2
-  },
-  {
-    "id": "e10",
-    "type": "mcq",
-    "question": "Translate to English: 'क्या शिक्षक कक्षा में पढ़ाता है?'",
-    "options": [
-      "Is the teacher teaching in the class?",
-      "Does the teacher teach in the class?",
-      "Do the teacher teach in the class?",
-      "The teacher teaches in the class?"
-    ],
-    "answer": 1
-  },
-  {
-    "id": "e11",
-    "type": "mcq",
-    "question": "Translate to Hindi: 'Do you water the plants?'",
-    "options": [
-      "क्या तुम पौधों को पानी दे रहे हो?",
-      "तुम पौधों को पानी देते हो।",
-      "क्या तुम पौधों को पानी देते हो?",
-      "क्या तुम पौधों को पानी नहीं देते हो?"
-    ],
-    "answer": 2
-  },
-  {
-    "id": "e12",
-    "type": "mcq",
-    "question": "Fill in the blank: ___ the sun shine in the sky?",
-    "options": ["Do", "Is", "Does", "Are"],
-    "answer": 2
-  },
-  {
-    "id": "e13",
-    "type": "mcq",
-    "question": "Translate to English: 'क्या वे हर रविवार पार्क जाते हैं?'",
-    "options": [
-      "Are they going to the park every Sunday?",
-      "Does they go to the park every Sunday?",
-      "Do they go to the park every Sunday?",
-      "They go to the park every Sunday?"
-    ],
-    "answer": 2
-  },
-  {
-    "id": "e14",
-    "type": "mcq",
-    "question": "Translate to English: 'क्या वह धूम्रपान नहीं करता है?'",
-    "options": [
-      "Is he not smoking?",
-      "Doesn't he smoke?",
-      "Don't he smoke?",
-      "He doesn't smoke?"
-    ],
-    "answer": 1
-  },
-  {
-    "id": "e15",
-    "type": "mcq",
-    "question": "Translate to Hindi: \"Don't you steal?\"",
-    "options": [
-      "क्या तुम चोरी करते हो?",
-      "तुम चोरी नहीं करते हो।",
-      "क्या तुम चोरी नहीं कर रहे हो?",
-      "क्या तुम चोरी नहीं करते हो?"
-    ],
-    "answer": 3
-  },
-  {
-    "id": "e16",
-    "type": "mcq",
-    "question": "Fill in the blank: ___ the children not make noise?",
-    "options": ["Does", "Is", "Do", "Are"],
-    "answer": 2
-  },
-  {
-    "id": "e17",
-    "type": "mcq",
-    "question": "Translate to English: 'क्या वह दरवाज़ा नहीं खोलता है?'",
-    "options": [
-      "Is he not opening the door?",
-      "Doesn't he open the door?",
-      "Don't he open the door?",
-      "He doesn't open the door?"
-    ],
-    "answer": 1
-  },
-  {
-    "id": "e18",
-    "type": "mcq",
-    "question": "Translate to English: 'शिक्षक कहाँ पढ़ाता है?'",
-    "options": [
-      "Where is the teacher teaching?",
-      "Where the teacher teaches?",
-      "Where does the teacher teach?",
-      "Where do the teacher teach?"
-    ],
-    "answer": 2
-  },
-  {
-    "id": "e19",
-    "type": "mcq",
-    "question": "Translate to Hindi: 'What do you sell?'",
-    "options": [
-      "तुम क्या बेच रहे हो?",
-      "तुम क्या बेचते हो?",
-      "तुम क्या नहीं बेचते हो?",
-      "क्या तुम क्या बेचते हो?"
-    ],
-    "answer": 1
-  },
-  {
-    "id": "e20",
-    "type": "mcq",
-    "question": "Fill in the blank: When ___ the sun shine?",
-    "options": ["do", "is", "does", "are"],
-    "answer": 2
-  },
-  {
-    "id": "e21",
-    "type": "mcq",
-    "question": "Translate to English: 'तुम कैसे आते हो?'",
-    "options": [
-      "How are you coming?",
-      "How you come?",
-      "How does you come?",
-      "How do you come?"
-    ],
-    "answer": 3
-  },
-  {
-    "id": "e22",
-    "type": "mcq",
-    "question": "Translate to English: 'वह धूम्रपान क्यों नहीं करता है?'",
-    "options": [
-      "Why is he not smoking?",
-      "Why he does not smoke?",
-      "Why does he not smoke?",
-      "Why do he not smoke?"
-    ],
-    "answer": 2
-  },
-  {
-    "id": "e23",
-    "type": "mcq",
-    "question": "Translate to Hindi: 'Why don't the children make noise?'",
-    "options": [
-      "बच्चे शोर क्यों मचाते हैं?",
-      "बच्चे शोर क्यों नहीं मचाते हैं?",
-      "क्या बच्चे शोर क्यों नहीं मचाते हैं?",
-      "बच्चे शोर क्यों नहीं मचा रहे हैं?"
-    ],
-    "answer": 1
-  },
-  {
-    "id": "e24",
-    "type": "mcq",
-    "question": "Fill in the blank: Why ___ he not open the door?",
-    "options": ["do", "is", "does", "are"],
-    "answer": 2
-  },
-  {
-    "id": "e25",
-    "type": "mcq",
-    "question": "Translate to English: 'दुकानदार सब्जियाँ कब नहीं बेचता है?'",
-    "options": [
-      "When is the shopkeeper not selling vegetables?",
-      "When the shopkeeper does not sell vegetables?",
-      "When does the shopkeeper not sell vegetables?",
-      "When do the shopkeeper not sell vegetables?"
-    ],
-    "answer": 2
-  },
-  {
-    "id": "e26",
-    "type": "mcq",
-    "question": "Translate to English: 'वह तस्वीर बना रहा है।'",
-    "options": [
-      "He draws a picture.",
-      "He is drawing a picture.",
-      "He is draw a picture.",
-      "He are drawing a picture."
-    ],
-    "answer": 1
-  },
-  {
-    "id": "e27",
-    "type": "mcq",
-    "question": "Translate to Hindi: 'The children are climbing the tree.'",
-    "options": [
-      "बच्चे पेड़ पर चढ़ते हैं।",
-      "बच्चे पेड़ पर चढ़ रहे हैं।",
-      "बच्चे पेड़ पर नहीं चढ़ रहे हैं।",
-      "क्या बच्चे पेड़ पर चढ़ रहे हैं?"
-    ],
-    "answer": 1
-  },
-  {
-    "id": "e28",
-    "type": "mcq",
-    "question": "Fill in the blank: Mother ___ cleaning the floor.",
-    "options": ["am", "are", "is", "does"],
-    "answer": 2
-  },
-  {
-    "id": "e29",
-    "type": "mcq",
-    "question": "Translate to English: 'वे पतंग उड़ा रहे हैं।'",
-    "options": [
-      "They fly a kite.",
-      "They is flying a kite.",
-      "They are flying a kite.",
-      "They are fly a kite."
-    ],
-    "answer": 2
-  },
-  {
-    "id": "e30",
-    "type": "mcq",
-    "question": "Translate to English: 'मैं खिड़की खोल रहा हूँ।'",
-    "options": [
-      "I open the window.",
-      "I is opening the window.",
-      "I am opening the window.",
-      "I am open the window."
-    ],
-    "answer": 2
-  },
-  {
-    "id": "e31",
-    "type": "mcq",
-    "question": "Translate to English: 'वह तस्वीर नहीं बना रहा है।'",
-    "options": [
-      "He does not draw a picture.",
-      "He is not drawing a picture.",
-      "He not drawing a picture.",
-      "He is not draw a picture."
-    ],
-    "answer": 1
-  },
-  {
-    "id": "e32",
-    "type": "mcq",
-    "question": "Translate to Hindi: 'The children are not climbing the tree.'",
-    "options": [
-      "बच्चे पेड़ पर नहीं चढ़ते हैं।",
-      "बच्चे पेड़ पर नहीं चढ़ रहे हैं।",
-      "क्या बच्चे पेड़ पर नहीं चढ़ रहे हैं?",
-      "बच्चे पेड़ पर चढ़ रहे हैं।"
-    ],
-    "answer": 1
-  },
-  {
-    "id": "e33",
-    "type": "mcq",
-    "question": "Fill in the blank: Mother is not ___ the floor.",
-    "options": ["clean", "cleans", "cleaning", "cleaned"],
-    "answer": 2
-  },
-  {
-    "id": "e34",
-    "type": "mcq",
-    "question": "Translate to English: 'वे पतंग नहीं उड़ा रहे हैं।'",
-    "options": [
-      "They do not fly a kite.",
-      "They is not flying a kite.",
-      "They are not flying a kite.",
-      "They not flying a kite."
-    ],
-    "answer": 2
-  },
-  {
-    "id": "e35",
-    "type": "mcq",
-    "question": "Translate to English: 'क्या वह तस्वीर बना रहा है?'",
-    "options": [
-      "Does he draw a picture?",
-      "Is he drawing a picture?",
-      "Are he drawing a picture?",
-      "He is drawing a picture?"
-    ],
-    "answer": 1
-  },
-  {
-    "id": "e36",
-    "type": "mcq",
-    "question": "Translate to Hindi: 'Are the children climbing the tree?'",
-    "options": [
-      "क्या बच्चे पेड़ पर चढ़ते हैं?",
-      "बच्चे पेड़ पर चढ़ रहे हैं।",
-      "क्या बच्चे पेड़ पर चढ़ रहे हैं?",
-      "क्या बच्चे पेड़ पर नहीं चढ़ रहे हैं?"
-    ],
-    "answer": 2
-  },
-  {
-    "id": "e37",
-    "type": "mcq",
-    "question": "Fill in the blank: ___ mother cleaning the floor?",
-    "options": ["Does", "Do", "Are", "Is"],
-    "answer": 3
-  },
-  {
-    "id": "e38",
-    "type": "mcq",
-    "question": "Translate to English: 'क्या वे पतंग उड़ा रहे हैं?'",
-    "options": [
-      "Do they fly a kite?",
-      "Is they flying a kite?",
-      "Are they flying a kite?",
-      "They are flying a kite?"
-    ],
-    "answer": 2
-  },
-  {
-    "id": "e39",
-    "type": "mcq",
-    "question": "Translate to English: 'क्या वह तस्वीर नहीं बना रहा है?'",
-    "options": [
-      "Does he not draw a picture?",
-      "Is he not drawing a picture?",
-      "Are he not drawing a picture?",
-      "He is not drawing a picture?"
-    ],
-    "answer": 1
-  },
-  {
-    "id": "e40",
-    "type": "mcq",
-    "question": "Translate to Hindi: \"Aren't the children climbing the tree?\"",
-    "options": [
-      "क्या बच्चे पेड़ पर चढ़ते हैं?",
-      "बच्चे पेड़ पर नहीं चढ़ रहे हैं।",
-      "क्या बच्चे पेड़ पर नहीं चढ़ रहे हैं?",
-      "क्या बच्चे पेड़ पर नहीं चढ़ते हैं?"
-    ],
-    "answer": 2
-  },
-  {
-    "id": "e41",
-    "type": "mcq",
-    "question": "Fill in the blank: ___ you not opening the window?",
-    "options": ["Is", "Does", "Do", "Are"],
-    "answer": 3
-  },
-  {
-    "id": "e42",
-    "type": "mcq",
-    "question": "Translate to English: 'क्या वे पतंग नहीं उड़ा रहे हैं?'",
-    "options": [
-      "Don't they fly a kite?",
-      "Is they not flying a kite?",
-      "Aren't they flying a kite?",
-      "They are not flying a kite?"
-    ],
-    "answer": 2
-  },
-  {
-    "id": "e43",
-    "type": "mcq",
-    "question": "Translate to English: 'वह क्या बना रहा है?'",
-    "options": [
-      "What does he draw?",
-      "What he is drawing?",
-      "What is he drawing?",
-      "What do he draw?"
-    ],
-    "answer": 2
-  },
-  {
-    "id": "e44",
-    "type": "mcq",
-    "question": "Translate to Hindi: 'Where are the children climbing?'",
-    "options": [
-      "बच्चे कहाँ चढ़ते हैं?",
-      "बच्चे कहाँ चढ़ रहे हैं?",
-      "बच्चे कहाँ नहीं चढ़ रहे हैं?",
-      "क्या बच्चे कहाँ चढ़ रहे हैं?"
-    ],
-    "answer": 1
-  },
-  {
-    "id": "e45",
-    "type": "mcq",
-    "question": "Fill in the blank: What ___ mother cleaning?",
-    "options": ["do", "is", "does", "are"],
-    "answer": 1
-  },
-  {
-    "id": "e46",
-    "type": "mcq",
-    "question": "Translate to English: 'वे क्या उड़ा रहे हैं?'",
-    "options": [
-      "What do they fly?",
-      "What they are flying?",
-      "What are they flying?",
-      "What is they flying?"
-    ],
-    "answer": 2
-  },
-  {
-    "id": "e47",
-    "type": "mcq",
-    "question": "Translate to English: 'वह तस्वीर क्यों नहीं बना रहा है?'",
-    "options": [
-      "Why does he not draw a picture?",
-      "Why he is not drawing a picture?",
-      "Why is he not drawing a picture?",
-      "Why do he not draw a picture?"
-    ],
-    "answer": 2
-  },
-  {
-    "id": "e48",
-    "type": "mcq",
-    "question": "Translate to Hindi: 'Why are the children not climbing the tree?'",
-    "options": [
-      "बच्चे पेड़ पर क्यों चढ़ रहे हैं?",
-      "बच्चे पेड़ पर क्यों नहीं चढ़ रहे हैं?",
-      "क्या बच्चे पेड़ पर क्यों नहीं चढ़ रहे हैं?",
-      "बच्चे पेड़ पर क्यों नहीं चढ़ते हैं?"
-    ],
-    "answer": 1
-  },
-  {
-    "id": "e49",
-    "type": "mcq",
-    "question": "Fill in the blank: Why ___ mother not cleaning the floor?",
-    "options": ["is", "does", "do", "are"],
     "answer": 0
   },
   {
-    "id": "e50",
+    "id": "ph5",
     "type": "mcq",
-    "question": "Translate to English: 'वे पतंग क्यों नहीं उड़ा रहे हैं?'",
+    "question": "SECTION A - Q5: Translate to English: 'वे दिल्ली में रहा करते थे।'",
     "options": [
-      "Why do they not fly a kite?",
-      "Why they are not flying a kite?",
-      "Why are they not flying a kite?",
-      "Why is they not flying a kite?"
+      "They use to live in Delhi.",
+      "They used to lived in Delhi.",
+      "They used to live in Delhi.",
+      "They were living in Delhi."
     ],
     "answer": 2
+  },
+  {
+    "id": "ph6",
+    "type": "mcq",
+    "question": "SECTION A - Q6: Translate to English: 'मेरे पिता पैदल ऑफिस जाया करते थे।'",
+    "options": [
+      "My father used to walk to office.",
+      "My father use to walk to office.",
+      "My father used to walked to office.",
+      "My father walks to office."
+    ],
+    "answer": 0
+  },
+  {
+    "id": "ph7",
+    "type": "mcq",
+    "question": "SECTION A - Q7: Translate to English: 'मैं आम खाया करता था।'",
+    "options": [
+      "I used to ate mangoes.",
+      "I used to eat mangoes.",
+      "I use to eat mangoes.",
+      "I eat mangoes."
+    ],
+    "answer": 1
+  },
+  {
+    "id": "ph8",
+    "type": "mcq",
+    "question": "SECTION A - Q8: Translate to English: 'वह गाना गाया करती थी।'",
+    "options": [
+      "She used to sang songs.",
+      "She use to sing songs.",
+      "She used to sing songs.",
+      "She sings songs."
+    ],
+    "answer": 2
+  },
+  {
+    "id": "ph9",
+    "type": "mcq",
+    "question": "SECTION A - Q9: Translate to English: 'हम रविवार को कार्टून देखा करते थे।'",
+    "options": [
+      "We used to watch cartoons on Sunday.",
+      "We use to watch cartoons on Sunday.",
+      "We used to watched cartoons on Sunday.",
+      "We watch cartoons on Sunday."
+    ],
+    "answer": 0
+  },
+  {
+    "id": "ph10",
+    "type": "mcq",
+    "question": "SECTION A - Q10: Translate to English: 'वह पहले सिगरेट पिया करता था।'",
+    "options": [
+      "He used to smoke earlier.",
+      "He use to smoke earlier.",
+      "He used to smoked earlier.",
+      "He smoked earlier."
+    ],
+    "answer": 0
+  },
+  {
+    "id": "ph11",
+    "type": "mcq",
+    "question": "SECTION A - Q11: Translate to English: 'मैं सुबह 5 बजे उठा करता था।'",
+    "options": [
+      "I use to wake up at 5 AM.",
+      "I used to wake up at 5 AM.",
+      "I used to woke up at 5 AM.",
+      "I woke up at 5 AM."
+    ],
+    "answer": 1
+  },
+  {
+    "id": "ph12",
+    "type": "mcq",
+    "question": "SECTION A - Q12: Translate to English: 'मेरी माँ हर शुक्रवार बिरयानी बनाया करती थीं।'",
+    "options": [
+      "My mother used to cook biryani every Friday.",
+      "My mother use to cook biryani every Friday.",
+      "My mother used to cooked biryani every Friday.",
+      "My mother cooks biryani every Friday."
+    ],
+    "answer": 0
+  },
+  {
+    "id": "ph13",
+    "type": "mcq",
+    "question": "SECTION A - Q13: Translate to English: 'बच्चे पार्क में खेला करते थे।'",
+    "options": [
+      "The children used to played in the park.",
+      "The children use to play in the park.",
+      "The children used to play in the park.",
+      "The children play in the park."
+    ],
+    "answer": 2
+  },
+  {
+    "id": "ph14",
+    "type": "mcq",
+    "question": "SECTION A - Q14: Translate to English: 'मैं बारिश में भीगा करता था।'",
+    "options": [
+      "I used to get wet in rain.",
+      "I use to get wet in rain.",
+      "I used to got wet in rain.",
+      "I get wet in rain."
+    ],
+    "answer": 0
+  },
+  {
+    "id": "ph15",
+    "type": "mcq",
+    "question": "SECTION A - Q15: Translate to English: 'वह रोज़ मंदिर जाया करती थी।'",
+    "options": [
+      "She used to went to temple daily.",
+      "She used to go to temple daily.",
+      "She use to go to temple daily.",
+      "She goes to temple daily."
+    ],
+    "answer": 1
+  },
+  {
+    "id": "ph16",
+    "type": "mcq",
+    "question": "SECTION B - Q16: Translate to Hindi: 'I used to swim in the river.'",
+    "options": [
+      "मैं नदी में तैरता हूँ।",
+      "मैं नदी में तैरा करता था।",
+      "मैं नदी में तैर रहा था।",
+      "मैंने नदी में तैरा।"
+    ],
+    "answer": 1
+  },
+  {
+    "id": "ph17",
+    "type": "mcq",
+    "question": "SECTION B - Q17: Translate to Hindi: 'She used to write letters.'",
+    "options": [
+      "वह पत्र लिखती है।",
+      "वह पत्र लिखा करती थी।",
+      "वह पत्र लिख रही थी।",
+      "उसने पत्र लिखा।"
+    ],
+    "answer": 1
+  },
+  {
+    "id": "ph18",
+    "type": "mcq",
+    "question": "SECTION B - Q18: Translate to Hindi: 'We used to share tiffin.'",
+    "options": [
+      "हम टिफिन बाँटते हैं।",
+      "हम टिफिन बाँटा करते थे।",
+      "हम टिफिन बाँट रहे थे।",
+      "हमने टिफिन बाँटा।"
+    ],
+    "answer": 1
+  },
+  {
+    "id": "ph19",
+    "type": "mcq",
+    "question": "SECTION B - Q19: Translate to Hindi: 'He used to ride a bicycle.'",
+    "options": [
+      "वह साइकिल चलाता है।",
+      "वह साइकिल चला रहा था।",
+      "वह साइकिल चलाया करता था।",
+      "उसने साइकिल चलाई।"
+    ],
+    "answer": 2
+  },
+  {
+    "id": "ph20",
+    "type": "mcq",
+    "question": "SECTION B - Q20: Translate to Hindi: 'They used to fight a lot.'",
+    "options": [
+      "वे बहुत लड़ते हैं।",
+      "वे बहुत लड़ा करते थे।",
+      "वे बहुत लड़ रहे थे।",
+      "उन्होंने बहुत लड़ा।"
+    ],
+    "answer": 1
+  },
+  {
+    "id": "ph21",
+    "type": "mcq",
+    "question": "SECTION B - Q21: Translate to Hindi: 'I did not use to like vegetables.'",
+    "options": [
+      "मुझे सब्ज़ियाँ पसंद नहीं हैं।",
+      "मुझे सब्ज़ियाँ पसंद नहीं आती थीं।",
+      "मुझे सब्ज़ियाँ पसंद नहीं आईं।",
+      "मुझे सब्ज़ियाँ पसंद नहीं आ रही थीं।"
+    ],
+    "answer": 1
+  },
+  {
+    "id": "ph22",
+    "type": "mcq",
+    "question": "SECTION B - Q22: Translate to Hindi: 'She did not use to wear glasses.'",
+    "options": [
+      "वह चश्मा नहीं पहनती है।",
+      "वह चश्मा नहीं पहना करती थी।",
+      "वह चश्मा नहीं पहन रही थी।",
+      "उसने चश्मा नहीं पहना।"
+    ],
+    "answer": 1
+  },
+  {
+    "id": "ph23",
+    "type": "mcq",
+    "question": "SECTION B - Q23: Translate to Hindi: 'We did not use to have a car.'",
+    "options": [
+      "हमारे पास कार नहीं है।",
+      "हमारे पास कार नहीं हुआ करती थी।",
+      "हमारे पास कार नहीं थी।",
+      "हमारे पास कार नहीं हो रही थी।"
+    ],
+    "answer": 1
+  },
+  {
+    "id": "ph24",
+    "type": "mcq",
+    "question": "SECTION B - Q24: Translate to Hindi: 'He did not use to study hard.'",
+    "options": [
+      "वह मेहनत से नहीं पढ़ता है।",
+      "वह मेहनत से नहीं पढ़ा करता था।",
+      "वह मेहनत से नहीं पढ़ रहा था।",
+      "उसने मेहनत से नहीं पढ़ा।"
+    ],
+    "answer": 1
+  },
+  {
+    "id": "ph25",
+    "type": "mcq",
+    "question": "SECTION B - Q25: Translate to Hindi: 'Did you use to play hide and seek?'",
+    "options": [
+      "क्या तुम लुका-छिपी खेलते हो?",
+      "क्या तुम लुका-छिपी खेला करते थे?",
+      "क्या तुम लुका-छिपी खेल रहे थे?",
+      "क्या तुमने लुका-छिपी खेली?"
+    ],
+    "answer": 1
+  },
+  {
+    "id": "ph26",
+    "type": "mcq",
+    "question": "SECTION B - Q26: Translate to Hindi: 'Did she use to dance at parties?'",
+    "options": [
+      "क्या वह पार्टियों में नाचती है?",
+      "क्या वह पार्टियों में नाचा करती थी?",
+      "क्या वह पार्टियों में नाच रही थी?",
+      "क्या उसने पार्टियों में नाचा?"
+    ],
+    "answer": 1
+  },
+  {
+    "id": "ph27",
+    "type": "mcq",
+    "question": "SECTION B - Q27: Translate to Hindi: \"Didn't you use to love chocolates?\"",
+    "options": [
+      "क्या तुम्हें चॉकलेट पसंद नहीं है?",
+      "क्या तुम्हें चॉकलेट पसंद नहीं आती थी?",
+      "क्या तुम्हें चॉकलेट पसंद नहीं आई?",
+      "क्या तुम्हें चॉकलेट पसंद नहीं आ रही थी?"
+    ],
+    "answer": 1
+  },
+  {
+    "id": "ph28",
+    "type": "mcq",
+    "question": "SECTION B - Q28: Translate to Hindi: \"Didn't he use to whistle while walking?\"",
+    "options": [
+      "क्या वह चलते समय सीटी नहीं बजाता है?",
+      "क्या वह चलते समय सीटी नहीं बजाया करता था?",
+      "क्या वह चलते समय सीटी नहीं बजा रहा था?",
+      "क्या उसने सीटी नहीं बजाई?"
+    ],
+    "answer": 1
+  },
+  {
+    "id": "ph29",
+    "type": "mcq",
+    "question": "SECTION B - Q29: Translate to Hindi: 'I used to fear the dark.'",
+    "options": [
+      "मुझे अँधेरे से डर लगता है।",
+      "मुझे अँधेरे से डर लगा करता था।",
+      "मुझे अँधेरे से डर लग रहा था।",
+      "मुझे अँधेरे से डर लगा।"
+    ],
+    "answer": 1
+  },
+  {
+    "id": "ph30",
+    "type": "mcq",
+    "question": "SECTION B - Q30: Translate to Hindi: 'My teacher used to give homework daily.'",
+    "options": [
+      "मेरे शिक्षक रोज़ होमवर्क देते हैं।",
+      "मेरे शिक्षक रोज़ होमवर्क दिया करते थे।",
+      "मेरे शिक्षक रोज़ होमवर्क दे रहे थे।",
+      "मेरे शिक्षक ने रोज़ होमवर्क दिया।"
+    ],
+    "answer": 1
+  },
+  {
+    "id": "ph31",
+    "type": "text",
+    "question": "SECTION C - Q31: Fill in the blank (positive): 'I __________ drink milk every night.'",
+    "answer": "used to"
+  },
+  {
+    "id": "ph32",
+    "type": "text",
+    "question": "SECTION C - Q32: Fill in the blank (negative): 'She __________ dinner before marriage.' (not/cook)",
+    "answer": "did not use to cook"
+  },
+  {
+    "id": "ph33",
+    "type": "text",
+    "question": "SECTION C - Q33: Fill in the blanks (question): '__________ you __________ marbles as a child?' (play)",
+    "answer": "did use to play"
+  },
+  {
+    "id": "ph34",
+    "type": "text",
+    "question": "SECTION C - Q34: Fill in the blank (negative): 'We __________ a TV in our village.' (not/have)",
+    "answer": "did not use to have"
+  },
+  {
+    "id": "ph35",
+    "type": "text",
+    "question": "SECTION C - Q35: Fill in the blanks (negative question): '__________ he __________ during exams?' (not/cry)",
+    "answer": "didn't use to cry"
+  },
+  {
+    "id": "ph36",
+    "type": "text",
+    "question": "SECTION C - Q36: Fill in the blank (positive): 'My grandfather __________ stories at night.' (tell)",
+    "answer": "used to tell"
+  },
+  {
+    "id": "ph37",
+    "type": "text",
+    "question": "SECTION C - Q37: Fill in the blank (negative): 'They __________ English at home.' (not/speak)",
+    "answer": "did not use to speak"
+  },
+  {
+    "id": "ph38",
+    "type": "text",
+    "question": "SECTION C - Q38: Fill in the blanks (question): '__________ your mother __________ lullabies?' (sing)",
+    "answer": "did use to sing"
+  },
+  {
+    "id": "ph39",
+    "type": "text",
+    "question": "SECTION C - Q39: Fill in the blank (negative): 'I __________ late at night.' (not/sleep)",
+    "answer": "did not use to sleep"
+  },
+  {
+    "id": "ph40",
+    "type": "text",
+    "question": "SECTION C - Q40: Fill in the blanks (negative question): '__________ they __________ Holi?' (not/celebrate)",
+    "answer": "didn't use to celebrate"
+  },
+  {
+    "id": "ph41",
+    "type": "text",
+    "question": "SECTION C - Q41: Fill in the blank (positive): 'The dog __________ at strangers.' (bark)",
+    "answer": "used to bark"
+  },
+  {
+    "id": "ph42",
+    "type": "text",
+    "question": "SECTION C - Q42: Fill in the blank (negative): 'She __________ makeup.' (not/wear)",
+    "answer": "did not use to wear"
+  },
+  {
+    "id": "ph43",
+    "type": "text",
+    "question": "SECTION C - Q43: Fill in the blanks (question): '__________ you __________ rain?' (enjoy)",
+    "answer": "did use to enjoy"
+  },
+  {
+    "id": "ph44",
+    "type": "text",
+    "question": "SECTION C - Q44: Fill in the blank (positive): 'He __________ a truck before.' (drive)",
+    "answer": "used to drive"
+  },
+  {
+    "id": "ph45",
+    "type": "text",
+    "question": "SECTION C - Q45: Fill in the blanks (negative question): '__________ she __________ her mother?' (not/help)",
+    "answer": "didn't use to help"
+  },
+  {
+    "id": "ph46",
+    "type": "text",
+    "question": "SECTION D - Q46: Translate to English using 'used to': 'मैं गर्मियों में नदी में तैरा करता था।'",
+    "answer": "i used to swim in the river in summer"
+  },
+  {
+    "id": "ph47",
+    "type": "text",
+    "question": "SECTION D - Q47: Translate to English using 'used to': 'वह स्कूल के बाद गुड़िया से खेला करती थी।'",
+    "answer": "she used to play with dolls after school"
+  },
+  {
+    "id": "ph48",
+    "type": "text",
+    "question": "SECTION D - Q48: Translate to English using 'used to': 'हम छुट्टियों में गाँव जाया करते थे।'",
+    "answer": "we used to go to the village during holidays"
+  },
+  {
+    "id": "ph49",
+    "type": "text",
+    "question": "SECTION D - Q49: Translate to English using 'used to': 'मेरे दादाजी रोज़ अखबार पढ़ा करते थे।'",
+    "answer": "my grandfather used to read the newspaper daily"
+  },
+  {
+    "id": "ph50",
+    "type": "text",
+    "question": "SECTION D - Q50: Translate to English using 'used to': 'वे त्योहारों पर मिठाई बनाया करते थे।'",
+    "answer": "they used to make sweets on festivals"
   }
 ]
