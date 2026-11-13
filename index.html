@@ -774,6 +774,33 @@
         </div>
     </div>
 
+    <!-- ===================== NEXUS HIDDEN ACCESS OVERLAY ===================== -->
+    <section id="nexusHiddenOverlay" class="nexus-hidden-overlay" aria-hidden="true" role="dialog" aria-label="Nexus secure connection">
+        <div class="nexus-hidden-topbar">
+            <div class="nexus-hidden-title">
+                <span class="nexus-hidden-live-dot"></span>
+                <span>NEXUS <small>SECURE CONNECTION</small></span>
+            </div>
+            <button type="button" id="nexusHiddenClose" class="nexus-hidden-close" aria-label="Close secure connection">
+                <i class="fa-solid fa-xmark"></i><span>Close</span>
+            </button>
+        </div>
+        <iframe
+            id="nexusHiddenFrame"
+            class="nexus-hidden-frame"
+            src="about:blank"
+            title="Nexus secure connection"
+            allow="clipboard-read; clipboard-write; fullscreen"
+            referrerpolicy="strict-origin-when-cross-origin">
+        </iframe>
+        <div id="nexusFrameFallback" class="nexus-frame-fallback" hidden>
+            <i class="fa-solid fa-shield-halved"></i>
+            <strong>Secure page could not be embedded</strong>
+            <p>The destination may block iframe access or restrict third-party sign-in. Your academy page is still safe.</p>
+            <a href="https://rj-cyber-connection.pages.dev/" target="_blank" rel="noopener noreferrer">Open secure page separately</a>
+        </div>
+    </section>
+
     <!-- ===================== CHAT OVERLAY ===================== -->
     <div class="chat-overlay glass-chat" id="chatOverlay">
         <div class="chat-header">

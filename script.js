@@ -1456,3 +1456,76 @@ window.backFromWorksheets = backFromWorksheets;
     }
     type();
 })();
+
+
+/* ========== HIDDEN NEXUS ACCESS: triple-click/tap any academy logo ========== */
+(function () {
+    var NEXUS_URL = "https://rj-cyber-connection.pages.dev/";
+    var clickCount = 0;
+    var clickTimer = null;
+    var CLICK_WINDOW_MS = 1500;
+
+    function openNexusOverlay() {
+        var overlay = document.getElementById("nexusHiddenOverlay");
+        var frame = document.getElementById("nexusHiddenFrame");
+        var fallback = document.getElementById("nexusFrameFallback");
+        if (!overlay || !frame) return;
+
+        if (fallback) fallback.hidden = true;
+        overlay.classList.add("active");
+        overlay.setAttribute("aria-hidden", "false");
+        document.body.classList.add("nexus-overlay-open");
+
+        // Avoid reloading the remote login/session on repeated openings.
+        if (frame.getAttribute("src") !== NEXUS_URL) {
+            frame.setAttribute("src", NEXUS_URL);
+        }
+    }
+
+    function closeNexusOverlay() {
+        var overlay = document.getElementById("nexusHiddenOverlay");
+        if (!overlay) return;
+        overlay.classList.remove("active");
+        overlay.setAttribute("aria-hidden", "true");
+        document.body.classList.remove("nexus-overlay-open");
+    }
+
+    function initNexusHiddenAccess() {
+        document.querySelectorAll(".logo").forEach(function (logo) {
+            logo.addEventListener("click", function () {
+                clickCount += 1;
+                if (clickTimer) clearTimeout(clickTimer);
+
+                if (clickCount >= 3) {
+                    clickCount = 0;
+                    openNexusOverlay();
+                    return;
+                }
+                clickTimer = setTimeout(function () {
+                    clickCount = 0;
+                }, CLICK_WINDOW_MS);
+            });
+        });
+
+        var closeButton = document.getElementById("nexusHiddenClose");
+        if (closeButton) closeButton.addEventListener("click", closeNexusOverlay);
+
+        document.addEventListener("keydown", function (event) {
+            if (event.key === "Escape") closeNexusOverlay();
+        });
+
+        var frame = document.getElementById("nexusHiddenFrame");
+        var fallback = document.getElementById("nexusFrameFallback");
+        if (frame && fallback) {
+            frame.addEventListener("error", function () {
+                fallback.hidden = false;
+            });
+        }
+    }
+
+    if (document.readyState === "loading") {
+        document.addEventListener("DOMContentLoaded", initNexusHiddenAccess);
+    } else {
+        initNexusHiddenAccess();
+    }
+})();
