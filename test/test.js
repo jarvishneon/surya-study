@@ -40,8 +40,10 @@ function localLockTimeKey(subject) {
     return `submitted_time_${String(subject || "english").toLowerCase().trim()}`;
 }
 function setLocalLock(subject) {
-    // Reattempts are enabled: submissions never create a local lock.
-    clearLocalLock(subject);
+    try {
+        localStorage.setItem(localLockKey(subject), "true");
+        localStorage.setItem(localLockTimeKey(subject), Date.now().toString());
+    } catch (e) {}
 }
 function clearLocalLock(subject) {
     try {
@@ -56,67 +58,6 @@ function hasLocalLock(subject) {
         return false;
     }
 }
-
-
-function draftStorageKey() {
-    return `rj_test_draft_${String(studentName || "").trim().toLowerCase()}_${String(currentSubject || "english").toLowerCase()}`;
-}
-function saveDraft() {
-    // Save the complete in-progress state, not only the selected answers.
-    // This lets a student resume at the same question after refresh/network loss.
-    try {
-        const draft = {
-            version: 2,
-            answers: userAnswers,
-            currentQIndex,
-            visitedQuestions: Array.from(visitedQuestions),
-            flaggedQuestions: Array.from(flaggedQuestions),
-            savedAt: Date.now()
-        };
-        localStorage.setItem(draftStorageKey(), JSON.stringify(draft));
-    } catch (e) {
-        console.warn("Could not save test progress locally:", e);
-    }
-}
-function restoreDraft() {
-    try {
-        const raw = localStorage.getItem(draftStorageKey());
-        if (!raw) return;
-        const parsed = JSON.parse(raw);
-        if (!parsed || typeof parsed !== "object" || Array.isArray(parsed)) return;
-
-        // Backward compatibility: v30 drafts stored only the answers object.
-        if (parsed.version === 2 && parsed.answers && typeof parsed.answers === "object") {
-            userAnswers = parsed.answers;
-            const maxIndex = Math.max(0, (testConfig?.questions?.length || 1) - 1);
-            currentQIndex = Math.min(maxIndex, Math.max(0, Number(parsed.currentQIndex) || 0));
-            visitedQuestions = new Set(
-                (Array.isArray(parsed.visitedQuestions) ? parsed.visitedQuestions : [])
-                    .map(Number).filter(i => Number.isInteger(i) && i >= 0 && i <= maxIndex)
-            );
-            flaggedQuestions = new Set(
-                (Array.isArray(parsed.flaggedQuestions) ? parsed.flaggedQuestions : [])
-                    .map(Number).filter(i => Number.isInteger(i) && i >= 0 && i <= maxIndex)
-            );
-        } else {
-            userAnswers = parsed; // legacy answers-only draft
-            currentQIndex = 0;
-        }
-    } catch (e) {
-        console.warn("Could not restore test draft:", e);
-        userAnswers = {};
-        currentQIndex = 0;
-    }
-}
-function clearDraft() {
-    try { localStorage.removeItem(draftStorageKey()); } catch (e) {}
-}
-
-// Save progress immediately when the page is being refreshed, closed, or hidden.
-window.addEventListener("beforeunload", saveDraft);
-document.addEventListener("visibilitychange", () => {
-    if (document.visibilityState === "hidden" && testStarted && !isSubmitting) saveDraft();
-});
 
 // ==================== INIT ====================
 document.addEventListener("DOMContentLoaded", () => {
@@ -146,10 +87,36 @@ document.addEventListener("DOMContentLoaded", () => {
     studentName = cleanName;
     sessionStorage.setItem("student_name", studentName);
 
+    // 🔒 FAST local lock check (instant block even before server)
+    if (hasLocalLock(currentSubject)) {
+        showLockedScreen(
+            "TEST ALREADY SUBMITTED",
+            `You have already completed the ${currentSubject.toUpperCase()} test.\nAsk Admin to unlock if needed.`
+        );
+        // Still verify with server in background (for admin reopen support)
+        verifyServerLockAndMaybeUnlock();
+        return;
+    }
+
     initFabDraggable();
     initDashboardBtn();
     fetchConfigAndInit();
 });
+
+// If local lock exists, check server — maybe admin reopened
+async function verifyServerLockAndMaybeUnlock() {
+    try {
+        const res = await fetch(
+            `${WORKER_URL}/api/check-lock?student=${encodeURIComponent(studentName)}&subject=${encodeURIComponent(currentSubject)}&t=${Date.now()}`
+        );
+        const data = await res.json();
+        if (data && data.locked === false) {
+            // Admin ne reopen/unlock kar diya
+            clearLocalLock(currentSubject);
+            location.reload();
+        }
+    } catch (e) {}
+}
 
 // ==================== FETCH CONFIG ====================
 async function fetchConfigAndInit() {
@@ -159,6 +126,16 @@ async function fetchConfigAndInit() {
         );
 
         const data = await res.json();
+
+        // 🔒 Server says already submitted (from /api/config itself)
+        if (res.status === 403 || data.locked === true || data.error === "ALREADY_SUBMITTED") {
+            setLocalLock(currentSubject);
+            showLockedScreen(
+                "TEST ALREADY SUBMITTED",
+                `You have already completed the ${currentSubject.toUpperCase()} test.\nAsk Admin to unlock if needed.`
+            );
+            return;
+        }
 
         if (data.error === "LOGIN_REQUIRED" || res.status === 401) {
             showLockedScreen("LOGIN REQUIRED", "Please login from Dashboard first.");
@@ -187,15 +164,53 @@ async function fetchConfigAndInit() {
         }
 
         if (testConfig.subject) currentSubject = testConfig.subject.toLowerCase();
-        restoreDraft();
 
-        beginTest();
+        // Double-check lock via dedicated endpoint
+        checkLockStatus();
     } catch (err) {
         console.error("Config fetch error:", err);
         showLockedScreen(
             "CONNECTION ERROR",
             "Could not load test. Please check internet and try again."
         );
+    }
+}
+
+// ==================== SERVER-SIDE LOCK CHECK ====================
+async function checkLockStatus() {
+    try {
+        const res = await fetch(
+            `${WORKER_URL}/api/check-lock?student=${encodeURIComponent(studentName)}&subject=${encodeURIComponent(currentSubject)}&t=${Date.now()}`
+        );
+        const data = await res.json();
+
+        if (data.locked === true) {
+            setLocalLock(currentSubject);
+            showLockedScreen(
+                "TEST ALREADY SUBMITTED",
+                `You have already completed the ${currentSubject.toUpperCase()} test.\nAsk Admin to unlock if needed.`
+            );
+            return;
+        }
+
+        // Agar server pe lock nahi — local bhi clear
+        if (data.locked === false) {
+            clearLocalLock(currentSubject);
+        }
+
+        beginTest();
+    } catch (err) {
+        console.error("Lock check error:", err);
+        // Network fail — local lock pe bharosa karo
+        if (hasLocalLock(currentSubject)) {
+            showLockedScreen(
+                "TEST ALREADY SUBMITTED",
+                `You have already completed the ${currentSubject.toUpperCase()} test.`
+            );
+            return;
+        }
+        // No local lock + network error — allow test (better UX)
+        beginTest();
     }
 }
 
@@ -219,6 +234,16 @@ async function beginTest() {
             });
             const startData = await startRes.json();
 
+            // Server ne bola already submitted
+            if (startData.error === "ALREADY_SUBMITTED" || startData.locked === true) {
+                setLocalLock(currentSubject);
+                showLockedScreen(
+                    "TEST ALREADY SUBMITTED",
+                    `You have already completed the ${currentSubject.toUpperCase()} test.`
+                );
+                return;
+            }
+
             if (startData.sessionId) sessionId = startData.sessionId;
             if (typeof startData.timeRemaining === "number") {
                 timeRemaining = startData.timeRemaining;
@@ -233,12 +258,7 @@ async function beginTest() {
 
     startTimer();
     startServerSync();
-    // Resume from the last saved question instead of always restarting at Q1.
-    const resumeIndex = Math.min(
-        Math.max(0, Number(currentQIndex) || 0),
-        testConfig.questions.length - 1
-    );
-    renderQuestion(resumeIndex);
+    renderQuestion(0);
     renderMatrix();
 }
 
@@ -317,15 +337,6 @@ function renderQuestion(index) {
 
     currentQIndex = index;
     visitedQuestions.add(index);
-    saveDraft();
-    const nextBtn = document.getElementById("mob-next-btn");
-    if (nextBtn) {
-        const isLastQuestion = index === testConfig.questions.length - 1;
-        nextBtn.innerHTML = isLastQuestion
-            ? 'Save & Submit'
-            : 'Save & Next <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"></polyline></svg>';
-        nextBtn.classList.toggle("save-submit-btn", isLastQuestion);
-    }
 
     const q = testConfig.questions[index];
     const questionContent = q.question || q.text || q.questionText || q.title || "";
@@ -368,7 +379,6 @@ function renderQuestion(index) {
 
         textarea.oninput = (e) => {
             userAnswers[index] = e.target.value;
-            saveDraft();
             updateMatrixButtonState(index);
         };
         optsContainer.appendChild(textarea);
@@ -391,7 +401,6 @@ function renderQuestion(index) {
 
 function selectOption(optIndex) {
     userAnswers[currentQIndex] = optIndex;
-    saveDraft();
     renderQuestion(currentQIndex);
 }
 
@@ -401,17 +410,12 @@ function toggleFlag() {
     } else {
         flaggedQuestions.add(currentQIndex);
     }
-    saveDraft();
     renderQuestion(currentQIndex);
 }
 
 function nextQuestion() {
-    // Persist the current response before moving to the next question.
-    saveDraft();
     if (currentQIndex < testConfig.questions.length - 1) {
         renderQuestion(currentQIndex + 1);
-    } else {
-        openSubmitConfirm();
     }
 }
 
@@ -593,11 +597,24 @@ async function submitTestFinal() {
 
         const result = await res.json();
 
-        if (result.success === true) {
-            // Reattempts remain enabled after every successful submission.
-            clearLocalLock(currentSubject);
-            clearDraft();
+        if (result.success || res.ok) {
+            // 🔒 DOUBLE LOCK: localStorage + server
+            setLocalLock(currentSubject);
+
+            // Debug log (optional)
+            if (result.lockSaved === false) {
+                console.warn("Server lock save failed:", result.lockError);
+            } else {
+                console.log("Lock saved:", result.lockKey);
+            }
+
             showResultScreen(result, studentName);
+        } else if (result.error === "ALREADY_SUBMITTED") {
+            setLocalLock(currentSubject);
+            showLockedScreen(
+                "TEST ALREADY SUBMITTED",
+                `You have already completed the ${currentSubject.toUpperCase()} test.`
+            );
         } else {
             isSubmitting = false;
             alert(result.error || "Submission failed. Please try again.");
@@ -625,7 +642,6 @@ function showResultScreen(result, name) {
     const total = result.total !== undefined ? result.total : (testConfig ? testConfig.questions.length : "—");
     const attempted = result.attempted !== undefined ? result.attempted : "—";
     const unattempted = result.unattempted !== undefined ? result.unattempted : "—";
-    const wrong = result.attempted !== undefined && result.score !== undefined ? result.attempted - result.score : "—";
 
     const titleEl = document.getElementById("locked-title");
     if (titleEl) titleEl.innerText = "Assessment Completed";
@@ -640,10 +656,6 @@ function showResultScreen(result, name) {
         scoreDisplay.style.display = "block";
         const marksEl = document.getElementById("final-marks");
         if (marksEl) marksEl.innerText = `${score}/${total}`;
-        const correctEl = document.getElementById("final-correct");
-        if (correctEl) correctEl.innerText = score;
-        const wrongEl = document.getElementById("final-wrong");
-        if (wrongEl) wrongEl.innerText = wrong;
         const attEl = document.getElementById("final-attempted");
         if (attEl) attEl.innerText = attempted;
         const unEl = document.getElementById("final-unattempted");
@@ -653,57 +665,8 @@ function showResultScreen(result, name) {
     const timeEl = document.getElementById("locked-timestamp");
     if (timeEl) timeEl.innerText = `Submitted: ${new Date().toLocaleString("en-IN")}`;
 
-    renderDetailedReview(result.detailedResults || []);
-    const dashBtn = document.getElementById("dash-btn");
-    if (dashBtn) dashBtn.innerText = "Back to Dashboard / Reattempt";
     const lockedScreen = document.getElementById("locked-screen");
     if (lockedScreen) lockedScreen.classList.remove("hidden");
-}
-
-function renderDetailedReview(items) {
-    const host = document.getElementById("detailed-review");
-    if (!host) return;
-    host.innerHTML = "";
-    const heading = document.createElement("h3");
-    heading.className = "review-heading";
-    heading.textContent = "Your Answer Review";
-    host.appendChild(heading);
-
-    if (!Array.isArray(items) || !items.length) {
-        const note = document.createElement("p");
-        note.textContent = "Detailed answer review is unavailable for this submission.";
-        host.appendChild(note);
-        return;
-    }
-
-    items.forEach((item, index) => {
-        const card = document.createElement("article");
-        card.className = `review-card review-${item.status || (item.isCorrect ? "correct" : "wrong")}`;
-        const status = item.status === "unattempted" ? "UNATTEMPTED" : (item.isCorrect ? "CORRECT" : "INCORRECT");
-        const q = document.createElement("h4");
-        q.textContent = `Q${index + 1}. ${item.question || ""}`;
-        const badge = document.createElement("span");
-        badge.className = "review-status";
-        badge.textContent = status;
-        const your = document.createElement("p");
-        your.textContent = `Your answer: ${item.selectedAnswer || "Not attempted"}`;
-        const correct = document.createElement("p");
-        correct.className = "review-correct-answer";
-        correct.textContent = `Correct answer: ${item.correctAnswer || "—"}`;
-        card.append(q, badge, your, correct);
-        if (item.explanation) {
-            const explanation = document.createElement("p");
-            explanation.className = "review-explanation";
-            explanation.textContent = `Review: ${item.explanation}`;
-            card.appendChild(explanation);
-        } else if (item.status === "wrong") {
-            const mistake = document.createElement("p");
-            mistake.className = "review-explanation";
-            mistake.textContent = "Mistake: Your selected answer does not match the correct answer.";
-            card.appendChild(mistake);
-        }
-        host.appendChild(card);
-    });
 }
 
 function showLockedScreen(title, msg) {
@@ -719,8 +682,6 @@ function showLockedScreen(title, msg) {
     const timeEl = document.getElementById("locked-timestamp");
     if (timeEl) timeEl.innerText = `Time: ${new Date().toLocaleString("en-IN")}`;
 
-    const review = document.getElementById("detailed-review");
-    if (review) review.innerHTML = "";
     const lockedScreen = document.getElementById("locked-screen");
     if (lockedScreen) lockedScreen.classList.remove("hidden");
 }
