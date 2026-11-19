@@ -796,3 +796,57 @@ body, html {
     .portal-title { font-size: 15px; }
     .timer-box { font-size: 13px; padding: 5px 10px; }
 }
+
+
+/* ===== STUDENT DETAILED RESULT REVIEW ===== */
+.save-submit-btn {
+    background: linear-gradient(135deg, var(--success), #00cc6a);
+    color: #001b10;
+    box-shadow: 0 5px 15px rgba(0, 255, 136, 0.25);
+}
+.detailed-review {
+    width: 100%;
+    margin-top: 26px;
+    text-align: left;
+    max-height: 46vh;
+    overflow-y: auto;
+    padding-right: 4px;
+}
+.review-heading {
+    color: var(--primary);
+    font-size: 18px;
+    font-weight: 800;
+    margin: 0 0 14px;
+}
+.review-card {
+    position: relative;
+    text-align: left;
+    padding: 15px;
+    margin: 12px 0;
+    border: 1px solid var(--glass-border);
+    border-left: 4px solid var(--text-muted);
+    border-radius: 12px;
+    background: rgba(255,255,255,0.045);
+}
+.review-card.review-correct { border-left-color: var(--success); }
+.review-card.review-wrong { border-left-color: var(--danger); }
+.review-card.review-unattempted { border-left-color: var(--warning); }
+.review-card h4 { color: #fff; font-size: 14px; line-height: 1.55; margin: 0 0 12px; padding-right: 90px; }
+.review-card p { color: var(--text-secondary); font-size: 13px; line-height: 1.55; margin: 7px 0 0; overflow-wrap: anywhere; }
+.review-card .review-correct-answer { color: var(--success); font-weight: 700; }
+.review-card .review-explanation { color: var(--warning); }
+.review-status {
+    position: absolute; top: 13px; right: 12px;
+    font-size: 10px; font-weight: 900; letter-spacing: .4px;
+    color: var(--text-secondary);
+}
+.review-correct .review-status { color: var(--success); }
+.review-wrong .review-status { color: var(--danger); }
+.review-unattempted .review-status { color: var(--warning); }
+.locked-card:has(.detailed-review:not(:empty)) { max-width: 760px; max-height: 92vh; overflow-y: auto; }
+@media (max-width: 600px) {
+    .detailed-review { max-height: 42vh; }
+    .review-card { padding: 12px; }
+    .review-card h4 { padding-right: 0; }
+    .review-status { position: static; display: inline-block; margin-bottom: 6px; }
+}
