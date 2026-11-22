@@ -87,13 +87,9 @@ document.addEventListener("DOMContentLoaded", () => {
     studentName = cleanName;
     sessionStorage.setItem("student_name", studentName);
 
-    // 🔒 FAST local lock check (instant block even before server)
+    // Local lock is a hint only. Ask the Worker before blocking so admin unlocks apply immediately.
     if (hasLocalLock(currentSubject)) {
-        showLockedScreen(
-            "TEST ALREADY SUBMITTED",
-            `You have already completed the ${currentSubject.toUpperCase()} test.\nAsk Admin to unlock if needed.`
-        );
-        // Still verify with server in background (for admin reopen support)
+        showLockedScreen("CHECKING TEST ACCESS", "Verifying your test access with the server...");
         verifyServerLockAndMaybeUnlock();
         return;
     }
@@ -103,19 +99,28 @@ document.addEventListener("DOMContentLoaded", () => {
     fetchConfigAndInit();
 });
 
-// If local lock exists, check server — maybe admin reopened
+// Server is authoritative when a local backup lock exists.
 async function verifyServerLockAndMaybeUnlock() {
     try {
         const res = await fetch(
-            `${WORKER_URL}/api/check-lock?student=${encodeURIComponent(studentName)}&subject=${encodeURIComponent(currentSubject)}&t=${Date.now()}`
+            `${WORKER_URL}/api/check-lock?student=${encodeURIComponent(studentName)}&subject=${encodeURIComponent(currentSubject)}&t=${Date.now()}`,
+            { cache: "no-store" }
         );
         const data = await res.json();
         if (data && data.locked === false) {
-            // Admin ne reopen/unlock kar diya
             clearLocalLock(currentSubject);
-            location.reload();
+            initFabDraggable();
+            initDashboardBtn();
+            await fetchConfigAndInit();
+            return;
         }
-    } catch (e) {}
+        showLockedScreen(
+            "TEST ALREADY SUBMITTED",
+            `You have already completed the ${currentSubject.toUpperCase()} test.\nAsk Admin to unlock if needed.`
+        );
+    } catch (e) {
+        showLockedScreen("CONNECTION ERROR", "Could not verify test access. Please refresh when internet is available.");
+    }
 }
 
 // ==================== FETCH CONFIG ====================
